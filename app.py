@@ -604,21 +604,12 @@ def _validate_plan(plan: dict, kw: int) -> dict:
         # Anmeldung
         fd_anm = [p for p in TFAS if "FD" in row[p] and "Anmeldung" in row[p]]
         sd_anm = [p for p in TFAS if "SD" in row[p] and "Anmeldung" in row[p]]
-        if len(active_tfas) >= 2:
-            # Nur flaggen wenn mind. 2 TFAs mit generischer Behandlung im gleichen Shift da
-            # sind, die Anmeldung hätten übernehmen können (einzelne Person = Ausnahme OK)
-            fd_beh_persons = [
-                p for p in TFAS
-                if "FD" in row[p] and "Behandlung" in row[p] and "Assistenz" not in row[p]
-                and working(row[p])
-            ]
-            sd_beh_persons = [
-                p for p in TFAS
-                if "SD" in row[p] and "Behandlung" in row[p] and "Assistenz" not in row[p]
-                and working(row[p])
-            ]
-            if not fd_anm and len(fd_beh_persons) >= 2: add_day(di, "FD: Anmeldung fehlt")
-            if not sd_anm and len(sd_beh_persons) >= 2: add_day(di, "SD: Anmeldung fehlt")
+        # Warnung sobald ≥1 TFA in einem Shift aktiv ist — unabhängig von der Rolle.
+        # (Frühere ">= 2 Behandlung"-Schwelle hat echte Lücken übersehen.)
+        fd_active = [p for p in TFAS if "FD" in row[p] and working(row[p])]
+        sd_active = [p for p in TFAS if "SD" in row[p] and working(row[p])]
+        if fd_active and not fd_anm: add_day(di, "FD: Anmeldung fehlt")
+        if sd_active and not sd_anm: add_day(di, "SD: Anmeldung fehlt")
         for p in fd_anm[1:]: add_cell(p, di, "FD: Anmeldung doppelt besetzt")
         for p in sd_anm[1:]: add_cell(p, di, "SD: Anmeldung doppelt besetzt")
         if len(fd_anm) > 1: add_day(di, f"FD: Anmeldung mehrfach ({', '.join(fd_anm)})")
