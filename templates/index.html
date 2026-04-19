@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dienstplan">
-<link rel="apple-touch-icon" href="/static/logo.svg">
-<link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+<link rel="apple-touch-icon" href="/static/logo.png">
+<link rel="icon" type="image/png" href="/static/logo.png">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -392,6 +392,34 @@
   th.today-col .day-name { color: #2563eb; font-weight: 800; }
   th.today-col .day-date { color: #60a5fa; }
   td.cell.today-col { box-shadow: inset 2px 0 0 #3b82f6, inset -2px 0 0 #3b82f6; }
+
+  /* ── FD/SD-Balance-Zeile ── */
+  tr.balance-row td {
+    background: #f8fafc; padding: 4px 6px; font-size: 11px; text-align: center;
+    border-bottom: 2px solid #e2e8f0; white-space: nowrap; font-weight: 600;
+  }
+  tr.balance-row .bal-label {
+    color: #64748b; font-weight: 700; text-align: left; padding-left: 10px;
+  }
+  tr.balance-row .bal-ok   { color: #15803d; }
+  tr.balance-row .bal-warn { color: #b45309; background: #fef9c3; }
+  tr.balance-row .bal-bad  { color: #b91c1c; background: #fee2e2; }
+  .bal-fd { color: #1d4ed8; }
+  .bal-sd { color: #9a3412; }
+  /* Balance-Banner Tagesansicht */
+  .day-balance-bar {
+    display: flex; align-items: center; gap: 10px; justify-content: center;
+    padding: 8px 16px; font-size: 13px; font-weight: 600;
+    border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+  }
+  .day-balance-bar .bal-warn-badge {
+    background: #fef9c3; color: #92400e; border-radius: 6px;
+    padding: 2px 8px; font-size: 11px;
+  }
+  .day-balance-bar .bal-ok-badge {
+    background: #dcfce7; color: #15803d; border-radius: 6px;
+    padding: 2px 8px; font-size: 11px;
+  }
 
   /* ── Swap Modal ── */
   #swap-overlay, #vac-overlay {
@@ -1146,6 +1174,25 @@ async function loadKw(kw) {
   }
 }
 
+// ── FD/SD Balance berechnen ───────────────────────────────────────────────
+function computeDayBalance(plan, di, allPersons) {
+  let fd = 0, sd = 0;
+  const SKIP = new Set(["–","Urlaub","Feiertag","SCHULE","Abschlussprüfung",
+    "ECVO Congress","Frei (Notdienst)","Notdienst (20–8 Uhr)","Dienst","Krank"]);
+  for (const p of allPersons) {
+    const v = String((plan[p] || [])[di] || "–").trim();
+    if (SKIP.has(v) || v.startsWith("Frei")) continue;
+    if (v.startsWith("FD") || v.includes("FD (") || v.includes("FD OP")) fd++;
+    else if (v.startsWith("SD") || v.includes("SD (") || v.includes("SD (")) sd++;
+  }
+  return { fd, sd };
+}
+
+function balanceCls(fd, sd) {
+  const diff = Math.abs(fd - sd);
+  return diff <= 1 ? "bal-ok" : diff <= 3 ? "bal-warn" : "bal-bad";
+}
+
 function renderPlan(data, valid) {
   const { kw, dates, plan, days, arzte, tfas, overrides } = data;
   const dayIssues  = valid?.day  || {};
@@ -1187,6 +1234,7 @@ function renderPlan(data, valid) {
   const todayDi = dates.indexOf(todayLabel); // -1 wenn nicht diese Woche
 
   // Header
+  const allP = [...(data.arzte||[]), ...(data.tfas||[])];
   thead.innerHTML = `<tr><th>Person</th>${days.map((d,i) => {
     const cnt   = issuePerDay[i] || 0;
     const today = i === todayDi ? " today-col" : "";
@@ -1194,6 +1242,13 @@ function renderPlan(data, valid) {
       <div class="day-name">${d}${cnt?`<span class="day-warn">${cnt}</span>`:""}</div>
       <div class="day-date">${dates[i]}</div>
     </th>`;
+  }).join("")}</tr>
+  <tr class="balance-row"><td class="bal-label">FD / SD</td>${days.map((d,i) => {
+    if (i === 5) return '<td>–</td>';
+    const {fd, sd} = computeDayBalance(plan, i, allP);
+    const cls = balanceCls(fd, sd);
+    const icon = cls==="bal-ok" ? "" : cls==="bal-warn" ? " ⚠" : " ⛔";
+    return `<td class="${cls}"><span class="bal-fd">↑${fd}</span> / <span class="bal-sd">↓${sd}</span>${icon}</td>`;
   }).join("")}</tr>`;
 
   // Body
@@ -1264,8 +1319,23 @@ function renderDayView(data, valid) {
   const isToday = di === _todayDayIndex();
   const dayIssueList = dayIssues[String(di)] || [];
 
+  // FD/SD Balance für diesen Tag
+  const allPersons = [...(data.arzte||[]), ...(data.tfas||[])];
+  const { fd: balFd, sd: balSd } = computeDayBalance(plan, di, allPersons);
+  const balDiff = Math.abs(balFd - balSd);
+  const balBadge = balDiff <= 1
+    ? `<span class="bal-ok-badge">✓ Ausgeglichen</span>`
+    : balDiff <= 3
+      ? `<span class="bal-warn-badge">⚠ Schief (Δ${balDiff})</span>`
+      : `<span class="bal-warn-badge" style="background:#fee2e2;color:#b91c1c">⛔ Ungleich (Δ${balDiff})</span>`;
+
   // Karten-Container aufbauen
-  let html = "";
+  let html = `<div class="day-balance-bar">
+    <span class="bal-fd">FD: ${balFd}</span>
+    <span style="color:#94a3b8">|</span>
+    <span class="bal-sd">SD: ${balSd}</span>
+    ${balBadge}
+  </div>`;
   for (const { label, persons: grp } of [
     { label: "Ärzte", persons: arzte },
     { label: "TFAs",  persons: tfas  }
@@ -1689,9 +1759,21 @@ document.addEventListener("click", e => {
 
 // ── Heute-Button ──────────────────────────────────────────────────────────
 btnHeute.addEventListener("click", () => {
-  const todayKw = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
-  if (todayKw !== currentKw) { currentKw = todayKw; loadKw(todayKw); }
+  const todayKw  = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
+  const todayDay = _todayDayIndex();
   closeCalendar();
+  if (todayKw !== currentKw) {
+    currentKw  = todayKw;
+    currentDay = todayDay;
+    loadKw(todayKw);
+  } else if (viewMode === "day" && currentDay !== todayDay) {
+    currentDay = todayDay;
+    renderDayView(planData, validData);
+  } else if (viewMode === "week") {
+    // Schon auf aktueller Woche – kurz aufblinken lassen
+    const col = document.querySelector("th.today-col");
+    if (col) { col.style.outline = "2px solid #3b82f6"; setTimeout(() => col.style.outline = "", 600); }
+  }
 });
 
 // ── Suggestions Panel ─────────────────────────────────────────────────────

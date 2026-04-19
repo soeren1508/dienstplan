@@ -169,7 +169,7 @@ def manifest():
         "theme_color": "#1e293b",
         "orientation": "portrait-primary",
         "icons": [
-            {"src": "/static/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"},
+            {"src": "/static/logo.png", "sizes": "any", "type": "image/png", "purpose": "any maskable"},
         ],
         "categories": ["productivity", "medical"],
     }
