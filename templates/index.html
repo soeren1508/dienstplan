@@ -1234,7 +1234,7 @@ function renderPlan(data, valid) {
   const todayDi = dates.indexOf(todayLabel); // -1 wenn nicht diese Woche
 
   // Header
-  const allP = [...(data.arzte||[]), ...(data.tfas||[])];
+  const allP = data.tfas || [];
   thead.innerHTML = `<tr><th>Person</th>${days.map((d,i) => {
     const cnt   = issuePerDay[i] || 0;
     const today = i === todayDi ? " today-col" : "";
@@ -1320,7 +1320,7 @@ function renderDayView(data, valid) {
   const dayIssueList = dayIssues[String(di)] || [];
 
   // FD/SD Balance für diesen Tag
-  const allPersons = [...(data.arzte||[]), ...(data.tfas||[])];
+  const allPersons = data.tfas || [];
   const { fd: balFd, sd: balSd } = computeDayBalance(plan, di, allPersons);
   const balDiff = Math.abs(balFd - balSd);
   const balBadge = balDiff <= 1
