@@ -181,18 +181,13 @@
     display: block; font-size: 10px; font-weight: 700; color: rgba(0,0,0,0.38); margin-top: 1px;
   }
 
-  /* ── FD-Schichten (kühle Töne) ── */
-  .c-fd-anm    { background: #bfdbfe; color: #1e3a8a; } /* Blau       – FD: Anmeldung      */
-  .c-fd-beh    { background: #dbeafe; color: #1d4ed8; } /* Hellblau   – FD: Behandlung     */
-  .c-fd-ulf    { background: #a5f3fc; color: #0e7490; } /* Cyan       – FD: Assistenz Ulf  */
-  .c-fd-lisa   { background: #c4b5fd; color: #5b21b6; } /* Lila       – FD: Assistenz Lisa */
-  .c-fd-wilke  { background: #86efac; color: #166534; } /* Mint       – FD: Assistenz Wilke*/
-  /* ── SD-Schichten (warme Töne) ── */
-  .c-sd-anm    { background: #fde68a; color: #78350f; } /* Gelb       – SD: Anmeldung      */
-  .c-sd-beh    { background: #fed7aa; color: #9a3412; } /* Orange     – SD: Behandlung     */
-  .c-sd-ulf    { background: #fdba74; color: #7c2d12; } /* Dunklorange– SD: Assistenz Ulf  */
-  .c-sd-lisa   { background: #f9a8d4; color: #9d174d; } /* Pink       – SD: Assistenz Lisa */
-  .c-sd-wilke  { background: #fca5a5; color: #991b1b; } /* Koralle    – SD: Assistenz Wilke*/
+  /* ── Schicht-Farben (6 Gruppen, FD+SD jeweils gleich) ── */
+  .c-anmeldung      { background: #e0e7ff; color: #3730a3; } /* Indigo   – Anmeldung (FD+SD)      */
+  .c-fd-beh         { background: #bfdbfe; color: #1e3a8a; } /* Blau     – FD: Behandlung         */
+  .c-sd-beh         { background: #fed7aa; color: #9a3412; } /* Orange   – SD: Behandlung         */
+  .c-assistenz-ulf  { background: #a5f3fc; color: #0e7490; } /* Cyan     – Assistenz Ulf (FD+SD)  */
+  .c-assistenz-lisa { background: #c4b5fd; color: #5b21b6; } /* Lila     – Assistenz Lisa (FD+SD) */
+  .c-assistenz-wilke{ background: #86efac; color: #166534; } /* Mint     – Assistenz Wilke (FD+SD)*/
   /* ── Sonstige ── */
   .c-urlaub    { background: #e2e8f0; color: #64748b; }
   .c-krank     { background: #fee2e2; color: #991b1b; }
@@ -360,10 +355,12 @@
   .cal-kw-cell {
     font-size: 10px; font-weight: 700; color: #e2e8f0;
     text-align: left; padding: 5px 4px; vertical-align: middle; width: 28px;
+    background: white;
   }
   .cal-day-cell {
     font-size: 13px; color: #1e293b; text-align: center;
     padding: 4px 1px; vertical-align: middle; border-radius: 6px;
+    background: white;
   }
   .cal-day-cell.cal-other-month { color: #cbd5e1; }
   .cal-day-cell.cal-sunday      { color: #94a3b8; }
@@ -733,18 +730,13 @@
   </div>
 
   <div class="legend">
-    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Frühdienst</div>
-    <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Anmeldung</div>
-    <div class="legend-item" style="background:#dbeafe;color:#1d4ed8"><div class="legend-dot" style="background:#60a5fa"></div>FD: Behandlung</div>
-    <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>FD: Ass. Ulf</div>
-    <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>FD: Ass. Lisa OP</div>
-    <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>FD: Ass. Wilke OP</div>
-    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Spätdienst</div>
-    <div class="legend-item" style="background:#fde68a;color:#78350f"><div class="legend-dot" style="background:#fbbf24"></div>SD: Anmeldung</div>
+    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Schichten</div>
+    <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
+    <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Behandlung</div>
     <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
-    <div class="legend-item" style="background:#fdba74;color:#7c2d12"><div class="legend-dot" style="background:#f97316"></div>SD: Ass. Ulf</div>
-    <div class="legend-item" style="background:#f9a8d4;color:#9d174d"><div class="legend-dot" style="background:#f472b6"></div>SD: Ass. Lisa OP</div>
-    <div class="legend-item" style="background:#fca5a5;color:#991b1b"><div class="legend-dot" style="background:#f87171"></div>SD: Ass. Wilke OP</div>
+    <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
+    <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa OP</div>
+    <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke OP</div>
     <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
     <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
     <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
@@ -921,37 +913,29 @@ function cellClass(val) {
   if (!val || val === "–") return "c-empty";
   const v = String(val);
 
-  // FD-Schichten (Reihenfolge: spezifischste zuerst)
-  if (v.includes("FD") && v.includes("Anmeldung"))           return "c-fd-anm";
-  if (v.includes("FD") && v.includes("Assistenz Ulf"))       return "c-fd-ulf";
-  if (v.includes("FD") && v.includes("Assistenz Lisa"))      return "c-fd-lisa";
-  if (v.includes("FD") && v.includes("Assistenz Wilke"))     return "c-fd-wilke";
-  if (v.includes("FD") && v.includes("Assistenz"))           return "c-fd-ulf"; // Fallback Assistenz
-  if (v.includes("FD") && v.includes("Behandlung"))          return "c-fd-beh";
-  if (v.startsWith("FD"))                                     return "c-fd-beh"; // Generischer FD
+  // Rollenbasierte Farben (FD und SD gleich je Rolle)
+  if (v.includes("Anmeldung"))            return "c-anmeldung";
+  if (v.includes("Assistenz Ulf"))        return "c-assistenz-ulf";
+  if (v.includes("Assistenz Lisa"))       return "c-assistenz-lisa";
+  if (v.includes("Assistenz Wilke"))      return "c-assistenz-wilke";
+  if (v.includes("Assistenz"))            return "c-assistenz-ulf"; // Fallback
 
-  // SD-Schichten
-  if (v.includes("SD") && v.includes("Anmeldung"))           return "c-sd-anm";
-  if (v.includes("SD") && v.includes("Assistenz Ulf"))       return "c-sd-ulf";
-  if (v.includes("SD") && v.includes("Assistenz Lisa"))      return "c-sd-lisa";
-  if (v.includes("SD") && v.includes("Assistenz Wilke"))     return "c-sd-wilke";
-  if (v.includes("SD") && v.includes("Assistenz"))           return "c-sd-ulf"; // Fallback Assistenz
-  if (v.includes("SD") && v.includes("Behandlung"))          return "c-sd-beh";
-  if (v.startsWith("SD"))                                     return "c-sd-beh"; // Generischer SD
+  // FD / SD Behandlung (einzige Unterscheidung nach Schicht)
+  if (v.startsWith("FD"))                 return "c-fd-beh";
+  if (v.startsWith("SD"))                 return "c-sd-beh";
 
   // Sonstige
-  if (v === "Urlaub")                                         return "c-urlaub";
-  if (v === "Krank")                                          return "c-krank";
-  if (v === "Feiertag")                                       return "c-feiertag";
-  if (v === "SCHULE")                                         return "c-schule";
-  if (v === "Dienst")                                         return "c-dienst";
-  if (v.includes("Notdienst"))                                return "c-notdienst";
-  if (v.includes("Abschlussprüfung"))                         return "c-pruefung";
-  if (v.includes("Frei"))                                     return "c-frei";
-  if (v.includes("OP") || v.includes("Assistenz") ||
-      v.includes("09:00") || v.includes("FD (") ||
-      v.includes("SD (")  || v.includes("09–12") ||
-      v.includes("ECVO")  || v.includes("Bestellungen"))      return "c-op";
+  if (v === "Urlaub")                     return "c-urlaub";
+  if (v === "Krank")                      return "c-krank";
+  if (v === "Feiertag")                   return "c-feiertag";
+  if (v === "SCHULE")                     return "c-schule";
+  if (v === "Dienst")                     return "c-dienst";
+  if (v.includes("Notdienst"))            return "c-notdienst";
+  if (v.includes("Abschlussprüfung"))     return "c-pruefung";
+  if (v.includes("Frei"))                 return "c-frei";
+  if (v.includes("OP") || v.includes("09:00") ||
+      v.includes("09–12") || v.includes("ECVO") ||
+      v.includes("Bestellungen"))         return "c-op";
   return "c-empty";
 }
 
