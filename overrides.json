@@ -1,0 +1,20 @@
+{
+  "17": {
+    "Nicolas": {"4": "SD: Behandlung"},
+    "Nadine":  {"2": "FD: Behandlung"}
+  },
+  "18": {
+    "Nicolas": {"3": "SD: Behandlung"}
+  },
+  "21": {
+    "Nicolas": {"4": "SD: Anmeldung"},
+    "Nadine":  {"2": "FD: Behandlung", "4": "FD: Behandlung"}
+  },
+  "22": {
+    "Kristin": {"2": "FD: Behandlung", "3": "SD: Behandlung"}
+  },
+  "23": {
+    "Nicolas": {"4": "SD: Behandlung"},
+    "Nadine":  {"4": "FD: Behandlung"}
+  }
+}
