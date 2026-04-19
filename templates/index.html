@@ -322,55 +322,68 @@
   #btn-abs-cancel { background: #f1f5f9; color: #475569; }
   #btn-abs-cancel:hover { background: #e2e8f0; }
 
-  /* ── Mini-Kalender (weißes Popover) ── */
+  /* ── Mini-Kalender ── */
   #cal-panel {
     display: none; position: fixed; z-index: 9999;
-    background: white; border-radius: 16px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10);
-    padding: 18px 16px 14px; width: 310px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+    padding: 14px 14px 10px;
+    width: 292px;
+    isolation: isolate;
   }
   #cal-panel.visible { display: block; }
+
+  /* Alle inneren Elemente explizit weiß – verhindert Durchscheinen */
+  #cal-panel, #cal-panel table, #cal-panel thead,
+  #cal-panel tbody, #cal-panel tr, #cal-panel th, #cal-panel td {
+    background: #ffffff !important;
+  }
+
   .cal-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
   }
-  .cal-header span { font-size: 16px; font-weight: 700; color: #1e293b; }
+  .cal-header span { font-size: 15px; font-weight: 700; color: #1e293b; }
   .cal-header button {
-    background: #f1f5f9; border: none; color: #64748b;
-    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
-    font-size: 16px; transition: background 0.15s;
-    display: flex; align-items: center; justify-content: center;
+    background: #f1f5f9 !important; border: none; color: #64748b;
+    width: 28px; height: 28px; border-radius: 7px; cursor: pointer;
+    font-size: 15px; display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s;
   }
-  .cal-header button:hover { background: #e2e8f0; color: #1e293b; }
+  .cal-header button:hover { background: #e2e8f0 !important; color: #1e293b; }
+
   .cal-grid { width: 100%; border-collapse: collapse; }
   .cal-grid thead th {
-    font-size: 11px; font-weight: 600; color: #94a3b8; text-align: center;
-    padding-bottom: 8px; letter-spacing: .3px;
+    font-size: 11px; font-weight: 600; color: #94a3b8 !important;
+    text-align: center; padding: 0 0 7px; letter-spacing: .3px;
+    background: #ffffff !important;
   }
-  .cal-grid thead th.cal-kw-th { text-align: left; color: #e2e8f0; font-size: 10px; width: 28px; }
+  .cal-grid thead th.cal-kw-th { color: #cbd5e1 !important; font-size: 10px; width: 26px; text-align: left; }
+
   .cal-week-row { cursor: pointer; }
-  .cal-week-row:hover .cal-day-cell { background: #f8fafc; }
-  .cal-week-row.selected .cal-day-cell { background: #eff6ff; }
+  .cal-week-row:hover td { background: #f8fafc !important; }
+  .cal-week-row.selected td { background: #eff6ff !important; }
   .cal-week-row.selected .cal-kw-cell { color: #3b82f6 !important; }
-  .cal-week-row:hover .cal-kw-cell    { color: #6366f1 !important; }
+
   .cal-kw-cell {
-    font-size: 10px; font-weight: 700; color: #e2e8f0;
-    text-align: left; padding: 5px 4px; vertical-align: middle; width: 28px;
-    background: white;
+    font-size: 10px; font-weight: 700; color: #cbd5e1;
+    text-align: left; padding: 5px 3px; vertical-align: middle; width: 26px;
   }
   .cal-day-cell {
     font-size: 13px; color: #1e293b; text-align: center;
-    padding: 4px 1px; vertical-align: middle; border-radius: 6px;
-    background: white;
+    padding: 4px 2px; vertical-align: middle;
   }
   .cal-day-cell.cal-other-month { color: #cbd5e1; }
   .cal-day-cell.cal-sunday      { color: #94a3b8; }
+  /* Heute: dezenter blauer Rahmen um die Zahl */
   .cal-day-cell.cal-today {
     font-weight: 700;
   }
-  .cal-day-cell.cal-today span {
+  .cal-day-cell.cal-today .cal-day-num {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #ef4444; color: white; font-weight: 700; font-size: 13px;
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid #3b82f6; color: #2563eb;
   }
 
   /* Heute-Spalte im Plan */
@@ -682,6 +695,7 @@
     <button id="btn-next">›</button>
   </div>
   <button class="btn btn-ghost" id="btn-cal" title="Kalender öffnen" style="font-size:16px;padding:4px 10px">📅</button>
+  <button class="btn btn-ghost" id="btn-heute" title="Zur aktuellen Woche springen" style="font-size:12px">Heute</button>
   <span id="mod-count" class="mod-count"></span>
 
   <div class="spacer"></div>
@@ -1246,18 +1260,19 @@ const calTitle  = document.getElementById("cal-title");
 const btnCal    = document.getElementById("btn-cal");
 const btnCalPrev= document.getElementById("cal-prev");
 const btnCalNext= document.getElementById("cal-next");
+const btnHeute  = document.getElementById("btn-heute");
 
 const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni",
                      "Juli","August","September","Oktober","November","Dezember"];
 
 let calYear  = new Date().getFullYear();
-let calMonth = new Date().getMonth(); // 0-based
+let calMonth = new Date().getMonth();
 
-function isoKwFromDate(date) {
-  const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+function isoKwFromDate(d) {
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
   const y0 = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-  return { kw: Math.ceil((((tmp - y0) / 86400000) + 1) / 7), year: tmp.getUTCFullYear() };
+  return Math.ceil((((tmp - y0) / 86400000) + 1) / 7);
 }
 
 function renderCalendar() {
@@ -1266,9 +1281,8 @@ function renderCalendar() {
 
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Ersten Montag der Kalenderansicht
-  const firstDay  = new Date(calYear, calMonth, 1);
-  const startDow  = (firstDay.getDay() + 6) % 7; // 0=Mo
+  const firstDay = new Date(calYear, calMonth, 1);
+  const startDow = (firstDay.getDay() + 6) % 7; // 0=Mo
   const startDate = new Date(firstDay);
   startDate.setDate(1 - startDow);
 
@@ -1276,34 +1290,45 @@ function renderCalendar() {
     const monday = new Date(startDate);
     monday.setDate(startDate.getDate() + week * 7);
 
-    const saturday = new Date(monday); saturday.setDate(monday.getDate() + 5);
-    if (week > 0 && monday.getMonth() !== calMonth && saturday.getMonth() !== calMonth) break;
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    if (week > 0 && monday.getMonth() !== calMonth && sunday.getMonth() !== calMonth) break;
 
-    const { kw } = isoKwFromDate(monday);
+    const kw = isoKwFromDate(monday);
     const inRange = kw >= KW_MIN && kw <= KW_MAX;
 
     const tr = document.createElement("tr");
     tr.className = "cal-week-row" + (kw === currentKw ? " selected" : "");
-    if (!inRange) { tr.style.opacity = "0.4"; tr.style.cursor = "default"; }
-    else tr.addEventListener("click", () => { currentKw = kw; loadKw(kw); closeCalendar(); });
+    if (!inRange) {
+      tr.style.opacity = "0.35";
+      tr.style.cursor  = "default";
+      tr.style.pointerEvents = "none";
+    } else {
+      tr.addEventListener("click", () => {
+        currentKw = kw;
+        loadKw(kw);
+        closeCalendar();
+      });
+    }
 
-    // KW-Zelle links
+    // KW-Zelle
     const kwTd = document.createElement("td");
     kwTd.className = "cal-kw-cell";
     kwTd.textContent = inRange ? kw : "";
     tr.appendChild(kwTd);
 
-    // Mo–So (7 Tage)
+    // Mo–So
     for (let d = 0; d < 7; d++) {
       const day = new Date(monday); day.setDate(monday.getDate() + d);
-      const td  = document.createElement("td");
-      td.className = "cal-day-cell";
       const isToday = day.getTime() === today.getTime();
-      // Heute: Zahl in rotem Kreis
-      td.innerHTML = isToday ? `<span>${day.getDate()}</span>` : day.getDate();
-      if (day.getMonth() !== calMonth) td.classList.add("cal-other-month");
-      if (d === 6) td.classList.add("cal-sunday");
-      if (isToday) td.classList.add("cal-today");
+      const td = document.createElement("td");
+      td.className = "cal-day-cell"
+        + (day.getMonth() !== calMonth ? " cal-other-month" : "")
+        + (d === 6 ? " cal-sunday" : "")
+        + (isToday ? " cal-today" : "");
+      // Heute: Zahl in blauem Kreis-Rahmen
+      td.innerHTML = isToday
+        ? `<span class="cal-day-num">${day.getDate()}</span>`
+        : `<span class="cal-day-num">${day.getDate()}</span>`;
       tr.appendChild(td);
     }
     calBody.appendChild(tr);
@@ -1311,26 +1336,28 @@ function renderCalendar() {
 }
 
 function openCalendar() {
-  // Monat der aktuell angezeigten KW
-  if (planData?.dates?.[0]) {
-    const m = parseInt(planData.dates[0].split(".")[1]);
-    if (m) { calMonth = m - 1; calYear = 2026; }
-  }
+  // Immer beim Öffnen: Monat der aktuellen Woche zeigen
+  const now = new Date();
+  calMonth = now.getMonth();
+  calYear  = now.getFullYear();
   renderCalendar();
 
-  // Popover direkt unter dem 📅-Button positionieren
-  const rect = btnCal.getBoundingClientRect();
-  const panelW = 310;
+  // Unter dem 📅-Button positionieren
+  const rect  = btnCal.getBoundingClientRect();
+  const panelW = 292;
   let left = rect.left;
   if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
+  if (left < 8) left = 8;
   calPanel.style.top  = (rect.bottom + 6) + "px";
   calPanel.style.left = left + "px";
-
-  calPanel.classList.toggle("visible");
+  calPanel.classList.add("visible");
 }
 function closeCalendar() { calPanel.classList.remove("visible"); }
 
-btnCal.addEventListener("click", e => { e.stopPropagation(); openCalendar(); });
+btnCal.addEventListener("click", e => {
+  e.stopPropagation();
+  calPanel.classList.contains("visible") ? closeCalendar() : openCalendar();
+});
 btnCalPrev.addEventListener("click", e => {
   e.stopPropagation();
   calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
@@ -1342,8 +1369,18 @@ btnCalNext.addEventListener("click", e => {
   renderCalendar();
 });
 document.addEventListener("click", e => {
-  if (calPanel.classList.contains("visible") && !calPanel.contains(e.target) && e.target !== btnCal)
+  if (calPanel.classList.contains("visible")
+      && !calPanel.contains(e.target)
+      && e.target !== btnCal) {
     closeCalendar();
+  }
+});
+
+// ── Heute-Button ──────────────────────────────────────────────────────────
+btnHeute.addEventListener("click", () => {
+  const todayKw = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
+  if (todayKw !== currentKw) { currentKw = todayKw; loadKw(todayKw); }
+  closeCalendar();
 });
 
 // ── Suggestions Panel ─────────────────────────────────────────────────────
