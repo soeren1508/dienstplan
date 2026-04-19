@@ -521,25 +521,70 @@
   .view-toggle button.active { background: rgba(255,255,255,0.25); color: white; }
   .view-toggle button:hover:not(.active) { color: white; }
 
-  /* ── Tagesansicht ── */
-  .day-nav {
-    display: none; align-items: center; gap: 4px;
-    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 4px 8px;
-  }
-  .day-nav button {
-    background: none; border: none; color: white; font-size: 18px; cursor: pointer;
-    padding: 2px 6px; border-radius: 4px; transition: background 0.15s;
-  }
-  .day-nav button:hover { background: rgba(255,255,255,0.2); }
-  .day-nav .day-label { font-size: 14px; font-weight: 700; min-width: 110px; text-align: center; }
-  body.day-view .day-nav { display: flex; }
-  body.day-view .kw-nav  { display: none; }
+  /* ── Tagesansicht (Karten) ── */
+  #day-container { display: none; }
+  body.day-view #day-container { display: block; padding-bottom: 80px; }
+  body.day-view .table-wrap   { display: none; }
+  body.day-view .legend       { display: none; }
+  body.day-view .kw-nav       { display: none; }
 
-  /* Tagesansicht: breite Zellen */
-  body.day-view table { min-width: auto; }
-  body.day-view thead th.day-col { min-width: 220px; }
-  body.day-view td.cell { min-height: 52px; }
-  body.day-view .cell-inner { font-size: 14px; padding: 10px 12px; min-height: 52px; }
+  /* Tages-Header in Topbar */
+  .day-header-topbar {
+    display: none; flex-direction: column; align-items: center; line-height: 1.2;
+  }
+  .day-header-topbar .dh-day  { font-size: 15px; font-weight: 700; }
+  .day-header-topbar .dh-date { font-size: 11px; color: rgba(255,255,255,0.6); }
+  body.day-view .day-header-topbar { display: flex; }
+
+  /* Karten */
+  .day-group-header {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: #94a3b8; background: #f8fafc; padding: 10px 16px 6px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .day-card {
+    display: flex; align-items: center; padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9; background: white;
+    min-height: 64px; gap: 12px; cursor: default;
+    transition: background 0.1s;
+  }
+  body.edit-mode .day-card { cursor: pointer; }
+  body.edit-mode .day-card:active { background: #f8fafc; }
+  .day-card-name {
+    font-size: 16px; font-weight: 600; color: #334155;
+    width: 85px; flex-shrink: 0;
+  }
+  .day-card-badge {
+    flex: 1; font-size: 13px; font-weight: 500;
+    padding: 7px 12px; border-radius: 8px; text-align: center;
+  }
+  .day-card.has-issue .day-card-badge {
+    outline: 2px solid #ef4444; outline-offset: -2px;
+  }
+  .day-card-edit-hint {
+    font-size: 18px; color: #cbd5e1; flex-shrink: 0;
+    display: none;
+  }
+  body.edit-mode .day-card-edit-hint { display: block; }
+
+  /* Bottom-Navigation (Tagesansicht) */
+  #day-bottom-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+    background: white; border-top: 1px solid #e2e8f0;
+    padding: 10px 16px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  body.day-view #day-bottom-nav { display: flex; }
+  #day-bottom-nav button {
+    background: #f1f5f9; border: none; border-radius: 10px;
+    font-size: 22px; padding: 10px 20px; cursor: pointer;
+    color: #1e293b; transition: background 0.15s; min-width: 56px;
+  }
+  #day-bottom-nav button:hover:not(:disabled) { background: #e2e8f0; }
+  #day-bottom-nav button:disabled { opacity: 0.3; cursor: default; }
+  #day-bottom-center { text-align: center; flex: 1; }
+  #day-bottom-center .dbc-day  { font-size: 16px; font-weight: 700; color: #1e293b; }
+  #day-bottom-center .dbc-date { font-size: 12px; color: #64748b; margin-top: 1px; }
 
   /* ── Toast ── */
   #toast {
@@ -752,11 +797,10 @@
     <button id="btn-next">›</button>
   </div>
 
-  <!-- Tages-Navigation (nur in Tagesansicht sichtbar) -->
-  <div class="day-nav">
-    <button id="btn-day-prev">‹</button>
-    <span class="day-label" id="day-label">Montag</span>
-    <button id="btn-day-next">›</button>
+  <!-- Tag-Anzeige in der Topbar (nur Tagesansicht) -->
+  <div class="day-header-topbar">
+    <span class="dh-day" id="dh-day">Montag</span>
+    <span class="dh-date" id="dh-date"></span>
   </div>
 
   <button class="btn btn-ghost" id="btn-cal"   title="Kalender" style="font-size:16px;padding:4px 10px">📅</button>
@@ -816,6 +860,9 @@
     </table>
   </div>
 
+  <!-- Tagesansicht: Karten-Container -->
+  <div id="day-container"></div>
+
   <div class="legend">
     <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Schichten</div>
     <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
@@ -832,6 +879,16 @@
     <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
     <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
   </div>
+</div>
+
+<!-- Tagesansicht Bottom-Navigation -->
+<div id="day-bottom-nav">
+  <button id="btn-day-prev">‹</button>
+  <div id="day-bottom-center">
+    <div class="dbc-day" id="dbc-day">Montag</div>
+    <div class="dbc-date" id="dbc-date"></div>
+  </div>
+  <button id="btn-day-next">›</button>
 </div>
 
 <div id="toast"></div>
@@ -1169,59 +1226,120 @@ function renderPlan(data, valid) {
   applyPersonFilter();
 }
 
-// ── Tagesansicht ──────────────────────────────────────────────────────────
-const DAYS_FULL = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
-const dayLabel  = document.getElementById("day-label");
-const btnDayPrev= document.getElementById("btn-day-prev");
-const btnDayNext= document.getElementById("btn-day-next");
+// ── Tagesansicht (Karten) ────────────────────────────────────────────────
+const DAYS_FULL   = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const dayContainer= document.getElementById("day-container");
+const dhDay       = document.getElementById("dh-day");
+const dhDate      = document.getElementById("dh-date");
+const dbcDay      = document.getElementById("dbc-day");
+const dbcDate     = document.getElementById("dbc-date");
+const btnDayPrev  = document.getElementById("btn-day-prev");
+const btnDayNext  = document.getElementById("btn-day-next");
 const btnViewWeek = document.getElementById("btn-view-week");
 const btnViewDay  = document.getElementById("btn-view-day");
 
+function _todayDayIndex() {
+  const d = new Date().getDay();
+  return d === 0 ? 5 : Math.max(0, d - 1);
+}
+
 function renderDayView(data, valid) {
-  const { kw, dates, plan, days, arzte, tfas, overrides } = data;
-  const dayIssues  = valid?.day  || {};
+  if (!data) return;
+  const { kw, dates, plan, arzte, tfas, overrides } = data;
   const cellIssues = valid?.cell || {};
+  const dayIssues  = valid?.day  || {};
   const di = currentDay;
 
+  // Topbar + Bottom-Nav aktualisieren
   kwLabel.textContent = `KW ${kw}`;
-  dayLabel.textContent = `${DAYS_FULL[di]}, ${dates[di]}`;
+  const dayName = DAYS_FULL[di];
+  const dayDate = dates[di] || "";
+  dhDay.textContent  = dayName;
+  dhDate.textContent = dayDate;
+  dbcDay.textContent  = dayName;
+  dbcDate.textContent = dayDate;
   btnDayPrev.disabled = di <= 0;
   btnDayNext.disabled = di >= 5;
 
-  const cnt   = (dayIssues[String(di)] || []).length;
-  const today = di === ((() => { const d=new Date(); return d.getDay()===0?5:Math.max(0,d.getDay()-1); })()) ? " today-col" : "";
+  const isToday = di === _todayDayIndex();
+  const dayIssueList = dayIssues[String(di)] || [];
 
-  thead.innerHTML = `<tr>
-    <th>Person</th>
-    <th class="day-col${cnt?" has-issue":""}${today}">
-      <div class="day-name">${days[di]}${cnt?`<span class="day-warn">${cnt}</span>`:""}</div>
-      <div class="day-date">${dates[di]}</div>
-    </th>
-  </tr>`;
-
+  // Karten-Container aufbauen
   let html = "";
   for (const { label, persons: grp } of [
-    { label:"Ärzte", persons:arzte },
-    { label:"TFAs",  persons:tfas  }
+    { label: "Ärzte", persons: arzte },
+    { label: "TFAs",  persons: tfas  }
   ]) {
-    html += `<tr class="group-header"><td colspan="2">${label}</td></tr>`;
-    for (const person of grp) {
-      if (personFilter && person !== personFilter) continue;
-      const val   = (plan[person] || [])[di] || "–";
-      const isOv  = overrides[person]?.[String(di)] !== undefined;
-      const msgs  = cellIssues[person]?.[String(di)] || [];
-      const inner = "cell-inner" + (isOv?" is-override":"") + (msgs.length?" has-issue":"");
-      const title = msgs.length ? ` title="${msgs.join(" | ").replace(/"/g,"&quot;")}"` : "";
-      html += `<tr data-person="${person}">
-        <td class="person-name">${person}</td>
-        <td class="cell ${cellClass(val)}${today}" data-person="${person}" data-di="${di}"${title}>
-          <div class="${inner}">${formatCell(val)}</div>
-        </td>
-      </tr>`;
+    const visible = grp.filter(p => !personFilter || p === personFilter);
+    if (!visible.length) continue;
+    html += `<div class="day-group-header">${label}</div>`;
+    for (const person of visible) {
+      const val  = (plan[person] || [])[di] || "–";
+      const msgs = cellIssues[person]?.[String(di)] || [];
+      const isOv = overrides[person]?.[String(di)] !== undefined;
+      const todayBorder = isToday ? " border-left: 3px solid #3b82f6;" : "";
+      html += `<div class="day-card${msgs.length ? " has-issue" : ""}"
+                    data-person="${person}" data-di="${di}"
+                    style="${todayBorder}"
+                    title="${msgs.join(" | ").replace(/"/g, "&quot;")}">
+        <span class="day-card-name">${person}</span>
+        <span class="day-card-badge ${cellClass(val)}">${formatCell(val)}${isOv ? " ✎" : ""}</span>
+        <span class="day-card-edit-hint">›</span>
+      </div>`;
     }
   }
-  tbody.innerHTML = html;
-  tbody.querySelectorAll("td.cell").forEach(td => td.addEventListener("click", onCellClick));
+
+  // Issues für diesen Tag
+  if (dayIssueList.length) {
+    html += `<div style="margin:12px 16px;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#92400e;">
+      <strong>⚠ ${dayIssueList.length} Regelhinweis${dayIssueList.length!==1?"e":""}</strong><br>
+      ${dayIssueList.map(m=>`• ${m}`).join("<br>")}
+    </div>`;
+  }
+
+  dayContainer.innerHTML = html;
+
+  // Klick-Handler für Karten (Edit-Modus)
+  dayContainer.querySelectorAll(".day-card").forEach(card => {
+    card.addEventListener("click", () => {
+      if (!isEditMode) return;
+      const person = card.dataset.person;
+      const diIdx  = parseInt(card.dataset.di);
+      const val    = planData.plan[person]?.[diIdx] || "–";
+      const isOv   = planData.overrides[person]?.[String(diIdx)] !== undefined;
+      const msgs   = validData?.cell?.[person]?.[String(diIdx)] || [];
+      editState = { person, di: diIdx, originalValue: val, isOverride: isOv };
+
+      // Edit-Popup über der Karte öffnen
+      const rect   = card.getBoundingClientRect();
+      const popupW = 290;
+      let left = rect.left + window.scrollX;
+      let top  = rect.bottom + window.scrollY + 4;
+      if (left + popupW > window.innerWidth - 16) left = Math.max(8, window.innerWidth - popupW - 16);
+      if (top + 280 > window.innerHeight + window.scrollY) top = rect.top + window.scrollY - 280;
+      editPopup.style.left = left + "px";
+      editPopup.style.top  = top  + "px";
+      popupTitle.textContent = `${person} · ${planData.days[diIdx]} ${planData.dates[diIdx]}`;
+      editInput.value = val === "–" ? "" : val.replace(" + Auffüllen", "");
+      quickPicks.innerHTML = "";
+      if (msgs.length) {
+        const hint = document.createElement("div");
+        hint.style.cssText = "font-size:11px;color:#991b1b;background:#fee2e2;padding:5px 8px;border-radius:5px;margin-bottom:8px;";
+        hint.textContent = "⚠ " + msgs.join(" · ");
+        quickPicks.before(hint);
+      }
+      QUICK_PICKS.forEach(({ label, cls }) => {
+        const btn = document.createElement("button");
+        btn.className = `quick-pick ${cls}`;
+        btn.textContent = label;
+        btn.addEventListener("click", () => saveEdit(label));
+        quickPicks.appendChild(btn);
+      });
+      editPopup.classList.add("visible");
+      popupOverlay.classList.add("visible");
+      editInput.focus();
+    });
+  });
 }
 
 function renderView() {
@@ -1247,6 +1365,17 @@ btnDayPrev.addEventListener("click", () => {
 btnDayNext.addEventListener("click", () => {
   if (currentDay < 5) { currentDay++; renderDayView(planData, validData); }
 });
+
+// Wisch-Geste (links/rechts wischen → Tag wechseln)
+let _touchX = 0;
+document.addEventListener("touchstart", e => { _touchX = e.touches[0].clientX; }, {passive:true});
+document.addEventListener("touchend", e => {
+  if (viewMode !== "day" || !planData) return;
+  const dx = e.changedTouches[0].clientX - _touchX;
+  if (Math.abs(dx) < 50) return;
+  if (dx < 0 && currentDay < 5) { currentDay++; renderDayView(planData, validData); }
+  if (dx > 0 && currentDay > 0) { currentDay--; renderDayView(planData, validData); }
+}, {passive:true});
 
 // ── Person-Filter ─────────────────────────────────────────────────────────
 const personFilterSel = document.getElementById("person-filter");
