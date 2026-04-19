@@ -1762,17 +1762,14 @@ btnHeute.addEventListener("click", () => {
   const todayKw  = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
   const todayDay = _todayDayIndex();
   closeCalendar();
+  currentDay = todayDay;
   if (todayKw !== currentKw) {
-    currentKw  = todayKw;
-    currentDay = todayDay;
+    currentKw = todayKw;
     loadKw(todayKw);
-  } else if (viewMode === "day" && currentDay !== todayDay) {
-    currentDay = todayDay;
-    renderDayView(planData, validData);
-  } else if (viewMode === "week") {
-    // Schon auf aktueller Woche – kurz aufblinken lassen
-    const col = document.querySelector("th.today-col");
-    if (col) { col.style.outline = "2px solid #3b82f6"; setTimeout(() => col.style.outline = "", 600); }
+  } else {
+    // Gleiche KW: immer neu rendern (gibt sichtbares Feedback)
+    if (viewMode === "day") renderDayView(planData, validData);
+    else loadKw(currentKw);
   }
 });
 
