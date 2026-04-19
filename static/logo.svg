@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="white"/>
+
+  <!-- Dog head (left, dark navy) -->
+  <g fill="none" stroke="#1d3461" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Dog skull -->
+    <path d="M310 480 C280 420 270 350 300 290 C330 230 390 210 440 220 C480 228 510 255 520 290"/>
+    <!-- Dog snout -->
+    <path d="M520 290 C540 310 545 340 535 365 C525 385 505 395 485 390 C465 385 450 370 445 350"/>
+    <!-- Dog ear (floppy) -->
+    <path d="M300 290 C270 280 245 295 238 325 C232 355 248 385 275 395 C295 402 315 392 325 375"/>
+    <!-- Dog nose -->
+    <ellipse cx="530" cy="355" rx="12" ry="8" fill="#1d3461" stroke="none"/>
+    <!-- Dog eye -->
+    <circle cx="410" cy="305" r="10" fill="#1d3461" stroke="none"/>
+    <!-- Dog neck/body suggestion -->
+    <path d="M445 390 C430 420 420 450 415 480"/>
+    <path d="M535 365 C548 390 550 420 540 450 C530 470 510 482 490 480"/>
+  </g>
+
+  <!-- Cat head (right, dark navy) -->
+  <g fill="none" stroke="#1d3461" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Cat head round -->
+    <path d="M560 470 C555 410 570 355 610 320 C645 290 690 282 725 295 C760 308 785 340 790 378 C795 412 780 448 755 465 C730 480 695 480 670 475"/>
+    <!-- Cat left ear -->
+    <path d="M610 320 C605 280 615 248 635 235 C650 225 668 228 672 250 C676 268 665 295 648 310"/>
+    <!-- Cat right ear -->
+    <path d="M755 310 C765 272 775 245 790 235 C804 225 818 232 818 255 C818 275 802 300 780 315"/>
+    <!-- Cat eye left -->
+    <circle cx="655" cy="370" r="11" fill="#1d3461" stroke="none"/>
+    <!-- Cat eye right -->
+    <circle cx="730" cy="370" r="11" fill="#1d3461" stroke="none"/>
+    <!-- Cat nose -->
+    <path d="M688 405 L695 398 L702 405" stroke="#1d3461" stroke-width="10" fill="none"/>
+    <!-- Cat whiskers -->
+    <line x1="640" y1="415" x2="680" y2="412" stroke="#1d3461" stroke-width="6"/>
+    <line x1="638" y1="428" x2="678" y2="422" stroke="#1d3461" stroke-width="6"/>
+    <line x1="712" y1="412" x2="752" y2="415" stroke="#1d3461" stroke-width="6"/>
+    <line x1="714" y1="422" x2="754" y2="428" stroke="#1d3461" stroke-width="6"/>
+  </g>
+
+  <!-- Wave 1 (dark navy) -->
+  <path d="M230 530 C280 510 320 545 370 535 C420 525 460 505 510 515 C560 525 600 555 650 548 C700 540 740 520 790 528"
+        fill="none" stroke="#1d3461" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Wave 2 (light blue) -->
+  <path d="M210 575 C270 552 315 590 370 580 C425 570 465 548 520 560 C575 572 615 600 670 592 C720 584 760 562 810 572"
+        fill="none" stroke="#00b4d8" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Text: "Die Hamburger" -->
+  <text x="512" y="680" font-family="Arial, Helvetica, sans-serif" font-size="88"
+        font-weight="700" fill="#1d3461" text-anchor="middle">Die Hamburger</text>
+
+  <!-- Text: "Tierärzte" -->
+  <text x="512" y="790" font-family="Arial, Helvetica, sans-serif" font-size="108"
+        font-weight="800" fill="#00b4d8" text-anchor="middle">Tierärzte</text>
+</svg>

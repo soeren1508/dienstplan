@@ -10,7 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Dienstplan">
-<link rel="apple-touch-icon" href="/static/icon.svg">
+<link rel="apple-touch-icon" href="/static/logo.svg">
+<link rel="icon" type="image/svg+xml" href="/static/logo.svg">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -499,6 +500,47 @@
   /* Krank-Zellfarbe */
   .c-krank { background: #fee2e2; color: #991b1b; }
 
+  /* ── Person-Filter ── */
+  #person-filter {
+    background: rgba(255,255,255,0.12); color: white; border: none;
+    border-radius: 6px; padding: 5px 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; outline: none; max-width: 120px;
+  }
+  #person-filter option { background: #1e293b; color: white; }
+  #person-filter:hover  { background: rgba(255,255,255,0.22); }
+
+  /* ── Ansicht-Umschalter ── */
+  .view-toggle {
+    display: flex; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;
+  }
+  .view-toggle button {
+    background: none; border: none; color: rgba(255,255,255,0.6);
+    padding: 5px 10px; font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .view-toggle button.active { background: rgba(255,255,255,0.25); color: white; }
+  .view-toggle button:hover:not(.active) { color: white; }
+
+  /* ── Tagesansicht ── */
+  .day-nav {
+    display: none; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 4px 8px;
+  }
+  .day-nav button {
+    background: none; border: none; color: white; font-size: 18px; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px; transition: background 0.15s;
+  }
+  .day-nav button:hover { background: rgba(255,255,255,0.2); }
+  .day-nav .day-label { font-size: 14px; font-weight: 700; min-width: 110px; text-align: center; }
+  body.day-view .day-nav { display: flex; }
+  body.day-view .kw-nav  { display: none; }
+
+  /* Tagesansicht: breite Zellen */
+  body.day-view table { min-width: auto; }
+  body.day-view thead th.day-col { min-width: 220px; }
+  body.day-view td.cell { min-height: 52px; }
+  body.day-view .cell-inner { font-size: 14px; padding: 10px 12px; min-height: 52px; }
+
   /* ── Toast ── */
   #toast {
     position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white;
@@ -537,6 +579,19 @@
 
   #popup-overlay { position: fixed; inset: 0; z-index: 999; display: none; }
   #popup-overlay.visible { display: block; }
+
+  /* ── Mobile ── */
+  @media (max-width: 700px) {
+    .topbar { padding: 0 10px; gap: 6px; height: 52px; flex-wrap: nowrap; overflow-x: auto; }
+    .topbar h1 { font-size: 13px; }
+    .btn { padding: 5px 9px; font-size: 11px; }
+    #btn-absence span, #btn-swap span, #btn-vac span { display: none; }
+    .main { padding: 10px 10px; }
+    .kw-nav .kw-label { min-width: 60px; font-size: 13px; }
+    /* Auf Handy Wochenansicht automatisch auf Tagesansicht umstellen */
+    .table-wrap { overflow-x: auto; }
+    .statusbar { font-size: 11px; }
+  }
 </style>
 </head>
 <body>
@@ -689,27 +744,45 @@
 <!-- Top Bar -->
 <div class="topbar">
   <h1>🐾 Dienstplan 2026</h1>
+
+  <!-- Wochen-Navigation -->
   <div class="kw-nav">
     <button id="btn-prev">‹</button>
     <span class="kw-label" id="kw-label">KW 17</span>
     <button id="btn-next">›</button>
   </div>
-  <button class="btn btn-ghost" id="btn-cal" title="Kalender öffnen" style="font-size:16px;padding:4px 10px">📅</button>
-  <button class="btn btn-ghost" id="btn-heute" title="Zur aktuellen Woche springen" style="font-size:12px">Heute</button>
+
+  <!-- Tages-Navigation (nur in Tagesansicht sichtbar) -->
+  <div class="day-nav">
+    <button id="btn-day-prev">‹</button>
+    <span class="day-label" id="day-label">Montag</span>
+    <button id="btn-day-next">›</button>
+  </div>
+
+  <button class="btn btn-ghost" id="btn-cal"   title="Kalender" style="font-size:16px;padding:4px 10px">📅</button>
+  <button class="btn btn-ghost" id="btn-heute" title="Aktuelle Woche" style="font-size:12px">Heute</button>
   <span id="mod-count" class="mod-count"></span>
+
+  <!-- Ansicht-Umschalter -->
+  <div class="view-toggle">
+    <button id="btn-view-week"  class="active">Woche</button>
+    <button id="btn-view-day">Tag</button>
+  </div>
+
+  <!-- Person-Filter -->
+  <select id="person-filter" title="Person filtern">
+    <option value="">👥 Alle</option>
+  </select>
 
   <div class="spacer"></div>
 
-  <!-- Aktions-Buttons (immer sichtbar, PIN erforderlich) -->
-  <button class="btn btn-ghost" id="btn-absence" title="Abwesenheit / Krankmeldung">🤒 Abwesenheit</button>
-  <button class="btn btn-ghost" id="btn-swap"    title="Dienste tauschen">⇄ Tausch</button>
-  <button class="btn btn-ghost" id="btn-vac"     title="Urlaub anpassen">🏖 Urlaub</button>
+  <button class="btn btn-ghost" id="btn-absence" title="Abwesenheit">🤒 <span>Abwesenheit</span></button>
+  <button class="btn btn-ghost" id="btn-swap"    title="Tausch">⇄ <span>Tausch</span></button>
+  <button class="btn btn-ghost" id="btn-vac"     title="Urlaub">🏖 <span>Urlaub</span></button>
 
-  <!-- Sichtbar nur im Edit-Modus -->
-  <button class="btn btn-ghost edit-only" id="btn-clear-kw">Woche zurücksetzen</button>
-  <button class="btn btn-ghost edit-only" id="btn-regen">⟳ Neu generieren</button>
+  <button class="btn btn-ghost edit-only" id="btn-clear-kw">Zurücksetzen</button>
+  <button class="btn btn-ghost edit-only" id="btn-regen">⟳ Neu</button>
 
-  <!-- Lock/Unlock Button -->
   <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
     <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
     <span class="btn-lock-label-unlock">🔓 Sperren</span>
@@ -795,11 +868,14 @@ function _currentIsoKw() {
   return Math.ceil((((tmp - y0) / 86400000) + 1) / 7);
 }
 
-let currentKw = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
-let planData  = null;
-let validData = null;
-let editState = null;
-let isEditMode = false;
+let currentKw   = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
+let planData    = null;
+let validData   = null;
+let editState   = null;
+let isEditMode  = false;
+let viewMode    = "week";   // "week" | "day"
+let currentDay  = (() => { const d = new Date().getDay(); return d===0?4:Math.max(0,d-1); })();
+let personFilter= "";
 
 // ── DOM ───────────────────────────────────────────────────────────────────
 const kwLabel      = document.getElementById("kw-label");
@@ -1002,7 +1078,8 @@ async function loadKw(kw) {
       suggestionsData = [];
     }
 
-    renderPlan(planData, validData);
+    buildPersonFilter(planData.persons || []);
+    renderView();
     renderSuggestions(suggestionsData, kw);
     updateNav();
   } catch(e) {
@@ -1089,7 +1166,112 @@ function renderPlan(data, valid) {
   }
   tbody.innerHTML = html;
   tbody.querySelectorAll("td.cell").forEach(td => td.addEventListener("click", onCellClick));
+  applyPersonFilter();
 }
+
+// ── Tagesansicht ──────────────────────────────────────────────────────────
+const DAYS_FULL = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const dayLabel  = document.getElementById("day-label");
+const btnDayPrev= document.getElementById("btn-day-prev");
+const btnDayNext= document.getElementById("btn-day-next");
+const btnViewWeek = document.getElementById("btn-view-week");
+const btnViewDay  = document.getElementById("btn-view-day");
+
+function renderDayView(data, valid) {
+  const { kw, dates, plan, days, arzte, tfas, overrides } = data;
+  const dayIssues  = valid?.day  || {};
+  const cellIssues = valid?.cell || {};
+  const di = currentDay;
+
+  kwLabel.textContent = `KW ${kw}`;
+  dayLabel.textContent = `${DAYS_FULL[di]}, ${dates[di]}`;
+  btnDayPrev.disabled = di <= 0;
+  btnDayNext.disabled = di >= 5;
+
+  const cnt   = (dayIssues[String(di)] || []).length;
+  const today = di === ((() => { const d=new Date(); return d.getDay()===0?5:Math.max(0,d.getDay()-1); })()) ? " today-col" : "";
+
+  thead.innerHTML = `<tr>
+    <th>Person</th>
+    <th class="day-col${cnt?" has-issue":""}${today}">
+      <div class="day-name">${days[di]}${cnt?`<span class="day-warn">${cnt}</span>`:""}</div>
+      <div class="day-date">${dates[di]}</div>
+    </th>
+  </tr>`;
+
+  let html = "";
+  for (const { label, persons: grp } of [
+    { label:"Ärzte", persons:arzte },
+    { label:"TFAs",  persons:tfas  }
+  ]) {
+    html += `<tr class="group-header"><td colspan="2">${label}</td></tr>`;
+    for (const person of grp) {
+      if (personFilter && person !== personFilter) continue;
+      const val   = (plan[person] || [])[di] || "–";
+      const isOv  = overrides[person]?.[String(di)] !== undefined;
+      const msgs  = cellIssues[person]?.[String(di)] || [];
+      const inner = "cell-inner" + (isOv?" is-override":"") + (msgs.length?" has-issue":"");
+      const title = msgs.length ? ` title="${msgs.join(" | ").replace(/"/g,"&quot;")}"` : "";
+      html += `<tr data-person="${person}">
+        <td class="person-name">${person}</td>
+        <td class="cell ${cellClass(val)}${today}" data-person="${person}" data-di="${di}"${title}>
+          <div class="${inner}">${formatCell(val)}</div>
+        </td>
+      </tr>`;
+    }
+  }
+  tbody.innerHTML = html;
+  tbody.querySelectorAll("td.cell").forEach(td => td.addEventListener("click", onCellClick));
+}
+
+function renderView() {
+  if (!planData) return;
+  if (viewMode === "day") renderDayView(planData, validData);
+  else                    renderPlan(planData, validData);
+}
+
+function setViewMode(mode) {
+  viewMode = mode;
+  document.body.classList.toggle("day-view", mode === "day");
+  btnViewWeek.classList.toggle("active", mode === "week");
+  btnViewDay .classList.toggle("active", mode === "day");
+  renderView();
+}
+
+btnViewWeek.addEventListener("click", () => setViewMode("week"));
+btnViewDay .addEventListener("click", () => setViewMode("day"));
+
+btnDayPrev.addEventListener("click", () => {
+  if (currentDay > 0) { currentDay--; renderDayView(planData, validData); }
+});
+btnDayNext.addEventListener("click", () => {
+  if (currentDay < 5) { currentDay++; renderDayView(planData, validData); }
+});
+
+// ── Person-Filter ─────────────────────────────────────────────────────────
+const personFilterSel = document.getElementById("person-filter");
+
+function buildPersonFilter(persons) {
+  const prev = personFilterSel.value;
+  personFilterSel.innerHTML = '<option value="">👥 Alle</option>'
+    + persons.map(p => `<option value="${p}">${p}</option>`).join("");
+  if (persons.includes(prev)) personFilterSel.value = prev;
+  personFilter = personFilterSel.value;
+}
+
+function applyPersonFilter() {
+  const v = personFilterSel.value;
+  personFilter = v;
+  tbody.querySelectorAll("tr[data-person]").forEach(tr => {
+    tr.style.display = (!v || tr.dataset.person === v) ? "" : "none";
+  });
+}
+
+personFilterSel.addEventListener("change", () => {
+  personFilter = personFilterSel.value;
+  if (viewMode === "day") renderDayView(planData, validData);
+  else applyPersonFilter();
+});
 
 // ── Navigation ────────────────────────────────────────────────────────────
 function updateNav() {
