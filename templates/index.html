@@ -626,7 +626,22 @@
   #toast.toast-err { background: #dc2626; }
 
   /* ── Legend ── */
-  .legend { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; font-size: 12px; }
+  .legend-wrap { margin-top: 12px; }
+  .legend-toggle {
+    display: flex; align-items: center; gap: 5px; cursor: pointer;
+    font-size: 11px; font-weight: 600; color: #64748b;
+    background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px;
+    padding: 4px 10px; width: fit-content; user-select: none;
+    transition: background 0.15s;
+  }
+  .legend-toggle:hover { background: #e2e8f0; }
+  .legend-toggle .legend-arrow { font-size: 9px; transition: transform 0.2s; }
+  .legend-toggle.open .legend-arrow { transform: rotate(180deg); }
+  .legend {
+    display: none; flex-wrap: wrap; gap: 7px;
+    margin-top: 8px; font-size: 12px;
+  }
+  .legend.open { display: flex; }
   .legend-item {
     display: flex; align-items: center; gap: 5px;
     padding: 3px 9px; border-radius: 5px; white-space: nowrap;
@@ -891,21 +906,26 @@
   <!-- Tagesansicht: Karten-Container -->
   <div id="day-container"></div>
 
-  <div class="legend">
-    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Schichten</div>
-    <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
-    <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Behandlung</div>
-    <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
-    <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
-    <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa OP</div>
-    <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke OP</div>
-    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
-    <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
-    <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
-    <div class="legend-item" style="background:#fef9c3;color:#854d0e"><div class="legend-dot" style="background:#fde047"></div>Feiertag</div>
-    <div class="legend-item" style="background:#ede9fe;color:#5b21b6"><div class="legend-dot" style="background:#c4b5fd"></div>Schule</div>
-    <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
-    <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
+  <div class="legend-wrap">
+    <div class="legend-toggle" id="legend-toggle">
+      <span>Legende</span><span class="legend-arrow">▼</span>
+    </div>
+    <div class="legend" id="legend-panel">
+      <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Schichten</div>
+      <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
+      <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Behandlung</div>
+      <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
+      <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
+      <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa OP</div>
+      <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke OP</div>
+      <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
+      <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
+      <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
+      <div class="legend-item" style="background:#fef9c3;color:#854d0e"><div class="legend-dot" style="background:#fde047"></div>Feiertag</div>
+      <div class="legend-item" style="background:#ede9fe;color:#5b21b6"><div class="legend-dot" style="background:#c4b5fd"></div>Schule</div>
+      <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
+      <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
+    </div>
   </div>
 </div>
 
@@ -1448,6 +1468,14 @@ document.addEventListener("touchend", e => {
 }, {passive:true});
 
 // ── Person-Filter ─────────────────────────────────────────────────────────
+// ── Legende Toggle ────────────────────────────────────────────────────────
+const legendToggle = document.getElementById("legend-toggle");
+const legendPanel  = document.getElementById("legend-panel");
+legendToggle.addEventListener("click", () => {
+  const open = legendPanel.classList.toggle("open");
+  legendToggle.classList.toggle("open", open);
+});
+
 const personFilterSel = document.getElementById("person-filter");
 
 function buildPersonFilter(persons) {
