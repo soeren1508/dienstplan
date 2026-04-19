@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dienstplan
+    env: python
+    region: frankfurt  # EU-Region (DSGVO)
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    rootDir: dienstplan
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true   # Render generiert einmalig einen stabilen Zufallsschlüssel
+      - key: EDIT_PIN
+        value: 1234           # <-- Hier auf gewünschten PIN ändern
+      - key: PYTHON_VERSION
+        value: 3.11.0

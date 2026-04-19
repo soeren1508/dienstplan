@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dienstplan 2026 – Tierarztpraxis Hamburg</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1e293b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dienstplan">
+<link rel="apple-touch-icon" href="/static/icon.svg">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f6fa; color: #1e293b; min-height: 100vh;
+  }
+
+  /* ── Top Bar ── */
+  .topbar {
+    background: #1e293b; color: white; padding: 0 20px; height: 56px;
+    display: flex; align-items: center; gap: 12px; position: sticky;
+    top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .topbar h1 { font-size: 15px; font-weight: 600; white-space: nowrap; }
+  .topbar .spacer { flex: 1; }
+
+  .kw-nav {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.1); border-radius: 8px; padding: 4px 8px;
+  }
+  .kw-nav button {
+    background: none; border: none; color: white; font-size: 18px; cursor: pointer;
+    padding: 2px 6px; border-radius: 4px; line-height: 1; transition: background 0.15s;
+  }
+  .kw-nav button:hover { background: rgba(255,255,255,0.2); }
+  .kw-nav button:disabled { opacity: 0.3; cursor: default; }
+  .kw-nav .kw-label { font-size: 14px; font-weight: 700; min-width: 80px; text-align: center; }
+
+  .btn {
+    padding: 6px 13px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-ghost  { background: rgba(255,255,255,0.12); color: white; }
+  .btn-ghost:hover { background: rgba(255,255,255,0.22); }
+  .btn-edit-on {
+    background: #f59e0b; color: white;
+    box-shadow: 0 0 0 2px rgba(245,158,11,0.4);
+  }
+  .btn-edit-on:hover { background: #d97706; }
+
+  /* Edit mode indicator */
+  .edit-badge {
+    display: none; font-size: 11px; background: #f59e0b; color: white;
+    border-radius: 10px; padding: 2px 9px; font-weight: 700; white-space: nowrap;
+  }
+  .edit-badge.visible { display: inline-flex; align-items: center; gap: 4px; }
+
+  .mod-count {
+    font-size: 11px; background: rgba(245,158,11,0.8); color: white;
+    border-radius: 10px; padding: 1px 7px; font-weight: 700; display: none;
+  }
+  .mod-count.visible { display: inline-block; }
+
+  /* Edit-only elements hidden in view mode */
+  .edit-only { display: none !important; }
+  body.edit-mode .edit-only { display: inline-flex !important; }
+  body.edit-mode .btn-lock-label-lock   { display: none; }
+  body.edit-mode .btn-lock-label-unlock { display: inline; }
+  body:not(.edit-mode) .btn-lock-label-lock   { display: inline; }
+  body:not(.edit-mode) .btn-lock-label-unlock { display: none; }
+
+  /* In view mode, cells are not interactive */
+  body:not(.edit-mode) td.cell { cursor: default; }
+  body:not(.edit-mode) td.cell:hover { filter: none; }
+
+  /* ── Main ── */
+  .main { padding: 16px 20px; max-width: 1500px; margin: 0 auto; }
+
+  .statusbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; font-size: 13px; flex-wrap: wrap;
+  }
+  .status-badge {
+    padding: 2px 9px; border-radius: 10px; font-size: 12px; font-weight: 600;
+  }
+  .badge-ok   { background: #d1fae5; color: #065f46; }
+  .badge-mod  { background: #fef3c7; color: #92400e; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .badge-warn { background: #fee2e2; color: #991b1b; }
+  .badge-view { background: #e0e7ff; color: #3730a3; }
+
+  /* ── Issue banner ── */
+  #day-issues-bar {
+    display: none; margin-bottom: 14px; background: #fff7ed;
+    border: 1px solid #fed7aa; border-radius: 8px; padding: 10px 14px;
+  }
+  #day-issues-bar.visible { display: block; }
+  #day-issues-bar h4 {
+    font-size: 12px; font-weight: 700; color: #92400e; margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .issue-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+  .issue-item {
+    font-size: 12px; padding: 2px 9px; border-radius: 5px;
+    background: #fee2e2; color: #991b1b; font-weight: 500;
+  }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: white; border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.06); overflow: auto;
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 960px; }
+
+  thead th {
+    background: #f8fafc; padding: 9px 10px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; color: #475569; text-align: left;
+    border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; z-index: 10;
+  }
+  thead th:first-child { min-width: 105px; width: 105px; }
+  thead th.day-col { min-width: 140px; text-align: center; }
+  thead th.day-col.has-issue { background: #fff7ed; }
+  thead th.day-col .day-name { font-size: 12px; }
+  thead th.day-col .day-date { font-size: 11px; font-weight: 400; color: #94a3b8; }
+  thead th.day-col .day-warn {
+    display: inline-block; font-size: 10px; background: #ef4444;
+    color: white; border-radius: 8px; padding: 0 5px; margin-left: 4px;
+    font-weight: 700; vertical-align: middle;
+  }
+
+  tbody tr { border-bottom: 1px solid #f1f5f9; }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr:last-child { border-bottom: none; }
+
+  tr.group-header td {
+    padding: 5px 10px 3px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;
+    background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+  }
+
+  td.person-name {
+    padding: 7px 10px; font-size: 13px; font-weight: 600; color: #334155;
+    white-space: nowrap; border-right: 2px solid #e2e8f0;
+  }
+  .role-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; margin-right: 5px; vertical-align: middle;
+  }
+  .dot-arzt { background: #6366f1; }
+  .dot-tfa  { background: #10b981; }
+
+  td.cell {
+    padding: 0; text-align: center; vertical-align: middle;
+    position: relative; cursor: pointer;
+    border-right: 1px solid #f1f5f9; transition: filter 0.1s;
+  }
+  td.cell:last-child { border-right: none; }
+  td.cell:hover { filter: brightness(0.92); }
+
+  .cell-inner {
+    padding: 6px 7px; font-size: 12px; line-height: 1.3; min-height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; position: relative;
+  }
+  .cell-inner.is-override::after {
+    content: "✎"; position: absolute; top: 2px; right: 3px;
+    font-size: 9px; color: rgba(0,0,0,0.3);
+  }
+  .cell-inner.has-issue {
+    outline: 2px solid #ef4444; outline-offset: -2px;
+  }
+  .cell-inner.has-issue::before {
+    content: "!"; position: absolute; top: 2px; left: 3px;
+    font-size: 9px; font-weight: 900; color: #ef4444;
+    background: #fee2e2; border-radius: 3px; padding: 0 3px; line-height: 14px;
+  }
+  .auffullen-badge {
+    display: block; font-size: 10px; font-weight: 700; color: rgba(0,0,0,0.38); margin-top: 1px;
+  }
+
+  /* ── FD-Schichten (kühle Töne) ── */
+  .c-fd-anm    { background: #bfdbfe; color: #1e3a8a; } /* Blau       – FD: Anmeldung      */
+  .c-fd-beh    { background: #dbeafe; color: #1d4ed8; } /* Hellblau   – FD: Behandlung     */
+  .c-fd-ulf    { background: #a5f3fc; color: #0e7490; } /* Cyan       – FD: Assistenz Ulf  */
+  .c-fd-lisa   { background: #c4b5fd; color: #5b21b6; } /* Lila       – FD: Assistenz Lisa */
+  .c-fd-wilke  { background: #86efac; color: #166534; } /* Mint       – FD: Assistenz Wilke*/
+  /* ── SD-Schichten (warme Töne) ── */
+  .c-sd-anm    { background: #fde68a; color: #78350f; } /* Gelb       – SD: Anmeldung      */
+  .c-sd-beh    { background: #fed7aa; color: #9a3412; } /* Orange     – SD: Behandlung     */
+  .c-sd-ulf    { background: #fdba74; color: #7c2d12; } /* Dunklorange– SD: Assistenz Ulf  */
+  .c-sd-lisa   { background: #f9a8d4; color: #9d174d; } /* Pink       – SD: Assistenz Lisa */
+  .c-sd-wilke  { background: #fca5a5; color: #991b1b; } /* Koralle    – SD: Assistenz Wilke*/
+  /* ── Sonstige ── */
+  .c-urlaub    { background: #e2e8f0; color: #64748b; }
+  .c-krank     { background: #fee2e2; color: #991b1b; }
+  .c-feiertag  { background: #fef9c3; color: #854d0e; }
+  .c-schule    { background: #ede9fe; color: #5b21b6; }
+  .c-dienst    { background: #d1fae5; color: #065f46; }
+  .c-notdienst { background: #fee2e2; color: #991b1b; }
+  .c-op        { background: #cffafe; color: #164e63; }
+  .c-frei      { background: #f8fafc; color: #94a3b8; }
+  .c-empty     { background: white;   color: #cbd5e1; }
+  .c-pruefung  { background: #fce7f3; color: #9d174d; }
+
+  /* ── Edit Popup ── */
+  #edit-popup {
+    position: fixed; z-index: 1000; background: white; border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+    padding: 14px; min-width: 270px; max-width: 320px; display: none;
+  }
+  #edit-popup.visible { display: block; }
+  #edit-popup h3 { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 10px; }
+  #edit-input {
+    width: 100%; padding: 7px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 6px; font-size: 13px; outline: none; margin-bottom: 10px;
+  }
+  #edit-input:focus { border-color: #6366f1; }
+  .quick-picks { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .quick-pick {
+    padding: 4px 9px; border-radius: 5px; font-size: 11px; cursor: pointer;
+    border: 1px solid #e2e8f0; background: #f8fafc; transition: all 0.1s;
+  }
+  .quick-pick:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .qp-fd     { background: #dbeafe; border-color: #bfdbfe; }
+  .qp-sd     { background: #fed7aa; border-color: #fdba74; }
+  .qp-reset  { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+  .qp-urlaub { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; }
+  .popup-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .popup-actions button {
+    padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600;
+  }
+  #btn-save   { background: #6366f1; color: white; }
+  #btn-save:hover { background: #4f46e5; }
+  #btn-cancel { background: #f1f5f9; color: #475569; }
+  #btn-cancel:hover { background: #e2e8f0; }
+  #btn-reset  { background: #fef2f2; color: #dc2626; margin-right: auto; }
+  #btn-reset:hover { background: #fee2e2; }
+
+  /* ── PIN Dialog ── */
+  #pin-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+  }
+  #pin-overlay.visible { display: flex; }
+  #pin-dialog {
+    background: white; border-radius: 14px; padding: 28px 28px 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); min-width: 280px; text-align: center;
+  }
+  #pin-dialog .pin-icon { font-size: 32px; margin-bottom: 10px; }
+  #pin-dialog h2 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
+  #pin-dialog p  { font-size: 13px; color: #64748b; margin-bottom: 18px; }
+  #pin-input {
+    width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0;
+    border-radius: 8px; font-size: 20px; letter-spacing: 8px;
+    text-align: center; outline: none; margin-bottom: 8px;
+    font-weight: 700; color: #1e293b;
+  }
+  #pin-input:focus { border-color: #6366f1; }
+  #pin-error {
+    font-size: 12px; color: #dc2626; min-height: 18px; margin-bottom: 12px; font-weight: 500;
+  }
+  .pin-buttons { display: flex; gap: 8px; }
+  .pin-buttons button {
+    flex: 1; padding: 9px; border-radius: 8px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s;
+  }
+  #btn-pin-ok     { background: #6366f1; color: white; }
+  #btn-pin-ok:hover { background: #4f46e5; }
+  #btn-pin-cancel { background: #f1f5f9; color: #475569; }
+  #btn-pin-cancel:hover { background: #e2e8f0; }
+
+  /* ── Absence Modal ── */
+  #absence-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+  }
+  #absence-overlay.visible { display: flex; }
+  #absence-dialog {
+    background: white; border-radius: 14px; padding: 24px 24px 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 340px; max-width: 95vw;
+  }
+  #absence-dialog h2 { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+  #absence-dialog .abs-subtitle {
+    font-size: 12px; color: #64748b; margin-bottom: 16px;
+  }
+  .abs-row { margin-bottom: 12px; }
+  .abs-row label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+  .abs-row select, .abs-row input[type="date"] {
+    width: 100%; padding: 8px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 7px; font-size: 13px; outline: none; color: #1e293b;
+    background: #fafbfc;
+  }
+  .abs-row select:focus, .abs-row input[type="date"]:focus { border-color: #6366f1; background: white; }
+  #abs-grund-row { display: flex; gap: 6px; }
+  #abs-grund-row button {
+    flex: 1; padding: 7px 4px; border-radius: 7px; border: 1.5px solid #e2e8f0;
+    font-size: 12px; font-weight: 600; cursor: pointer; background: #f8fafc;
+    color: #64748b; transition: all 0.15s;
+  }
+  #abs-grund-row button.active-krank  { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  #abs-grund-row button.active-urlaub { background: #e2e8f0; border-color: #94a3b8; color: #334155; }
+  #abs-grund-row button.active-frei   { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  #abs-result {
+    display: none; margin: 12px 0 6px; padding: 10px 12px;
+    background: #fff7ed; border: 1px solid #fed7aa; border-radius: 7px; font-size: 12px;
+  }
+  #abs-result.visible { display: block; }
+  #abs-result.no-issues { background: #f0fdf4; border-color: #86efac; }
+  #abs-result h4 { font-weight: 700; color: #92400e; margin-bottom: 5px; font-size: 12px; }
+  #abs-result.no-issues h4 { color: #166534; }
+  #abs-result ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  #abs-result ul li {
+    padding: 2px 7px; border-radius: 4px; background: #fee2e2; color: #991b1b; font-size: 11px;
+  }
+  #abs-result.no-issues ul li { background: #dcfce7; color: #166534; }
+  .abs-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+  .abs-actions button {
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.15s;
+  }
+  #btn-abs-ok     { background: #6366f1; color: white; }
+  #btn-abs-ok:hover { background: #4f46e5; }
+  #btn-abs-cancel { background: #f1f5f9; color: #475569; }
+  #btn-abs-cancel:hover { background: #e2e8f0; }
+
+  /* ── Mini-Kalender (weißes Popover) ── */
+  #cal-panel {
+    display: none; position: fixed; z-index: 9999;
+    background: white; border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10);
+    padding: 18px 16px 14px; width: 310px;
+  }
+  #cal-panel.visible { display: block; }
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .cal-header span { font-size: 16px; font-weight: 700; color: #1e293b; }
+  .cal-header button {
+    background: #f1f5f9; border: none; color: #64748b;
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+    font-size: 16px; transition: background 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cal-header button:hover { background: #e2e8f0; color: #1e293b; }
+  .cal-grid { width: 100%; border-collapse: collapse; }
+  .cal-grid thead th {
+    font-size: 11px; font-weight: 600; color: #94a3b8; text-align: center;
+    padding-bottom: 8px; letter-spacing: .3px;
+  }
+  .cal-grid thead th.cal-kw-th { text-align: left; color: #e2e8f0; font-size: 10px; width: 28px; }
+  .cal-week-row { cursor: pointer; }
+  .cal-week-row:hover .cal-day-cell { background: #f8fafc; }
+  .cal-week-row.selected .cal-day-cell { background: #eff6ff; }
+  .cal-week-row.selected .cal-kw-cell { color: #3b82f6 !important; }
+  .cal-week-row:hover .cal-kw-cell    { color: #6366f1 !important; }
+  .cal-kw-cell {
+    font-size: 10px; font-weight: 700; color: #e2e8f0;
+    text-align: left; padding: 5px 4px; vertical-align: middle; width: 28px;
+  }
+  .cal-day-cell {
+    font-size: 13px; color: #1e293b; text-align: center;
+    padding: 4px 1px; vertical-align: middle; border-radius: 6px;
+  }
+  .cal-day-cell.cal-other-month { color: #cbd5e1; }
+  .cal-day-cell.cal-sunday      { color: #94a3b8; }
+  .cal-day-cell.cal-today {
+    font-weight: 700;
+  }
+  .cal-day-cell.cal-today span {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #ef4444; color: white; font-weight: 700; font-size: 13px;
+  }
+
+  /* Heute-Spalte im Plan */
+  th.today-col { background: #eff6ff !important; }
+  th.today-col .day-name { color: #2563eb; font-weight: 800; }
+  th.today-col .day-date { color: #60a5fa; }
+  td.cell.today-col { box-shadow: inset 2px 0 0 #3b82f6, inset -2px 0 0 #3b82f6; }
+
+  /* ── Swap Modal ── */
+  #swap-overlay, #vac-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+  }
+  #swap-overlay.visible, #vac-overlay.visible { display: flex; }
+  #swap-dialog, #vac-dialog {
+    background: white; border-radius: 14px; padding: 24px 24px 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 380px; max-width: 95vw;
+  }
+  #swap-dialog h2, #vac-dialog h2 {
+    font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 3px;
+  }
+  .modal-subtitle { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+  .modal-row { margin-bottom: 12px; }
+  .modal-row label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
+  .modal-row select, .modal-row input[type="date"] {
+    width: 100%; padding: 8px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 7px; font-size: 13px; outline: none; background: #fafbfc; color: #1e293b;
+  }
+  .modal-row select:focus, .modal-row input[type="date"]:focus {
+    border-color: #6366f1; background: white;
+  }
+  .modal-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+  /* Swap preview box */
+  #swap-preview {
+    display: none; margin: 8px 0; padding: 10px 12px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px;
+  }
+  #swap-preview.visible { display: block; }
+  .swap-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .swap-row:last-child { margin-bottom: 0; }
+  .swap-name { font-weight: 700; color: #334155; min-width: 70px; }
+  .swap-from { color: #64748b; }
+  .swap-arrow { color: #6366f1; font-weight: 700; }
+  .swap-to   { color: #1e293b; font-weight: 600; }
+
+  /* Vacation action buttons */
+  .vac-action-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .vac-action-row button {
+    flex: 1; padding: 8px; border-radius: 7px; border: 1.5px solid #e2e8f0;
+    font-size: 12px; font-weight: 600; cursor: pointer; background: #f8fafc; color: #475569;
+    transition: all 0.15s;
+  }
+  .vac-action-row button.active-add    { background: #f0fdf4; border-color: #86efac; color: #166534; }
+  .vac-action-row button.active-remove { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+  /* Shared result box for swap & vac */
+  .modal-result {
+    display: none; margin: 8px 0 4px; padding: 10px 12px;
+    border-radius: 7px; font-size: 12px;
+  }
+  .modal-result.visible   { display: block; }
+  .modal-result.has-issues { background: #fff7ed; border: 1px solid #fed7aa; }
+  .modal-result.no-issues  { background: #f0fdf4; border: 1px solid #86efac; }
+  .modal-result h4 { font-weight: 700; margin-bottom: 5px; font-size: 12px; }
+  .modal-result.has-issues h4 { color: #92400e; }
+  .modal-result.no-issues  h4 { color: #166534; }
+  .modal-result ul { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .modal-result.has-issues li { padding: 2px 7px; border-radius: 4px; background: #fee2e2; color: #991b1b; }
+  .modal-result.no-issues  li { padding: 2px 7px; border-radius: 4px; background: #dcfce7; color: #166534; }
+
+  .modal-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+  .modal-actions button {
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all 0.15s;
+  }
+  .btn-modal-ok     { background: #6366f1; color: white; }
+  .btn-modal-ok:hover { background: #4f46e5; }
+  .btn-modal-ok:disabled { background: #a5b4fc; cursor: default; }
+  .btn-modal-cancel { background: #f1f5f9; color: #475569; }
+  .btn-modal-cancel:hover { background: #e2e8f0; }
+  .btn-modal-preview { background: #e0e7ff; color: #4338ca; }
+  .btn-modal-preview:hover { background: #c7d2fe; }
+
+  /* ── Suggestions Panel ── */
+  #suggestions-bar {
+    display: none; margin-bottom: 12px; background: #eff6ff;
+    border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px;
+  }
+  #suggestions-bar.visible { display: block; }
+  #suggestions-bar h4 {
+    font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .suggestion-list { display: flex; flex-direction: column; gap: 5px; }
+  .suggestion-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 6px; background: white;
+    border: 1px solid #dbeafe; font-size: 12px; color: #1e293b;
+  }
+  .suggestion-item .sug-cause {
+    font-size: 10px; color: #64748b; padding: 1px 6px; border-radius: 4px;
+    background: #f1f5f9; white-space: nowrap; flex-shrink: 0;
+  }
+  .suggestion-item .sug-desc { flex: 1; }
+  .suggestion-item .btn-apply {
+    padding: 3px 10px; border-radius: 5px; border: none; cursor: pointer;
+    font-size: 11px; font-weight: 700; background: #6366f1; color: white;
+    white-space: nowrap; flex-shrink: 0; transition: background 0.15s;
+  }
+  .suggestion-item .btn-apply:hover { background: #4f46e5; }
+
+  /* Krank-Zellfarbe */
+  .c-krank { background: #fee2e2; color: #991b1b; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white;
+    padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0;
+    transition: all 0.25s ease; z-index: 3000;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.toast-ok  { background: #059669; }
+  #toast.toast-err { background: #dc2626; }
+
+  /* ── Legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; font-size: 12px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 5px; white-space: nowrap;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-issue {
+    display: flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px;
+    background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; white-space: nowrap;
+  }
+
+  /* ── Loading ── */
+  #loading {
+    display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.75);
+    z-index: 500; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; font-size: 14px; color: #475569;
+  }
+  #loading.show { display: flex; }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #6366f1;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #popup-overlay { position: fixed; inset: 0; z-index: 999; display: none; }
+  #popup-overlay.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading"><div class="spinner"></div><span id="loading-msg">Wird geladen…</span></div>
+<div id="popup-overlay"></div>
+
+<!-- PIN Dialog -->
+<div id="pin-overlay">
+  <div id="pin-dialog">
+    <div class="pin-icon">🔐</div>
+    <h2>Bearbeitungsmodus</h2>
+    <p>Bitte PIN eingeben, um Änderungen vorzunehmen</p>
+    <input type="password" id="pin-input" maxlength="8" placeholder="• • • •" autocomplete="off">
+    <div id="pin-error"></div>
+    <div class="pin-buttons">
+      <button id="btn-pin-cancel">Abbrechen</button>
+      <button id="btn-pin-ok">Entsperren</button>
+    </div>
+  </div>
+</div>
+
+<!-- Swap Modal -->
+<div id="swap-overlay">
+  <div id="swap-dialog">
+    <h2>⇄ Dienst tauschen</h2>
+    <p class="modal-subtitle">Tauscht die Dienste zweier Personen an einem Tag. Regelprüfung erfolgt automatisch.</p>
+    <div class="modal-row-2col">
+      <div>
+        <label>Person A</label>
+        <select id="swap-person-a"></select>
+      </div>
+      <div>
+        <label>Tag</label>
+        <select id="swap-day-sel"></select>
+      </div>
+    </div>
+    <div class="modal-row">
+      <label>Person B</label>
+      <select id="swap-person-b"></select>
+    </div>
+    <div id="swap-preview">
+      <div class="swap-row">
+        <span class="swap-name" id="swap-prev-a-name"></span>
+        <span class="swap-from" id="swap-prev-a-from"></span>
+        <span class="swap-arrow">→</span>
+        <span class="swap-to"   id="swap-prev-a-to"></span>
+      </div>
+      <div class="swap-row">
+        <span class="swap-name" id="swap-prev-b-name"></span>
+        <span class="swap-from" id="swap-prev-b-from"></span>
+        <span class="swap-arrow">→</span>
+        <span class="swap-to"   id="swap-prev-b-to"></span>
+      </div>
+    </div>
+    <div id="swap-result" class="modal-result">
+      <h4 id="swap-result-title"></h4>
+      <ul id="swap-result-list"></ul>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-swap-cancel">Abbrechen</button>
+      <button class="btn-modal-preview" id="btn-swap-preview">Vorschau</button>
+      <button class="btn-modal-ok" id="btn-swap-ok" disabled>Tausch bestätigen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vacation Modal -->
+<div id="vac-overlay">
+  <div id="vac-dialog">
+    <h2>🏖 Urlaub anpassen</h2>
+    <p class="modal-subtitle">Fügt Urlaubstage hinzu oder entfernt sie. Der Plan wird danach neu berechnet.</p>
+    <div class="modal-row">
+      <label>Person</label>
+      <select id="vac-person"></select>
+    </div>
+    <div class="modal-row-2col">
+      <div>
+        <label>Von</label>
+        <input type="date" id="vac-date-from">
+      </div>
+      <div>
+        <label>Bis (optional)</label>
+        <input type="date" id="vac-date-to">
+      </div>
+    </div>
+    <div class="modal-row">
+      <label>Aktion</label>
+      <div class="vac-action-row">
+        <button data-action="add"    class="active-add" id="btn-vac-add">➕ Urlaub eintragen</button>
+        <button data-action="remove"                    id="btn-vac-remove">➖ Urlaub entfernen</button>
+      </div>
+    </div>
+    <div id="vac-result" class="modal-result">
+      <h4 id="vac-result-title"></h4>
+      <ul id="vac-result-list"></ul>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-vac-cancel">Abbrechen</button>
+      <button class="btn-modal-ok" id="btn-vac-ok">Übernehmen & Neu planen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Absence Modal -->
+<div id="absence-overlay">
+  <div id="absence-dialog">
+    <h2>🤒 Abwesenheit eintragen</h2>
+    <p class="abs-subtitle">Trägt die Abwesenheit als Override ein und zeigt sofort, welche Rollen offen sind.</p>
+    <div class="abs-row">
+      <label>Person</label>
+      <select id="abs-person"></select>
+    </div>
+    <div class="abs-row">
+      <label>Tag</label>
+      <input type="date" id="abs-date">
+    </div>
+    <div class="abs-row">
+      <label>Grund</label>
+      <div id="abs-grund-row">
+        <button data-grund="Krank"  class="active-krank">🤒 Krank</button>
+        <button data-grund="Urlaub"                     >🏖 Urlaub</button>
+        <button data-grund="Frei"                       >✓ Frei</button>
+      </div>
+    </div>
+    <div id="abs-result">
+      <h4 id="abs-result-title"></h4>
+      <ul id="abs-result-list"></ul>
+    </div>
+    <div class="abs-actions">
+      <button id="btn-abs-cancel">Abbrechen</button>
+      <button id="btn-abs-ok">Eintragen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Popup -->
+<div id="edit-popup">
+  <h3 id="popup-title">Zelle bearbeiten</h3>
+  <input type="text" id="edit-input" placeholder="Wert eingeben…" autocomplete="off">
+  <div class="quick-picks" id="quick-picks"></div>
+  <div class="popup-actions">
+    <button id="btn-reset">↩ Reset</button>
+    <button id="btn-cancel">Abbrechen</button>
+    <button id="btn-save">Speichern</button>
+  </div>
+</div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <h1>🐾 Dienstplan 2026</h1>
+  <div class="kw-nav">
+    <button id="btn-prev">‹</button>
+    <span class="kw-label" id="kw-label">KW 17</span>
+    <button id="btn-next">›</button>
+  </div>
+  <button class="btn btn-ghost" id="btn-cal" title="Kalender öffnen" style="font-size:16px;padding:4px 10px">📅</button>
+  <span id="mod-count" class="mod-count"></span>
+
+  <div class="spacer"></div>
+
+  <!-- Aktions-Buttons (immer sichtbar, PIN erforderlich) -->
+  <button class="btn btn-ghost" id="btn-absence" title="Abwesenheit / Krankmeldung">🤒 Abwesenheit</button>
+  <button class="btn btn-ghost" id="btn-swap"    title="Dienste tauschen">⇄ Tausch</button>
+  <button class="btn btn-ghost" id="btn-vac"     title="Urlaub anpassen">🏖 Urlaub</button>
+
+  <!-- Sichtbar nur im Edit-Modus -->
+  <button class="btn btn-ghost edit-only" id="btn-clear-kw">Woche zurücksetzen</button>
+  <button class="btn btn-ghost edit-only" id="btn-regen">⟳ Neu generieren</button>
+
+  <!-- Lock/Unlock Button -->
+  <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
+    <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
+    <span class="btn-lock-label-unlock">🔓 Sperren</span>
+  </button>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="statusbar">
+    <span id="status-kw" class="status-badge badge-info">KW 15</span>
+    <span id="status-dates" style="color:#64748b"></span>
+    <span id="status-mode"></span>
+    <span id="status-mods"></span>
+    <span id="status-issues"></span>
+  </div>
+
+  <div id="day-issues-bar">
+    <h4>⚠ Regelprobleme diese Woche</h4>
+    <ul class="issue-list" id="issue-list"></ul>
+  </div>
+
+  <div id="suggestions-bar">
+    <h4>💡 Lösungsvorschläge</h4>
+    <div class="suggestion-list" id="suggestion-list"></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead id="plan-thead"></thead>
+      <tbody id="plan-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Frühdienst</div>
+    <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Anmeldung</div>
+    <div class="legend-item" style="background:#dbeafe;color:#1d4ed8"><div class="legend-dot" style="background:#60a5fa"></div>FD: Behandlung</div>
+    <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>FD: Ass. Ulf</div>
+    <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>FD: Ass. Lisa OP</div>
+    <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>FD: Ass. Wilke OP</div>
+    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Spätdienst</div>
+    <div class="legend-item" style="background:#fde68a;color:#78350f"><div class="legend-dot" style="background:#fbbf24"></div>SD: Anmeldung</div>
+    <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
+    <div class="legend-item" style="background:#fdba74;color:#7c2d12"><div class="legend-dot" style="background:#f97316"></div>SD: Ass. Ulf</div>
+    <div class="legend-item" style="background:#f9a8d4;color:#9d174d"><div class="legend-dot" style="background:#f472b6"></div>SD: Ass. Lisa OP</div>
+    <div class="legend-item" style="background:#fca5a5;color:#991b1b"><div class="legend-dot" style="background:#f87171"></div>SD: Ass. Wilke OP</div>
+    <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
+    <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
+    <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
+    <div class="legend-item" style="background:#fef9c3;color:#854d0e"><div class="legend-dot" style="background:#fde047"></div>Feiertag</div>
+    <div class="legend-item" style="background:#ede9fe;color:#5b21b6"><div class="legend-dot" style="background:#c4b5fd"></div>Schule</div>
+    <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
+    <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Mini-Kalender Popover (außerhalb aller Stacking Contexts) -->
+<div id="cal-panel">
+  <div class="cal-header">
+    <button id="cal-prev">‹</button>
+    <span id="cal-title"></span>
+    <button id="cal-next">›</button>
+  </div>
+  <table class="cal-grid">
+    <thead>
+      <tr>
+        <th class="cal-kw-th">KW</th>
+        <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
+      </tr>
+    </thead>
+    <tbody id="cal-body"></tbody>
+  </table>
+</div>
+
+<script>
+"use strict";
+
+// ── State ─────────────────────────────────────────────────────────────────
+const KW_MIN = 17, KW_MAX = 23;
+
+function _currentIsoKw() {
+  const d = new Date();
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+  const y0 = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+  return Math.ceil((((tmp - y0) / 86400000) + 1) / 7);
+}
+
+let currentKw = Math.max(KW_MIN, Math.min(KW_MAX, _currentIsoKw()));
+let planData  = null;
+let validData = null;
+let editState = null;
+let isEditMode = false;
+
+// ── DOM ───────────────────────────────────────────────────────────────────
+const kwLabel      = document.getElementById("kw-label");
+const btnPrev      = document.getElementById("btn-prev");
+const btnNext      = document.getElementById("btn-next");
+const statusKw     = document.getElementById("status-kw");
+const statusDates  = document.getElementById("status-dates");
+const statusMode   = document.getElementById("status-mode");
+const statusMods   = document.getElementById("status-mods");
+const statusIssues = document.getElementById("status-issues");
+const modCount     = document.getElementById("mod-count");
+const thead        = document.getElementById("plan-thead");
+const tbody        = document.getElementById("plan-tbody");
+const loading      = document.getElementById("loading");
+const loadingMsg   = document.getElementById("loading-msg");
+const toast        = document.getElementById("toast");
+const editPopup    = document.getElementById("edit-popup");
+const popupTitle   = document.getElementById("popup-title");
+const editInput    = document.getElementById("edit-input");
+const quickPicks   = document.getElementById("quick-picks");
+const btnSave      = document.getElementById("btn-save");
+const btnCancel    = document.getElementById("btn-cancel");
+const btnReset     = document.getElementById("btn-reset");
+const btnClearKw   = document.getElementById("btn-clear-kw");
+const btnRegen     = document.getElementById("btn-regen");
+const popupOverlay = document.getElementById("popup-overlay");
+const dayIssuesBar = document.getElementById("day-issues-bar");
+const issueList    = document.getElementById("issue-list");
+const btnLock      = document.getElementById("btn-lock");
+const pinOverlay   = document.getElementById("pin-overlay");
+const pinInput     = document.getElementById("pin-input");
+const pinError     = document.getElementById("pin-error");
+const btnPinOk     = document.getElementById("btn-pin-ok");
+const btnPinCancel = document.getElementById("btn-pin-cancel");
+
+const QUICK_PICKS = [
+  { label: "FD: Behandlung",        cls: "qp-fd" },
+  { label: "SD: Behandlung",        cls: "qp-sd" },
+  { label: "FD: Anmeldung",         cls: "qp-fd" },
+  { label: "SD: Anmeldung",         cls: "qp-sd" },
+  { label: "FD: Assistenz Lisa OP", cls: "qp-fd" },
+  { label: "SD: Assistenz Lisa OP", cls: "qp-sd" },
+  { label: "FD: Assistenz Ulf",     cls: "qp-fd" },
+  { label: "SD: Assistenz Ulf",     cls: "qp-sd" },
+  { label: "Urlaub",                cls: "qp-urlaub" },
+  { label: "–",                     cls: "" },
+];
+
+// ── Auth / Mode ───────────────────────────────────────────────────────────
+function setEditMode(on) {
+  isEditMode = on;
+  document.body.classList.toggle("edit-mode", on);
+  btnLock.className = on ? "btn btn-edit-on" : "btn btn-ghost";
+  statusMode.innerHTML = on
+    ? '<span class="status-badge" style="background:#fef3c7;color:#92400e">✏ Bearbeitungsmodus</span>'
+    : '<span class="status-badge badge-view">👁 Nur Ansicht</span>';
+}
+
+async function checkAuth() {
+  try {
+    const r = await fetch("/api/me");
+    const d = await r.json();
+    setEditMode(d.authenticated);
+  } catch(e) { setEditMode(false); }
+}
+
+// Lock button click
+btnLock.addEventListener("click", async () => {
+  if (isEditMode) {
+    // Log out
+    await fetch("/api/auth", { method: "DELETE" });
+    setEditMode(false);
+    showToast("Bearbeitungsmodus gesperrt", "ok");
+  } else {
+    // Show PIN dialog
+    pinInput.value = "";
+    pinError.textContent = "";
+    pinOverlay.classList.add("visible");
+    setTimeout(() => pinInput.focus(), 80);
+  }
+});
+
+// PIN dialog
+btnPinCancel.addEventListener("click", closePinDialog);
+pinOverlay.addEventListener("click", e => { if (e.target === pinOverlay) closePinDialog(); });
+pinInput.addEventListener("keydown", e => {
+  if (e.key === "Enter")  { e.preventDefault(); submitPin(); }
+  if (e.key === "Escape") { closePinDialog(); }
+});
+btnPinOk.addEventListener("click", submitPin);
+
+async function submitPin() {
+  const pin = pinInput.value.trim();
+  if (!pin) { pinError.textContent = "Bitte PIN eingeben."; return; }
+  try {
+    const r = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      closePinDialog();
+      setEditMode(true);
+      showToast("Bearbeitungsmodus entsperrt ✓", "ok");
+      _onAuthSuccess();   // ggf. warte Absence-Modal öffnen
+    } else {
+      pinError.textContent = "Falscher PIN. Bitte erneut versuchen.";
+      pinInput.value = "";
+      pinInput.focus();
+    }
+  } catch(e) {
+    pinError.textContent = "Verbindungsfehler.";
+  }
+}
+
+function closePinDialog() {
+  pinOverlay.classList.remove("visible");
+  pinInput.value = "";
+  pinError.textContent = "";
+}
+
+// ── Cell colors ───────────────────────────────────────────────────────────
+function cellClass(val) {
+  if (!val || val === "–") return "c-empty";
+  const v = String(val);
+
+  // FD-Schichten (Reihenfolge: spezifischste zuerst)
+  if (v.includes("FD") && v.includes("Anmeldung"))           return "c-fd-anm";
+  if (v.includes("FD") && v.includes("Assistenz Ulf"))       return "c-fd-ulf";
+  if (v.includes("FD") && v.includes("Assistenz Lisa"))      return "c-fd-lisa";
+  if (v.includes("FD") && v.includes("Assistenz Wilke"))     return "c-fd-wilke";
+  if (v.includes("FD") && v.includes("Assistenz"))           return "c-fd-ulf"; // Fallback Assistenz
+  if (v.includes("FD") && v.includes("Behandlung"))          return "c-fd-beh";
+  if (v.startsWith("FD"))                                     return "c-fd-beh"; // Generischer FD
+
+  // SD-Schichten
+  if (v.includes("SD") && v.includes("Anmeldung"))           return "c-sd-anm";
+  if (v.includes("SD") && v.includes("Assistenz Ulf"))       return "c-sd-ulf";
+  if (v.includes("SD") && v.includes("Assistenz Lisa"))      return "c-sd-lisa";
+  if (v.includes("SD") && v.includes("Assistenz Wilke"))     return "c-sd-wilke";
+  if (v.includes("SD") && v.includes("Assistenz"))           return "c-sd-ulf"; // Fallback Assistenz
+  if (v.includes("SD") && v.includes("Behandlung"))          return "c-sd-beh";
+  if (v.startsWith("SD"))                                     return "c-sd-beh"; // Generischer SD
+
+  // Sonstige
+  if (v === "Urlaub")                                         return "c-urlaub";
+  if (v === "Krank")                                          return "c-krank";
+  if (v === "Feiertag")                                       return "c-feiertag";
+  if (v === "SCHULE")                                         return "c-schule";
+  if (v === "Dienst")                                         return "c-dienst";
+  if (v.includes("Notdienst"))                                return "c-notdienst";
+  if (v.includes("Abschlussprüfung"))                         return "c-pruefung";
+  if (v.includes("Frei"))                                     return "c-frei";
+  if (v.includes("OP") || v.includes("Assistenz") ||
+      v.includes("09:00") || v.includes("FD (") ||
+      v.includes("SD (")  || v.includes("09–12") ||
+      v.includes("ECVO")  || v.includes("Bestellungen"))      return "c-op";
+  return "c-empty";
+}
+
+function formatCell(val) {
+  if (!val || val === "–") return '<span style="color:#cbd5e1">—</span>';
+  const v = String(val);
+  let main = v, auffl = "";
+  if (v.includes("+ Auffüllen")) {
+    main  = v.replace("+ Auffüllen","").trim();
+    auffl = '<span class="auffullen-badge">+ Auffüllen</span>';
+  }
+  main = main
+    .replace("FD: Assistenz Lisa OP",  "FD: Ass. Lisa OP")
+    .replace("SD: Assistenz Lisa OP",  "SD: Ass. Lisa OP")
+    .replace("FD: Assistenz Wilke OP", "FD: Ass. Wilke OP")
+    .replace("FD: Assistenz Ulf",      "FD: Ass. Ulf")
+    .replace("SD: Assistenz Ulf",      "SD: Ass. Ulf")
+    .replace("Abschlussprüfung",       "Prüfung")
+    .replace("Notdienst (20–8 Uhr)",  "Notdienst")
+    .replace("Frei (Notdienst)",       "Frei (ND)")
+    .replace("SD: Behandlung (ab 15:30)", "SD: Beh. (15:30)")
+    .replace("ECVO Congress", "ECVO");
+  return main + auffl;
+}
+
+// ── Load & Render ─────────────────────────────────────────────────────────
+let suggestionsData = [];
+
+async function loadKw(kw) {
+  showLoading(`KW ${kw} …`);
+  try {
+    const [pr, vr] = await Promise.all([
+      fetch(`/api/plan/${kw}`),
+      fetch(`/api/validate/${kw}`)
+    ]);
+    planData  = await pr.json();
+    validData = await vr.json();
+
+    // Vorschläge berechnen (serverseitig via validate-Daten geht nicht direkt,
+    // deshalb holen wir sie vom neuen Endpoint wenn Violations vorhanden)
+    const totalIssues = Object.values(validData?.day || {}).reduce((s,v) => s+v.length, 0);
+    if (totalIssues > 0) {
+      try {
+        // Wir nutzen /api/apply-suggestions mit leeren overrides um nur Suggestions zu bekommen
+        const sr = await fetch(`/api/validate/${kw}/suggestions`);
+        if (sr.ok) suggestionsData = await sr.json();
+        else suggestionsData = [];
+      } catch { suggestionsData = []; }
+    } else {
+      suggestionsData = [];
+    }
+
+    renderPlan(planData, validData);
+    renderSuggestions(suggestionsData, kw);
+    updateNav();
+  } catch(e) {
+    showToast("Fehler beim Laden: " + e.message, "err");
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderPlan(data, valid) {
+  const { kw, dates, plan, days, arzte, tfas, overrides } = data;
+  const dayIssues  = valid?.day  || {};
+  const cellIssues = valid?.cell || {};
+
+  kwLabel.textContent     = `KW ${kw}`;
+  statusKw.textContent    = `KW ${kw}`;
+  statusDates.textContent = `${dates[0]} – ${dates[5]}`;
+
+  const totalMods = Object.values(overrides).reduce((s,v) => s + Object.keys(v).length, 0);
+  statusMods.innerHTML = totalMods > 0
+    ? `<span class="status-badge badge-mod">${totalMods} Änderung${totalMods!==1?"en":""}</span>`
+    : '<span class="status-badge badge-ok">Keine Änderungen</span>';
+  modCount.textContent = `${totalMods} geändert`;
+  modCount.classList.toggle("visible", totalMods > 0);
+
+  // Issues
+  const totalIssues = Object.values(dayIssues).reduce((s,v) => s+v.length, 0);
+  statusIssues.innerHTML = totalIssues > 0
+    ? `<span class="status-badge badge-warn">⚠ ${totalIssues} Regelverstoß${totalIssues!==1?"e":""}</span>` : "";
+  dayIssuesBar.classList.toggle("visible", totalIssues > 0);
+  issueList.innerHTML = "";
+  for (const [di, msgs] of Object.entries(dayIssues)) {
+    const d = days[parseInt(di)] || "", dt = dates[parseInt(di)] || "";
+    for (const msg of msgs) {
+      const li = document.createElement("li");
+      li.className = "issue-item";
+      li.textContent = `${d} ${dt}: ${msg}`;
+      issueList.appendChild(li);
+    }
+  }
+
+  const issuePerDay = {};
+  for (const [di, msgs] of Object.entries(dayIssues)) issuePerDay[parseInt(di)] = msgs.length;
+
+  // Heute-Spalte ermitteln ("17.4." Format)
+  const _now = new Date();
+  const todayLabel = `${_now.getDate()}.${_now.getMonth()+1}.`;
+  const todayDi = dates.indexOf(todayLabel); // -1 wenn nicht diese Woche
+
+  // Header
+  thead.innerHTML = `<tr><th>Person</th>${days.map((d,i) => {
+    const cnt   = issuePerDay[i] || 0;
+    const today = i === todayDi ? " today-col" : "";
+    return `<th class="day-col${cnt?" has-issue":""}${today}">
+      <div class="day-name">${d}${cnt?`<span class="day-warn">${cnt}</span>`:""}</div>
+      <div class="day-date">${dates[i]}</div>
+    </th>`;
+  }).join("")}</tr>`;
+
+  // Body
+  let html = "";
+  for (const { label, persons: grp } of [
+    { label:"Ärzte", persons:arzte },
+    { label:"TFAs",  persons:tfas  }
+  ]) {
+    html += `<tr class="group-header"><td colspan="7">${label}</td></tr>`;
+    for (const person of grp) {
+      const row      = plan[person] || Array(6).fill("–");
+      const personOv = overrides[person] || {};
+      const pIssues  = cellIssues[person] || {};
+      html += `<tr data-person="${person}"><td class="person-name">${person}</td>`;
+      for (let di = 0; di < 6; di++) {
+        const val     = row[di] || "–";
+        const isOv    = personOv[String(di)] !== undefined;
+        const msgs    = pIssues[String(di)] || [];
+        const isToday = di === todayDi ? " today-col" : "";
+        let innerCls  = "cell-inner" + (isOv?" is-override":"") + (msgs.length?" has-issue":"");
+        const titleAttr = msgs.length ? ` title="${msgs.join(" | ").replace(/"/g,"&quot;")}"` : "";
+        html += `<td class="cell ${cellClass(val)}${isToday}" data-person="${person}" data-di="${di}"${titleAttr}>
+          <div class="${innerCls}">${formatCell(val)}</div></td>`;
+      }
+      html += "</tr>";
+    }
+  }
+  tbody.innerHTML = html;
+  tbody.querySelectorAll("td.cell").forEach(td => td.addEventListener("click", onCellClick));
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+function updateNav() {
+  btnPrev.disabled = currentKw <= KW_MIN;
+  btnNext.disabled = currentKw >= KW_MAX;
+}
+btnPrev.addEventListener("click", () => { if (currentKw > KW_MIN) { currentKw--; loadKw(currentKw); } });
+btnNext.addEventListener("click", () => { if (currentKw < KW_MAX) { currentKw++; loadKw(currentKw); } });
+document.addEventListener("keydown", e => {
+  if (editPopup.classList.contains("visible") || pinOverlay.classList.contains("visible")) return;
+  if (e.key === "ArrowLeft"  && currentKw > KW_MIN) { currentKw--; loadKw(currentKw); }
+  if (e.key === "ArrowRight" && currentKw < KW_MAX) { currentKw++; loadKw(currentKw); }
+});
+
+// ── Cell click → only in edit mode ───────────────────────────────────────
+function onCellClick(e) {
+  if (!isEditMode) return;   // View mode: nichts tun
+
+  const td     = e.currentTarget;
+  const person = td.dataset.person;
+  const di     = parseInt(td.dataset.di);
+  const val    = planData.plan[person]?.[di] || "–";
+  const isOv   = planData.overrides[person]?.[String(di)] !== undefined;
+  const issues = validData?.cell?.[person]?.[String(di)] || [];
+
+  editState = { person, di, originalValue: val, isOverride: isOv };
+
+  const rect   = td.getBoundingClientRect();
+  const popupW = 290;
+  let left = rect.left + window.scrollX;
+  let top  = rect.bottom + window.scrollY + 4;
+  if (left + popupW > window.innerWidth - 16) left = Math.max(8, window.innerWidth - popupW - 16);
+  if (top + 240 > window.innerHeight + window.scrollY) top = rect.top + window.scrollY - 250;
+  editPopup.style.left = left + "px";
+  editPopup.style.top  = top  + "px";
+
+  popupTitle.textContent = `${person} · ${planData.days[di]} ${planData.dates[di]}`;
+  editInput.value = val === "–" ? "" : val.replace(" + Auffüllen", "");
+
+  quickPicks.innerHTML = "";
+  if (issues.length > 0) {
+    const hint = document.createElement("div");
+    hint.style.cssText = "font-size:11px;color:#991b1b;background:#fee2e2;padding:5px 8px;border-radius:5px;margin-bottom:8px;";
+    hint.textContent = "⚠ " + issues.join(" · ");
+    quickPicks.before(hint);
+  }
+  QUICK_PICKS.forEach(({ label, cls }) => {
+    const btn = document.createElement("button");
+    btn.className = `quick-pick ${cls}`;
+    btn.textContent = label;
+    btn.addEventListener("click", () => { editInput.value = label; saveEdit(label); });
+    quickPicks.appendChild(btn);
+  });
+  if (isOv) {
+    const rb = document.createElement("button");
+    rb.className = "quick-pick qp-reset";
+    rb.textContent = "↩ Reset";
+    rb.addEventListener("click", resetEdit);
+    quickPicks.appendChild(rb);
+  }
+
+  editPopup.classList.add("visible");
+  popupOverlay.classList.add("visible");
+  editInput.focus();
+  editInput.select();
+}
+
+editInput.addEventListener("keydown", e => {
+  if (e.key === "Enter")  { e.preventDefault(); saveEdit(editInput.value.trim()); }
+  if (e.key === "Escape") { closePopup(); }
+});
+btnSave.addEventListener("click",   () => saveEdit(editInput.value.trim()));
+btnCancel.addEventListener("click", () => closePopup());
+btnReset.addEventListener("click",  resetEdit);
+popupOverlay.addEventListener("click", () => closePopup());
+
+// Zählt aktuelle Verstöße aus validData
+function _countIssues() {
+  return Object.values(validData?.day || {}).reduce((s,v) => s+v.length, 0);
+}
+
+// Lädt KW neu und zeigt Violations-Delta als Toast
+async function reloadAndNotify(label) {
+  const before = _countIssues();
+  await loadKw(currentKw);
+  const after = _countIssues();
+  if (after === 0) {
+    showToast(`${label} · ✓ Keine Regelverstöße`, "ok");
+  } else if (after > before) {
+    showToast(`${label} · ⚠ ${after} Regelverstoß${after!==1?"e":""}`, "err");
+  } else if (after < before) {
+    showToast(`${label} · ${after} Verstoß${after!==1?"e":""} verbleiben`, "ok");
+  } else {
+    showToast(`${label} · ⚠ ${after} Regelverstoß${after!==1?"e":""}`, "err");
+  }
+}
+
+async function saveEdit(value) {
+  if (!editState) return;
+  if (!value || value === editState.originalValue) { closePopup(); return; }
+  const { person, di } = editState;
+  closePopup();
+  try {
+    const r = await fetch("/api/override", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw: currentKw, person, di, value })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert – bitte entsperren", "err"); return; }
+    if (!r.ok) throw new Error(`Fehler ${r.status}`);
+    await reloadAndNotify(`${person} ${planData?.days[di] ?? ""}: gespeichert`);
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+}
+
+async function resetEdit() {
+  if (!editState) return;
+  const { person, di } = editState;
+  closePopup();
+  try {
+    const r = await fetch("/api/override", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw: currentKw, person, di, value: "__reset__" })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert – bitte entsperren", "err"); return; }
+    await reloadAndNotify(`${person} ${planData?.days[di] ?? ""}: zurückgesetzt`);
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+}
+
+function closePopup() {
+  editPopup.classList.remove("visible");
+  popupOverlay.classList.remove("visible");
+  editState = null;
+  const hint = editPopup.querySelector("div[style]");
+  if (hint) hint.remove();
+}
+
+// ── Edit buttons ──────────────────────────────────────────────────────────
+btnClearKw.addEventListener("click", async () => {
+  if (!confirm(`Alle manuellen Änderungen für KW ${currentKw} zurücksetzen?`)) return;
+  const r = await fetch(`/api/overrides/clear/${currentKw}`, { method: "POST" });
+  if (r.status === 403) { showToast("Nicht autorisiert", "err"); return; }
+  showToast(`KW ${currentKw}: zurückgesetzt`, "ok");
+  loadKw(currentKw);
+});
+
+btnRegen.addEventListener("click", async () => {
+  showLoading("Generiere Plan aus Regeln…");
+  const r = await fetch("/api/regenerate", { method: "POST" });
+  if (r.status === 403) { showToast("Nicht autorisiert", "err"); hideLoading(); return; }
+  showToast("Plan neu generiert ✓", "ok");
+  loadKw(currentKw);
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+let toastT;
+function showToast(msg, type="ok") {
+  clearTimeout(toastT);
+  toast.textContent = msg;
+  toast.className = `show toast-${type}`;
+  toastT = setTimeout(() => { toast.className = ""; }, 3000);
+}
+function showLoading(msg="…") { loadingMsg.textContent = msg; loading.classList.add("show"); }
+function hideLoading() { loading.classList.remove("show"); }
+
+// ── Mini-Kalender ─────────────────────────────────────────────────────────
+const calPanel  = document.getElementById("cal-panel");
+const calBody   = document.getElementById("cal-body");
+const calTitle  = document.getElementById("cal-title");
+const btnCal    = document.getElementById("btn-cal");
+const btnCalPrev= document.getElementById("cal-prev");
+const btnCalNext= document.getElementById("cal-next");
+
+const MONTH_NAMES = ["Januar","Februar","März","April","Mai","Juni",
+                     "Juli","August","September","Oktober","November","Dezember"];
+
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+
+function isoKwFromDate(date) {
+  const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+  const y0 = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+  return { kw: Math.ceil((((tmp - y0) / 86400000) + 1) / 7), year: tmp.getUTCFullYear() };
+}
+
+function renderCalendar() {
+  calTitle.textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+  calBody.innerHTML = "";
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Ersten Montag der Kalenderansicht
+  const firstDay  = new Date(calYear, calMonth, 1);
+  const startDow  = (firstDay.getDay() + 6) % 7; // 0=Mo
+  const startDate = new Date(firstDay);
+  startDate.setDate(1 - startDow);
+
+  for (let week = 0; week < 6; week++) {
+    const monday = new Date(startDate);
+    monday.setDate(startDate.getDate() + week * 7);
+
+    const saturday = new Date(monday); saturday.setDate(monday.getDate() + 5);
+    if (week > 0 && monday.getMonth() !== calMonth && saturday.getMonth() !== calMonth) break;
+
+    const { kw } = isoKwFromDate(monday);
+    const inRange = kw >= KW_MIN && kw <= KW_MAX;
+
+    const tr = document.createElement("tr");
+    tr.className = "cal-week-row" + (kw === currentKw ? " selected" : "");
+    if (!inRange) { tr.style.opacity = "0.4"; tr.style.cursor = "default"; }
+    else tr.addEventListener("click", () => { currentKw = kw; loadKw(kw); closeCalendar(); });
+
+    // KW-Zelle links
+    const kwTd = document.createElement("td");
+    kwTd.className = "cal-kw-cell";
+    kwTd.textContent = inRange ? kw : "";
+    tr.appendChild(kwTd);
+
+    // Mo–So (7 Tage)
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(monday); day.setDate(monday.getDate() + d);
+      const td  = document.createElement("td");
+      td.className = "cal-day-cell";
+      const isToday = day.getTime() === today.getTime();
+      // Heute: Zahl in rotem Kreis
+      td.innerHTML = isToday ? `<span>${day.getDate()}</span>` : day.getDate();
+      if (day.getMonth() !== calMonth) td.classList.add("cal-other-month");
+      if (d === 6) td.classList.add("cal-sunday");
+      if (isToday) td.classList.add("cal-today");
+      tr.appendChild(td);
+    }
+    calBody.appendChild(tr);
+  }
+}
+
+function openCalendar() {
+  // Monat der aktuell angezeigten KW
+  if (planData?.dates?.[0]) {
+    const m = parseInt(planData.dates[0].split(".")[1]);
+    if (m) { calMonth = m - 1; calYear = 2026; }
+  }
+  renderCalendar();
+
+  // Popover direkt unter dem 📅-Button positionieren
+  const rect = btnCal.getBoundingClientRect();
+  const panelW = 310;
+  let left = rect.left;
+  if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
+  calPanel.style.top  = (rect.bottom + 6) + "px";
+  calPanel.style.left = left + "px";
+
+  calPanel.classList.toggle("visible");
+}
+function closeCalendar() { calPanel.classList.remove("visible"); }
+
+btnCal.addEventListener("click", e => { e.stopPropagation(); openCalendar(); });
+btnCalPrev.addEventListener("click", e => {
+  e.stopPropagation();
+  calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+});
+btnCalNext.addEventListener("click", e => {
+  e.stopPropagation();
+  calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+});
+document.addEventListener("click", e => {
+  if (calPanel.classList.contains("visible") && !calPanel.contains(e.target) && e.target !== btnCal)
+    closeCalendar();
+});
+
+// ── Suggestions Panel ─────────────────────────────────────────────────────
+const suggestionsBar  = document.getElementById("suggestions-bar");
+const suggestionList  = document.getElementById("suggestion-list");
+
+function renderSuggestions(suggestions, kw) {
+  if (!suggestions || suggestions.length === 0) {
+    suggestionsBar.classList.remove("visible");
+    return;
+  }
+  suggestionsBar.classList.add("visible");
+  suggestionList.innerHTML = "";
+  suggestions.forEach((sug, idx) => {
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
+    item.innerHTML = `
+      <span class="sug-cause">${planData?.days?.[sug.day] ?? "?"}</span>
+      <span class="sug-desc">${sug.description}</span>
+      <button class="btn-apply" data-idx="${idx}">✓ Anwenden</button>
+    `;
+    item.querySelector(".btn-apply").addEventListener("click", () => applySuggestion(sug, kw));
+    suggestionList.appendChild(item);
+  });
+}
+
+async function applySuggestion(sug, kw) {
+  try {
+    const r = await fetch("/api/apply-suggestions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw, overrides: sug.overrides })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert – bitte entsperren", "err"); return; }
+    const d = await r.json();
+    showToast("Vorschlag angewendet ✓", "ok");
+    suggestionsData = d.suggestions || [];
+    renderSuggestions(suggestionsData, kw);
+    loadKw(kw);
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+}
+
+
+// ── Swap Modal ────────────────────────────────────────────────────────────
+const swapOverlay    = document.getElementById("swap-overlay");
+const swapPersonA    = document.getElementById("swap-person-a");
+const swapPersonB    = document.getElementById("swap-person-b");
+const swapDaySel     = document.getElementById("swap-day-sel");
+const swapPreview    = document.getElementById("swap-preview");
+const swapPrevAName  = document.getElementById("swap-prev-a-name");
+const swapPrevAFrom  = document.getElementById("swap-prev-a-from");
+const swapPrevATo    = document.getElementById("swap-prev-a-to");
+const swapPrevBName  = document.getElementById("swap-prev-b-name");
+const swapPrevBFrom  = document.getElementById("swap-prev-b-from");
+const swapPrevBTo    = document.getElementById("swap-prev-b-to");
+const swapResult     = document.getElementById("swap-result");
+const swapResultTitle= document.getElementById("swap-result-title");
+const swapResultList = document.getElementById("swap-result-list");
+const btnSwapCancel  = document.getElementById("btn-swap-cancel");
+const btnSwapPreview = document.getElementById("btn-swap-preview");
+const btnSwapOk      = document.getElementById("btn-swap-ok");
+const btnSwap        = document.getElementById("btn-swap");
+
+let _swapConfirmed = false;  // true nach Vorschau — Klick auf OK führt Tausch aus
+
+function openSwapModal() {
+  if (!isEditMode) { _pendingSwapOpen = true; _showPinForAction(); return; }
+  _showSwapModal();
+}
+let _pendingSwapOpen = false;
+
+function _showSwapModal() {
+  const persons = planData?.persons || [];
+  [swapPersonA, swapPersonB].forEach(sel => {
+    sel.innerHTML = persons.map(p => `<option>${p}</option>`).join("");
+  });
+  swapPersonB.value = persons[1] || persons[0];
+
+  // Tag-Dropdown: aktuelle KW-Tage
+  swapDaySel.innerHTML = (planData?.days || []).map((d, i) =>
+    `<option value="${i}">${d} ${planData.dates?.[i] || ""}</option>`
+  ).filter((_, i) => i < 6).join("");
+
+  swapPreview.classList.remove("visible");
+  swapResult.classList.remove("visible", "has-issues", "no-issues");
+  btnSwapOk.disabled = true;
+  _swapConfirmed = false;
+
+  swapOverlay.classList.add("visible");
+}
+
+btnSwap.addEventListener("click", openSwapModal);
+btnSwapCancel.addEventListener("click", () => swapOverlay.classList.remove("visible"));
+swapOverlay.addEventListener("click", e => { if (e.target === swapOverlay) swapOverlay.classList.remove("visible"); });
+
+btnSwapPreview.addEventListener("click", () => {
+  const di = parseInt(swapDaySel.value);
+  const pA = swapPersonA.value;
+  const pB = swapPersonB.value;
+  if (!planData) return;
+
+  const valA = String(planData.plan?.[pA]?.[di] || "–").replace(" + Auffüllen", "");
+  const valB = String(planData.plan?.[pB]?.[di] || "–").replace(" + Auffüllen", "");
+
+  swapPrevAName.textContent = pA;
+  swapPrevAFrom.textContent = valA;
+  swapPrevATo.textContent   = valB;
+  swapPrevBName.textContent = pB;
+  swapPrevBFrom.textContent = valB;
+  swapPrevBTo.textContent   = valA;
+
+  swapPreview.classList.add("visible");
+  btnSwapOk.disabled = false;
+  _swapConfirmed = true;
+});
+
+btnSwapOk.addEventListener("click", async () => {
+  if (!_swapConfirmed) return;
+  const di = parseInt(swapDaySel.value);
+  const pA = swapPersonA.value;
+  const pB = swapPersonB.value;
+
+  btnSwapOk.disabled = true;
+  btnSwapOk.textContent = "…";
+  try {
+    const r = await fetch("/api/swap", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw: currentKw, di, person_a: pA, person_b: pB })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert", "err"); return; }
+    const d = await r.json();
+    if (!d.ok) { showToast("Fehler: " + (d.error || "?"), "err"); return; }
+
+    // Issues anzeigen
+    const allIssues = flattenIssues(d.issues, di);
+    swapResult.classList.add("visible");
+    if (allIssues.length) {
+      swapResult.classList.add("has-issues"); swapResult.classList.remove("no-issues");
+      swapResultTitle.textContent = `⚠ ${allIssues.length} Regelhinweis${allIssues.length !== 1 ? "e" : ""} nach dem Tausch:`;
+    } else {
+      swapResult.classList.add("no-issues"); swapResult.classList.remove("has-issues");
+      swapResultTitle.textContent = "✓ Kein Regelverstoß nach dem Tausch";
+    }
+    swapResultList.innerHTML = allIssues.map(m => `<li>${m}</li>`).join("");
+
+    showToast(`${pA} ⇄ ${pB} getauscht ✓`, "ok");
+
+    if (d.suggestions?.length) {
+      suggestionsData = d.suggestions;
+      renderSuggestions(suggestionsData, currentKw);
+    }
+    loadKw(currentKw);
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+  finally { btnSwapOk.disabled = false; btnSwapOk.textContent = "Tausch bestätigen"; }
+});
+
+
+// ── Vacation Modal ────────────────────────────────────────────────────────
+const vacOverlay    = document.getElementById("vac-overlay");
+const vacPersonSel  = document.getElementById("vac-person");
+const vacDateFrom   = document.getElementById("vac-date-from");
+const vacDateTo     = document.getElementById("vac-date-to");
+const btnVacAdd     = document.getElementById("btn-vac-add");
+const btnVacRemove  = document.getElementById("btn-vac-remove");
+const vacResult     = document.getElementById("vac-result");
+const vacResultTitle= document.getElementById("vac-result-title");
+const vacResultList = document.getElementById("vac-result-list");
+const btnVacCancel  = document.getElementById("btn-vac-cancel");
+const btnVacOk      = document.getElementById("btn-vac-ok");
+const btnVac        = document.getElementById("btn-vac");
+
+let _vacAction = "add";
+let _pendingVacOpen = false;
+
+function openVacModal() {
+  if (!isEditMode) { _pendingVacOpen = true; _showPinForAction(); return; }
+  _showVacModal();
+}
+function _showVacModal() {
+  const persons = planData?.persons || [];
+  vacPersonSel.innerHTML = persons.map(p => `<option>${p}</option>`).join("");
+  const today = new Date().toISOString().slice(0, 10);
+  vacDateFrom.value = today;
+  vacDateTo.value   = "";
+  _vacAction = "add";
+  btnVacAdd.className = "active-add";
+  btnVacRemove.className = "";
+  vacResult.classList.remove("visible", "has-issues", "no-issues");
+  vacOverlay.classList.add("visible");
+}
+
+btnVac.addEventListener("click", openVacModal);
+btnVacCancel.addEventListener("click", () => vacOverlay.classList.remove("visible"));
+vacOverlay.addEventListener("click", e => { if (e.target === vacOverlay) vacOverlay.classList.remove("visible"); });
+[btnVacAdd, btnVacRemove].forEach(btn => {
+  btn.addEventListener("click", () => {
+    _vacAction = btn.dataset.action;
+    btnVacAdd.className    = _vacAction === "add"    ? "active-add"    : "";
+    btnVacRemove.className = _vacAction === "remove" ? "active-remove" : "";
+  });
+});
+
+btnVacOk.addEventListener("click", async () => {
+  const person  = vacPersonSel.value;
+  const fromStr = vacDateFrom.value;
+  const toStr   = vacDateTo.value || fromStr;
+  if (!person || !fromStr) { showToast("Bitte Person und Datum wählen", "err"); return; }
+
+  // Alle Tage im Bereich sammeln (Mo–Sa)
+  const dates = [];
+  let cur = new Date(fromStr + "T12:00:00");
+  const end = new Date(toStr   + "T12:00:00");
+  while (cur <= end) {
+    if (cur.getDay() !== 0) dates.push(cur.toISOString().slice(0, 10)); // kein Sonntag
+    cur.setDate(cur.getDate() + 1);
+  }
+  if (!dates.length) { showToast("Kein Arbeitstag im gewählten Bereich", "err"); return; }
+
+  btnVacOk.disabled = true; btnVacOk.textContent = "Wird neu geplant…";
+  let lastResult = null;
+  try {
+    for (const iso of dates) {
+      const r = await fetch("/api/vacation-day", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ person, date: iso, action: _vacAction })
+      });
+      if (r.status === 403) { showToast("Nicht autorisiert", "err"); return; }
+      lastResult = await r.json();
+    }
+    if (lastResult?.ok) {
+      const issues = lastResult.issues || {};
+      const allI   = Object.values(issues?.day || {}).flat();
+      vacResult.classList.add("visible");
+      if (allI.length) {
+        vacResult.classList.add("has-issues"); vacResult.classList.remove("no-issues");
+        vacResultTitle.textContent = `⚠ ${allI.length} Regelhinweis${allI.length !== 1 ? "e" : ""} in KW ${lastResult.kw}:`;
+      } else {
+        vacResult.classList.add("no-issues"); vacResult.classList.remove("has-issues");
+        vacResultTitle.textContent = `✓ Plan für KW ${lastResult.kw} regelkonform`;
+      }
+      vacResultList.innerHTML = allI.map(m => `<li>${m}</li>`).join("");
+      if (lastResult.suggestions?.length) {
+        suggestionsData = lastResult.suggestions;
+        renderSuggestions(suggestionsData, lastResult.kw || currentKw);
+      }
+      const label = _vacAction === "add" ? "eingetragen" : "entfernt";
+      showToast(`${person}: ${dates.length} Urlaubstag${dates.length !== 1 ? "e" : ""} ${label} ✓`, "ok");
+      loadKw(currentKw);
+    }
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+  finally { btnVacOk.disabled = false; btnVacOk.textContent = "Übernehmen & Neu planen"; }
+});
+
+
+// ── Hilfsfunktionen für Modals ────────────────────────────────────────────
+function flattenIssues(issues, filterDi) {
+  const result = [];
+  if (!issues) return result;
+  for (const [di, msgs] of Object.entries(issues.day || {})) {
+    if (filterDi !== undefined && parseInt(di) !== filterDi) continue;
+    result.push(...msgs);
+  }
+  return result;
+}
+
+// PIN für Aktions-Buttons anfordern (wenn noch nicht eingeloggt)
+function _showPinForAction() {
+  pinInput.value = "";
+  pinError.textContent = "";
+  pinOverlay.classList.add("visible");
+  setTimeout(() => pinInput.focus(), 80);
+}
+
+// ── Absence Modal ─────────────────────────────────────────────────────────
+const absenceOverlay = document.getElementById("absence-overlay");
+const absPersonSel   = document.getElementById("abs-person");
+const absDateInput   = document.getElementById("abs-date");
+const absGrundRow    = document.getElementById("abs-grund-row");
+const absResult      = document.getElementById("abs-result");
+const absResultTitle = document.getElementById("abs-result-title");
+const absResultList  = document.getElementById("abs-result-list");
+const btnAbsOk       = document.getElementById("btn-abs-ok");
+const btnAbsCancel   = document.getElementById("btn-abs-cancel");
+const btnAbsence     = document.getElementById("btn-absence");
+
+let absGrund = "Krank";
+
+// Personen-Dropdown befüllen
+function buildAbsPersonSelect(persons) {
+  absPersonSel.innerHTML = persons.map(p => `<option>${p}</option>`).join("");
+}
+
+// Grund-Buttons
+absGrundRow.querySelectorAll("button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    absGrundRow.querySelectorAll("button").forEach(b => b.className = "");
+    const g = btn.dataset.grund;
+    absGrund = g;
+    btn.className = `active-${g.toLowerCase()}`;
+  });
+});
+
+function openAbsenceModal() {
+  // Auth prüfen – wenn nicht eingeloggt, PIN-Dialog zeigen, dann danach Absence-Modal öffnen
+  if (!isEditMode) {
+    _pendingAbsenceOpen = true;
+    pinInput.value = "";
+    pinError.textContent = "";
+    pinOverlay.classList.add("visible");
+    setTimeout(() => pinInput.focus(), 80);
+    return;
+  }
+  _showAbsenceModal();
+}
+
+function _showAbsenceModal() {
+  // Personen aus aktuellem Plan
+  const persons = planData?.persons || [];
+  buildAbsPersonSelect(persons);
+
+  // Datum: heute oder aktuelle KW-Montag
+  const today = new Date().toISOString().slice(0, 10);
+  absDateInput.value = today;
+
+  // Reset
+  absGrund = "Krank";
+  absGrundRow.querySelectorAll("button").forEach(b => b.className = "");
+  absGrundRow.querySelector("[data-grund='Krank']").className = "active-krank";
+  absResult.classList.remove("visible", "no-issues");
+  absResultList.innerHTML = "";
+
+  absenceOverlay.classList.add("visible");
+}
+
+let _pendingAbsenceOpen = false;
+
+btnAbsence.addEventListener("click", openAbsenceModal);
+btnAbsCancel.addEventListener("click", () => absenceOverlay.classList.remove("visible"));
+absenceOverlay.addEventListener("click", e => {
+  if (e.target === absenceOverlay) absenceOverlay.classList.remove("visible");
+});
+
+btnAbsOk.addEventListener("click", async () => {
+  const person = absPersonSel.value;
+  const dateStr = absDateInput.value;
+  if (!person || !dateStr) { showToast("Bitte Person und Datum wählen", "err"); return; }
+
+  // Datum → KW + Wochentag ermitteln
+  const d = new Date(dateStr + "T12:00:00");
+  const dow = d.getDay(); // 0=So
+  const diMap = { 1:0, 2:1, 3:2, 4:3, 5:4, 6:5, 0:null };
+  const di = diMap[dow];
+  if (di === null) { showToast("Sonntage sind kein Arbeitstag", "err"); return; }
+
+  // ISO-KW berechnen
+  function isoKw(date) {
+    const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+    return Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
+  }
+  const kw = isoKw(d);
+
+  btnAbsOk.disabled = true;
+  btnAbsOk.textContent = "…";
+  try {
+    const r = await fetch("/api/absence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw, person, di, grund: absGrund })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert – bitte entsperren", "err"); return; }
+    const data = await r.json();
+    if (!data.ok) { showToast("Fehler: " + data.error, "err"); return; }
+
+    // Issues anzeigen
+    const allIssues = [...(data.issues_day || [])];
+    for (const [p, msgs] of Object.entries(data.issues_cell || {})) {
+      for (const m of msgs) allIssues.push(`${p}: ${m}`);
+    }
+    absResult.classList.add("visible");
+    if (allIssues.length > 0) {
+      absResult.classList.remove("no-issues");
+      absResultTitle.textContent = `⚠ ${allIssues.length} offene Rolle${allIssues.length !== 1 ? "n" : ""} für diesen Tag:`;
+      absResultList.innerHTML = allIssues.map(m => `<li>${m}</li>`).join("");
+    } else {
+      absResult.classList.add("no-issues");
+      absResultTitle.textContent = "✓ Alle Rollen sind noch besetzt";
+      absResultList.innerHTML = "";
+    }
+
+    showToast(`${person} ${absGrund} am ${dateStr} eingetragen`, "ok");
+
+    // Plan neu laden wenn aktuelle KW betroffen
+    if (kw === currentKw) loadKw(currentKw);
+  } catch(e) {
+    showToast("Fehler: " + e.message, "err");
+  } finally {
+    btnAbsOk.disabled = false;
+    btnAbsOk.textContent = "Eintragen";
+  }
+});
+
+// Nach erfolgreichem PIN-Login ggf. Absence-Modal öffnen
+const _origSetEditMode = setEditMode;
+// Patch: nach PIN-Login prüfen ob Absence-Modal gewartet hat
+function _onAuthSuccess() {
+  if (_pendingAbsenceOpen) { _pendingAbsenceOpen = false; setTimeout(_showAbsenceModal, 100); return; }
+  if (_pendingSwapOpen)    { _pendingSwapOpen    = false; setTimeout(_showSwapModal,    100); return; }
+  if (_pendingVacOpen)     { _pendingVacOpen     = false; setTimeout(_showVacModal,     100); return; }
+}
+
+// ── Service Worker ────────────────────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/static/sw.js")
+    .catch(e => console.warn("SW:", e));
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+(async () => {
+  await checkAuth();   // Prüft ob Session noch aktiv
+  loadKw(currentKw);
+})();
+</script>
+</body>
+</html>
