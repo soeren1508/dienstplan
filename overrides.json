@@ -1,20 +1,83 @@
 {
   "17": {
-    "Nicolas": {"4": "SD: Behandlung"},
-    "Nadine":  {"2": "FD: Behandlung"}
+    "Nicolas": {
+      "4": "FD: Behandlung"
+    },
+    "Nadine": {
+      "2": "FD: Behandlung",
+      "3": "SD: Assistenz Lisa OP + Auffüllen"
+    }
   },
   "18": {
-    "Nicolas": {"3": "SD: Behandlung"}
+    "Nicolas": {
+      "3": "SD: Behandlung"
+    },
+    "Natalie": {
+      "3": "FD: Behandlung"
+    }
   },
   "21": {
-    "Nicolas": {"4": "SD: Anmeldung"},
-    "Nadine":  {"2": "FD: Behandlung", "4": "FD: Behandlung"}
+    "Nicolas": {
+      "4": "SD: Anmeldung"
+    },
+    "Nadine": {
+      "2": "FD: Behandlung",
+      "4": "FD: Behandlung",
+      "3": "SD: Assistenz Lisa OP + Auffüllen"
+    }
   },
   "22": {
-    "Kristin": {"2": "FD: Behandlung", "3": "SD: Behandlung"}
+    "Kristin": {
+      "2": "FD: Assistenz Ulf",
+      "3": "SD: Behandlung"
+    },
+    "Natalie": {
+      "3": "FD: Anmeldung"
+    },
+    "Pauline": {
+      "3": "SD: Behandlung (ab 15:30) + Auffüllen"
+    }
   },
   "23": {
-    "Nicolas": {"4": "SD: Behandlung"},
-    "Nadine":  {"4": "FD: Behandlung"}
+    "Nicolas": {
+      "4": "SD: Behandlung"
+    },
+    "Nadine": {
+      "4": "FD: Behandlung",
+      "0": "SD: Anmeldung"
+    },
+    "Pauline": {
+      "0": "SD: Assistenz Lisa OP",
+      "3": "FD: Behandlung"
+    }
+  },
+  "19": {
+    "Deborah": {
+      "4": "SD: Anmeldung"
+    },
+    "Nadine": {
+      "1": "FD: Anmeldung"
+    },
+    "Alyssa": {
+      "1": "FD: Behandlung",
+      "4": "SD: Behandlung"
+    },
+    "Pauline": {
+      "3": "SD: Behandlung (ab 15:30) + Auffüllen"
+    }
+  },
+  "20": {
+    "Deborah": {
+      "0": "FD: Anmeldung",
+      "2": "FD: Anmeldung"
+    },
+    "Imke": {
+      "0": "SD: Anmeldung",
+      "1": "SD: Behandlung"
+    },
+    "Alyssa": {
+      "2": "SD: Behandlung",
+      "4": "SD: Anmeldung"
+    }
   }
 }
