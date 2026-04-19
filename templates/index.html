@@ -406,11 +406,28 @@
   tr.balance-row .bal-bad  { color: #b91c1c; background: #fee2e2; }
   .bal-fd { color: #1d4ed8; }
   .bal-sd { color: #9a3412; }
+  /* Tagesansicht: Kopfzeile */
+  .day-view-header {
+    padding: 14px 16px 10px;
+    background: white; border-bottom: 2px solid #e2e8f0;
+  }
+  .day-view-header-top {
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .day-view-dayname {
+    font-size: 22px; font-weight: 800; color: #1e293b;
+  }
+  .day-view-date {
+    font-size: 15px; color: #64748b; font-weight: 500;
+  }
+  .day-today-badge {
+    font-size: 11px; font-weight: 700; background: #3b82f6;
+    color: white; border-radius: 5px; padding: 2px 7px; margin-left: 4px;
+  }
   /* Balance-Banner Tagesansicht */
   .day-balance-bar {
-    display: flex; align-items: center; gap: 10px; justify-content: center;
-    padding: 8px 16px; font-size: 13px; font-weight: 600;
-    border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px; font-size: 12px; font-weight: 600;
   }
   .day-balance-bar .bal-warn-badge {
     background: #fef9c3; color: #92400e; border-radius: 6px;
@@ -1350,11 +1367,19 @@ function renderDayView(data, valid) {
       : `<span class="bal-warn-badge" style="background:#fee2e2;color:#b91c1c">⛔ Ungleich (Δ${balDiff})</span>`;
 
   // Karten-Container aufbauen
-  let html = `<div class="day-balance-bar">
-    <span class="bal-fd">FD: ${balFd}</span>
-    <span style="color:#94a3b8">|</span>
-    <span class="bal-sd">SD: ${balSd}</span>
-    ${balBadge}
+  const todayBadge = isToday ? `<span class="day-today-badge">Heute</span>` : "";
+  let html = `<div class="day-view-header">
+    <div class="day-view-header-top">
+      <span class="day-view-dayname">${dayName}</span>
+      <span class="day-view-date">${dayDate}</span>
+      ${todayBadge}
+    </div>
+    <div class="day-balance-bar">
+      <span class="bal-fd">FD: ${balFd}</span>
+      <span style="color:#cbd5e1">|</span>
+      <span class="bal-sd">SD: ${balSd}</span>
+      ${balBadge}
+    </div>
   </div>`;
   for (const { label, persons: grp } of [
     { label: "Ärzte", persons: arzte },
