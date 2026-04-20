@@ -46,6 +46,7 @@ if not URLAUB_PATH.exists():
 
 OVERRIDES_PATH     = DIENSTPLAN_DIR / "overrides.json"
 VAC_OVERRIDES_PATH = DIENSTPLAN_DIR / "vacation_overrides.json"
+OT_ROTATION_PATH   = DIENSTPLAN_DIR / "overtime_rotation.json"
 
 # PIN für den Bearbeitungsmodus (Umgebungsvariable EDIT_PIN, Fallback "1234")
 EDIT_PIN = os.environ.get("EDIT_PIN", "1234")
@@ -118,6 +119,7 @@ def _sync_from_github():
     for path, filename in [
         (OVERRIDES_PATH,     "overrides.json"),
         (VAC_OVERRIDES_PATH, "vacation_overrides.json"),
+        (OT_ROTATION_PATH,   "overtime_rotation.json"),
     ]:
         content = _github_pull(filename)
         if content:
@@ -666,6 +668,94 @@ def _suggest_fixes(plan: dict, issues: dict, kw: int) -> list:
 # Regel-Validierung
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Überstunden-Abbau-Rotation
+# ---------------------------------------------------------------------------
+
+def _load_ot_rotation() -> dict:
+    if OT_ROTATION_PATH.exists():
+        with open(OT_ROTATION_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    return {"counts": {p: 0 for p in TFAS}}
+
+
+def _save_ot_rotation(data: dict):
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    OT_ROTATION_PATH.write_text(content, encoding="utf-8")
+    _github_push("overtime_rotation.json", content, "Auto-save: Überstunden-Rotation")
+
+
+def _check_overtime(plan: dict, kw: int) -> list:
+    """
+    Prüft Mo–Fr: Ist ein Arzt wegen Urlaub/Krank abwesend UND sind ≥4 TFAs aktiv?
+    Gibt Vorschläge zurück; wer vorgeschlagen wird, rotiert fair (niedrigster Zähler zuerst).
+    """
+    from scheduler import week_dates
+    from config import FEIERTAGE_HH_2026, ARZT_PATTERNS
+
+    dates    = week_dates(kw)
+    rotation = _load_ot_rotation()
+    counts   = rotation.get("counts", {p: 0 for p in TFAS})
+
+    ABSENT_STATES = {"Urlaub", "Krank"}
+
+    def doctor_absent(val: str) -> bool:
+        return val in ABSENT_STATES or val.startswith("Frei")
+
+    def tfa_active(val: str) -> bool:
+        skip = {"–", "Urlaub", "Feiertag", "SCHULE", "FREI_SCHUTZ",
+                "Abschlussprüfung", "Krank", "ECVO Congress",
+                "Notdienst (20–8 Uhr)", "Frei (ÜS-Abbau)"}
+        return val not in skip and not val.startswith("Frei")
+
+    suggestions = []
+
+    for di in range(5):
+        if dates[di] in FEIERTAGE_HH_2026:
+            continue
+
+        row = {p: _strip_note(str(plan[p][di])) for p in ALL_PERSONS}
+
+        # Ärzte, die heute EIGENTLICH arbeiten würden, aber absent sind
+        absent_docs = [
+            a for a in ARZTE
+            if doctor_absent(row[a]) and ARZT_PATTERNS[a][di] != "–"
+        ]
+        if not absent_docs:
+            continue
+
+        active_tfas = [p for p in TFAS if tfa_active(row[p])]
+        if len(active_tfas) < 4:
+            continue  # zu wenig Personal – kein Spielraum
+
+        # Kandidaten: aktive TFAs, sortiert nach Rotationszähler (fairste Verteilung)
+        pool = sorted(active_tfas, key=lambda p: (counts.get(p, 0), TFAS.index(p)))
+
+        # Kritische Rollen nicht vorschlagen (einzige Anmeldung im Shift)
+        fd_anm = [p for p in active_tfas if "FD" in row[p] and "Anmeldung" in row[p]]
+        sd_anm = [p for p in active_tfas if "SD" in row[p] and "Anmeldung" in row[p]]
+        critical = set()
+        if len(fd_anm) <= 1: critical.update(fd_anm)
+        if len(sd_anm) <= 1: critical.update(sd_anm)
+
+        candidate = next((p for p in pool if p not in critical), None)
+        if not candidate:
+            continue
+
+        suggestions.append({
+            "di":                   di,
+            "day":                  DAYS[di],
+            "date":                 dates[di].strftime("%-d.%-m."),
+            "absent_doctors":       absent_docs,
+            "active_tfa_count":     len(active_tfas),
+            "suggested_person":     candidate,
+            "suggested_count":      counts.get(candidate, 0),
+            "current_shift":        row[candidate],
+        })
+
+    return suggestions
+
+
 def _strip_note(val) -> str:
     """Entfernt optionalen Hinweis-Text (nach ' || ') aus dem Zellwert."""
     s = str(val) if val else "–"
@@ -752,6 +842,61 @@ def _validate_plan(plan: dict, kw: int) -> dict:
             add_day(di, f"FD/SD-Ungleichgewicht: FD={fd_n}, SD={sd_n}")
 
     return issues
+
+
+# ---------------------------------------------------------------------------
+# Überstunden-Abbau-Routen
+# ---------------------------------------------------------------------------
+
+@app.route("/api/overtime/<int:kw>")
+def api_overtime(kw):
+    """Gibt Überstunden-Abbau-Vorschläge für eine KW zurück (kein Auth nötig)."""
+    if not _plan_cache:
+        _generate_all()
+    overrides   = _load_overrides()
+    plan        = _plan_for_kw(kw, overrides)
+    suggestions = _check_overtime(plan, kw)
+    return jsonify(suggestions)
+
+
+@app.route("/api/overtime/apply", methods=["POST"])
+@require_auth
+def api_overtime_apply():
+    """
+    Trägt einen Überstunden-Freitag ein und erhöht den Rotationszähler der Person.
+    Body: { kw, di, person }
+    """
+    if not _plan_cache:
+        _generate_all()
+    data   = request.get_json()
+    kw     = int(data["kw"])
+    di     = int(data["di"])
+    person = data["person"]
+
+    if person not in ALL_PERSONS:
+        return jsonify({"ok": False, "error": "Unbekannte Person"}), 400
+
+    # Freier Tag als Override eintragen
+    overrides = _load_overrides()
+    overrides.setdefault(str(kw), {}).setdefault(person, {})[str(di)] = "Frei (ÜS-Abbau)"
+    _save_overrides(overrides)
+
+    # Rotationszähler der Person erhöhen
+    rotation = _load_ot_rotation()
+    rotation.setdefault("counts", {})[person] = rotation["counts"].get(person, 0) + 1
+    _save_ot_rotation(rotation)
+
+    # Aktualisierte Vorschläge + Validierung zurückgeben
+    plan        = _plan_for_kw(kw, overrides)
+    issues      = _validate_plan(plan, kw)
+    suggestions = _check_overtime(plan, kw)
+
+    return jsonify({
+        "ok":           True,
+        "issues":       issues,
+        "ot_suggestions": suggestions,
+        "total_issues": sum(len(v) for v in issues["day"].values()),
+    })
 
 
 # ---------------------------------------------------------------------------
