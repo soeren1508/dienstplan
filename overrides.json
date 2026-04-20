@@ -6,13 +6,17 @@
     },
     "Nadine": {
       "2": "FD: Behandlung",
-      "3": "SD: Assistenz Lisa OP + Auffüllen"
+      "3": "SD: Assistenz Lisa OP + Auffüllen",
+      "4": "SD: Anmeldung"
     },
     "Deborah": {
       "0": "FD: Behandlung"
     },
     "Pauline": {
       "0": "SD: Behandlung"
+    },
+    "Imke": {
+      "4": "FD: Behandlung"
     }
   },
   "18": {
