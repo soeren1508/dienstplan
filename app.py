@@ -11,12 +11,15 @@ PIN ändern: Umgebungsvariable EDIT_PIN setzen, oder direkt hier:
     EDIT_PIN = "1234"
 """
 
+import base64
 import hashlib
 import json
 import os
 import secrets
 import socket
 import sys
+import threading
+import urllib.request
 from datetime import date
 from functools import wraps
 from pathlib import Path
@@ -47,11 +50,93 @@ VAC_OVERRIDES_PATH = DIENSTPLAN_DIR / "vacation_overrides.json"
 # PIN für den Bearbeitungsmodus (Umgebungsvariable EDIT_PIN, Fallback "1234")
 EDIT_PIN = os.environ.get("EDIT_PIN", "1234")
 
+# ---------------------------------------------------------------------------
+# GitHub-Persistenz (verhindert Datenverlust bei Server-Neustart auf Render)
+# Env-Vars: GITHUB_TOKEN, GITHUB_REPO (optional, Default: soeren1508/dienstplan)
+# ---------------------------------------------------------------------------
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPO  = os.environ.get("GITHUB_REPO", "soeren1508/dienstplan")
+GITHUB_API   = "https://api.github.com"
+
+def _gh_headers() -> dict:
+    return {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "DienstplanApp/1.0",
+        "Content-Type": "application/json",
+    }
+
+def _github_pull(filename: str) -> str | None:
+    """Liest eine Datei aus dem GitHub-Repo. Gibt den Inhalt oder None zurück."""
+    if not GITHUB_TOKEN:
+        return None
+    url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{filename}"
+    try:
+        req = urllib.request.Request(url, headers=_gh_headers())
+        with urllib.request.urlopen(req, timeout=10) as r:
+            data = json.loads(r.read())
+            return base64.b64decode(data["content"]).decode("utf-8")
+    except Exception as e:
+        print(f"[GitHub] Pull {filename} fehlgeschlagen: {e}")
+        return None
+
+def _github_push(filename: str, content: str, message: str = "Auto-save"):
+    """Schreibt eine Datei in das GitHub-Repo (im Hintergrund)."""
+    if not GITHUB_TOKEN:
+        return
+    def _do():
+        url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{filename}"
+        headers = _gh_headers()
+        # Aktuellen SHA holen (nötig für Update)
+        sha = None
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as r:
+                sha = json.loads(r.read()).get("sha")
+        except Exception:
+            pass
+        body: dict = {
+            "message": message,
+            "content": base64.b64encode(content.encode("utf-8")).decode(),
+            "branch": "main",
+        }
+        if sha:
+            body["sha"] = sha
+        try:
+            req = urllib.request.Request(
+                url, data=json.dumps(body).encode(), headers=headers, method="PUT"
+            )
+            with urllib.request.urlopen(req, timeout=15):
+                pass
+            print(f"[GitHub] {filename} gespeichert ✓")
+        except Exception as e:
+            print(f"[GitHub] Push {filename} fehlgeschlagen: {e}")
+    threading.Thread(target=_do, daemon=True).start()
+
+def _sync_from_github():
+    """Beim Start: Overrides von GitHub laden (aktuellster Stand)."""
+    for path, filename in [
+        (OVERRIDES_PATH,     "overrides.json"),
+        (VAC_OVERRIDES_PATH, "vacation_overrides.json"),
+    ]:
+        content = _github_pull(filename)
+        if content:
+            try:
+                json.loads(content)   # Validierung
+                path.write_text(content, encoding="utf-8")
+                print(f"[GitHub] {filename} geladen ✓")
+            except Exception as e:
+                print(f"[GitHub] {filename} ungültig: {e}")
+
 app = Flask(__name__)
 CORS(app)  # Erlaubt Netlify-Frontend → Render-Backend
 
 # SECRET_KEY: stabil aus Env-Var (wichtig für Render.com, sonst verliert jeder Restart Sessions)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+# Beim Start (auch unter Gunicorn): aktuellste Overrides von GitHub laden
+_sync_from_github()
+_generate_all()
 
 
 # ---------------------------------------------------------------------------
@@ -92,8 +177,9 @@ def _load_vac_overrides() -> dict:
 
 
 def _save_vac_overrides(data: dict):
-    with open(VAC_OVERRIDES_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    VAC_OVERRIDES_PATH.write_text(content, encoding="utf-8")
+    _github_push("vacation_overrides.json", content, "Auto-save: Urlaubsänderung")
 
 
 def _get_all_vac():
@@ -132,8 +218,9 @@ def _load_overrides() -> dict:
 
 
 def _save_overrides(data: dict):
-    with open(OVERRIDES_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    OVERRIDES_PATH.write_text(content, encoding="utf-8")
+    _github_push("overrides.json", content, "Auto-save: Dienstplan-Änderung")
 
 
 def _plan_for_kw(kw: int, overrides: dict) -> dict:
@@ -674,6 +761,8 @@ def _get_local_ip() -> str:
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
+    print("Synchronisiere Overrides von GitHub …")
+    _sync_from_github()
     print("Generiere Plan KW 17–23 …")
     _generate_all()
     ip = _get_local_ip()
