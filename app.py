@@ -134,9 +134,8 @@ CORS(app)  # Erlaubt Netlify-Frontend → Render-Backend
 # SECRET_KEY: stabil aus Env-Var (wichtig für Render.com, sonst verliert jeder Restart Sessions)
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
-# Beim Start (auch unter Gunicorn): aktuellste Overrides von GitHub laden
-_sync_from_github()
-_generate_all()
+# _sync_from_github() und _generate_all() werden NACH deren Definition aufgerufen
+# (siehe unten, nach _generate_all)
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +202,11 @@ def _generate_all():
     for kw in range(17, 24):
         plans[kw] = generate_week(kw, all_vac, auffl)
     _plan_cache = plans
+
+
+# Beim Start (auch unter Gunicorn): Overrides von GitHub laden, Plan generieren
+_sync_from_github()
+_generate_all()
 
 
 def _iso_kw(d) -> int:

@@ -649,12 +649,14 @@
 
   /* ── Toast ── */
   #toast {
-    position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white;
-    padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0;
-    transition: all 0.25s ease; z-index: 3000;
+    position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: #1e293b; color: white;
+    padding: 11px 22px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25); opacity: 0;
+    transition: all 0.25s ease; z-index: 3000; white-space: nowrap;
+    pointer-events: none;
   }
-  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   #toast.toast-ok  { background: #059669; }
   #toast.toast-err { background: #dc2626; }
 
@@ -1694,9 +1696,9 @@ btnRegen.addEventListener("click", async () => {
 let toastT;
 function showToast(msg, type="ok") {
   clearTimeout(toastT);
-  toast.textContent = msg;
+  toast.textContent = (type === "ok" ? "✓ " : "✗ ") + msg;
   toast.className = `show toast-${type}`;
-  toastT = setTimeout(() => { toast.className = ""; }, 3000);
+  toastT = setTimeout(() => { toast.className = ""; }, 4000);
 }
 function showLoading(msg="…") { loadingMsg.textContent = msg; loading.classList.add("show"); }
 function hideLoading() { loading.classList.remove("show"); }
