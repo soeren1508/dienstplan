@@ -723,10 +723,15 @@
     font-size: 10px; background: #fef3c7; color: #92400e;
     border-radius: 8px; padding: 1px 6px; white-space: nowrap;
   }
+  .overtime-swap {
+    display: inline-block; margin-left: 4px; font-size: 11px;
+    background: #fef3c7; color: #92400e; border-radius: 4px; padding: 1px 5px;
+    font-weight: 600; white-space: nowrap;
+  }
   .overtime-btn {
-    padding: 5px 13px; border-radius: 6px; border: none;
+    padding: 5px 12px; border-radius: 6px; border: none;
     background: #f59e0b; color: white; font-size: 11px; font-weight: 700;
-    cursor: pointer; transition: background 0.15s; white-space: nowrap;
+    cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
   }
   .overtime-btn:hover { background: #d97706; }
   .overtime-empty { color: #6b7280; font-size: 12px; font-style: italic; }
@@ -1339,31 +1344,39 @@ async function loadOvertimeSuggestions(kw) {
 
 function renderOvertimeSuggestions(suggestions, kw) {
   if (!suggestions || suggestions.length === 0) {
-    overtimeList.innerHTML = '<span class="overtime-empty">Keine Vorschläge für diese Woche.</span>';
+    overtimeList.innerHTML = '<span class="overtime-empty">Keine regelkonformen Vorschläge für diese Woche.</span>';
     overtimeBadge.textContent = "";
     overtimeBadge.style.display = "none";
     return;
   }
   overtimeBadge.textContent = suggestions.length;
   overtimeBadge.style.display = "";
+
+  // Swap-Daten als JSON im data-Attribut speichern
   overtimeList.innerHTML = suggestions.map(s => {
-    const docs   = s.absent_doctors.join(", ");
-    const shift  = s.current_shift || "–";
-    const count  = s.suggested_count ?? 0;
+    const docs  = s.absent_doctors.join(", ");
+    const shift = s.current_shift || "–";
+    const count = s.suggested_count ?? 0;
+    const swapHtml = s.swap
+      ? `<span class="overtime-swap">+ ${s.swap.person} → ${s.swap.to}</span>`
+      : "";
+    const swapData = s.swap ? encodeURIComponent(JSON.stringify(s.swap)) : "";
     return `
       <div class="overtime-item">
         <span class="overtime-day">${s.day} ${s.date}</span>
         <span class="overtime-info">
-          <b>${docs}</b> abwesend · ${s.active_tfa_count} TFAs aktiv ·
-          Vorschlag: <b>${s.suggested_person}</b>
-          <span style="color:#94a3b8">(${shift})</span>
+          <b>${docs}</b> abwesend · ${s.active_tfa_count} TFAs ·
+          <b>${s.suggested_person}</b> frei <span style="color:#94a3b8">(${shift})</span>
+          ${swapHtml}
         </span>
         <span class="overtime-rotation" title="Wie oft wurde ${s.suggested_person} bisher vorgeschlagen">
-          ${count}× vorgeschlagen
+          ${count}×
         </span>
         <button class="overtime-btn"
-          data-kw="${kw}" data-di="${s.di}" data-person="${s.suggested_person}">
-          Freitag eintragen
+          data-kw="${kw}" data-di="${s.di}"
+          data-person="${s.suggested_person}"
+          data-swap="${swapData}">
+          Eintragen
         </button>
       </div>`;
   }).join("");
@@ -1374,17 +1387,21 @@ function renderOvertimeSuggestions(suggestions, kw) {
       const kw     = parseInt(btn.dataset.kw);
       const di     = parseInt(btn.dataset.di);
       const person = btn.dataset.person;
-      btn.disabled = true;
-      btn.textContent = "…";
+      const swap   = btn.dataset.swap ? JSON.parse(decodeURIComponent(btn.dataset.swap)) : null;
+      btn.disabled = true; btn.textContent = "…";
       try {
         const r = await fetch("/api/overtime/apply", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ kw, di, person })
+          body: JSON.stringify({ kw, di, person,
+            swap: swap ? { person: swap.person, value: swap.to } : null })
         });
         if (r.status === 403) { showToast("Nicht autorisiert", "err"); return; }
         const d = await r.json();
         if (!d.ok) { showToast("Fehler: " + (d.error || "?"), "err"); return; }
-        showToast(`${person}: Frei (ÜS-Abbau) eingetragen`, "ok");
+        const msg = swap
+          ? `${person} frei · ${swap.person} → ${swap.to}`
+          : `${person}: Frei (ÜS-Abbau) eingetragen`;
+        showToast(msg, "ok");
         renderOvertimeSuggestions(d.ot_suggestions || [], kw);
         await loadKw(kw);
       } catch(e) { showToast("Fehler: " + e.message, "err"); }

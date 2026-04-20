@@ -688,7 +688,14 @@ def _save_ot_rotation(data: dict):
 def _check_overtime(plan: dict, kw: int) -> list:
     """
     Prüft Mo–Fr: Ist ein Arzt wegen Urlaub/Krank abwesend UND sind ≥4 TFAs aktiv?
-    Gibt Vorschläge zurück; wer vorgeschlagen wird, rotiert fair (niedrigster Zähler zuerst).
+    Testet per echter Regelvalidierung ob jemand freigestellt werden kann.
+
+    Ablauf pro Kandidat (nach fairem Rotationszähler sortiert):
+      1. Kandidat → "Frei" simulieren → validieren → kein Fehler? → Vorschlag!
+      2. Nur Anmeldungs-Lücken entstehen? → Ersatz im selben Shift suchen
+         (Behandlungs-Person wechselt zu Anmeldung) → nochmals validieren → Vorschlag
+         mit extra "swap"-Feld (Person A frei, Person B übernimmt Anmeldung)
+      3. Andere Regeln (Assistenz Ulf/Lisa/Wilke) verletzt → Kandidat überspringen
     """
     from scheduler import week_dates
     from config import FEIERTAGE_HH_2026, ARZT_PATTERNS
@@ -708,6 +715,16 @@ def _check_overtime(plan: dict, kw: int) -> list:
                 "Notdienst (20–8 Uhr)", "Frei (ÜS-Abbau)"}
         return val not in skip and not val.startswith("Frei")
 
+    def sim_plan(overrides: list[tuple]) -> dict:
+        """Erstellt Plan-Kopie mit angewendeten (person, di, value)-Overrides."""
+        p = {person: list(plan[person]) for person in ALL_PERSONS}
+        for person, day_i, val in overrides:
+            p[person][day_i] = val
+        return p
+
+    def day_issues(sp: dict) -> list[str]:
+        return _validate_plan(sp, kw)["day"].get(str(di), [])
+
     suggestions = []
 
     for di in range(5):
@@ -716,7 +733,7 @@ def _check_overtime(plan: dict, kw: int) -> list:
 
         row = {p: _strip_note(str(plan[p][di])) for p in ALL_PERSONS}
 
-        # Ärzte, die heute EIGENTLICH arbeiten würden, aber absent sind
+        # Ärzte, die an diesem Tag normalerweise arbeiten, aber absent sind
         absent_docs = [
             a for a in ARZTE
             if doctor_absent(row[a]) and ARZT_PATTERNS[a][di] != "–"
@@ -731,27 +748,70 @@ def _check_overtime(plan: dict, kw: int) -> list:
         # Kandidaten: aktive TFAs, sortiert nach Rotationszähler (fairste Verteilung)
         pool = sorted(active_tfas, key=lambda p: (counts.get(p, 0), TFAS.index(p)))
 
-        # Kritische Rollen nicht vorschlagen (einzige Anmeldung im Shift)
-        fd_anm = [p for p in active_tfas if "FD" in row[p] and "Anmeldung" in row[p]]
-        sd_anm = [p for p in active_tfas if "SD" in row[p] and "Anmeldung" in row[p]]
-        critical = set()
-        if len(fd_anm) <= 1: critical.update(fd_anm)
-        if len(sd_anm) <= 1: critical.update(sd_anm)
+        found = False
+        for candidate in pool:
+            cand_val = row[candidate]
+            cand_shift = ("FD" if cand_val.startswith("FD")
+                          else "SD" if cand_val.startswith("SD") else None)
 
-        candidate = next((p for p in pool if p not in critical), None)
-        if not candidate:
-            continue
+            # ── Versuch 1: Kandidat direkt freistellen ─────────────────────
+            issues = day_issues(sim_plan([(candidate, di, "Frei (ÜS-Abbau)")]))
+            if not issues:
+                suggestions.append({
+                    "di": di, "day": DAYS[di],
+                    "date": dates[di].strftime("%-d.%-m."),
+                    "absent_doctors": absent_docs,
+                    "active_tfa_count": len(active_tfas),
+                    "suggested_person": candidate,
+                    "suggested_count": counts.get(candidate, 0),
+                    "current_shift": cand_val,
+                    "swap": None,
+                })
+                found = True
+                break
 
-        suggestions.append({
-            "di":                   di,
-            "day":                  DAYS[di],
-            "date":                 dates[di].strftime("%-d.%-m."),
-            "absent_doctors":       absent_docs,
-            "active_tfa_count":     len(active_tfas),
-            "suggested_person":     candidate,
-            "suggested_count":      counts.get(candidate, 0),
-            "current_shift":        row[candidate],
-        })
+            # ── Versuch 2: Nur Anmeldungs-Lücken? → Ersatz suchen ──────────
+            if not all("Anmeldung fehlt" in i for i in issues):
+                continue  # Assistenz/Wilke/Lisa-Regeln betroffen → überspringen
+
+            if not cand_shift:
+                continue
+
+            # Suche im selben Shift jemanden mit Behandlung (kein Assistenz)
+            # als Anmeldungs-Ersatz; sortiert nach Rotationszähler für Fairness
+            rep_pool = sorted(
+                [p for p in active_tfas
+                 if p != candidate
+                 and row[p].startswith(cand_shift)
+                 and "Behandlung" in row[p]
+                 and "Assistenz" not in row[p]],
+                key=lambda p: counts.get(p, 0)
+            )
+            for rep in rep_pool:
+                new_rep_val = f"{cand_shift}: Anmeldung"
+                issues2 = day_issues(sim_plan([
+                    (candidate, di, "Frei (ÜS-Abbau)"),
+                    (rep,       di, new_rep_val),
+                ]))
+                if not issues2:
+                    suggestions.append({
+                        "di": di, "day": DAYS[di],
+                        "date": dates[di].strftime("%-d.%-m."),
+                        "absent_doctors": absent_docs,
+                        "active_tfa_count": len(active_tfas),
+                        "suggested_person": candidate,
+                        "suggested_count": counts.get(candidate, 0),
+                        "current_shift": cand_val,
+                        "swap": {
+                            "person": rep,
+                            "from":   row[rep],
+                            "to":     new_rep_val,
+                        },
+                    })
+                    found = True
+                    break
+            if found:
+                break
 
     return suggestions
 
@@ -876,9 +936,14 @@ def api_overtime_apply():
     if person not in ALL_PERSONS:
         return jsonify({"ok": False, "error": "Unbekannte Person"}), 400
 
+    swap = data.get("swap")  # optional: {"person": ..., "value": ...}
+
     # Freier Tag als Override eintragen
     overrides = _load_overrides()
     overrides.setdefault(str(kw), {}).setdefault(person, {})[str(di)] = "Frei (ÜS-Abbau)"
+    # Optional: Anmeldungs-Ersatz übernehmen
+    if swap and swap.get("person") and swap.get("value"):
+        overrides.setdefault(str(kw), {}).setdefault(swap["person"], {})[str(di)] = swap["value"]
     _save_overrides(overrides)
 
     # Rotationszähler der Person erhöhen
