@@ -453,15 +453,31 @@
   }
   .modal-subtitle { font-size: 12px; color: #64748b; margin-bottom: 16px; }
   .modal-row { margin-bottom: 12px; }
-  .modal-row label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
-  .modal-row select, .modal-row input[type="date"] {
-    width: 100%; padding: 8px 10px; border: 1.5px solid #e2e8f0;
-    border-radius: 7px; font-size: 13px; outline: none; background: #fafbfc; color: #1e293b;
-  }
-  .modal-row select:focus, .modal-row input[type="date"]:focus {
-    border-color: #6366f1; background: white;
-  }
   .modal-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  /* Labels und Inputs einheitlich — gilt für modal-row UND Kinder von modal-row-2col */
+  .modal-row label,
+  .modal-row-2col > div > label {
+    display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;
+  }
+  .modal-row select,
+  .modal-row input[type="date"],
+  .modal-row-2col > div > select,
+  .modal-row-2col > div > input[type="date"] {
+    width: 100%; padding: 8px 10px; border: 1.5px solid #e2e8f0;
+    border-radius: 7px; font-size: 13px; outline: none;
+    background: #fafbfc; color: #1e293b;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+  }
+  .modal-row select:focus,
+  .modal-row input[type="date"]:focus,
+  .modal-row-2col > div > select:focus,
+  .modal-row-2col > div > input[type="date"]:focus {
+    border-color: #6366f1; background-color: white;
+  }
 
   /* Swap preview box */
   #swap-preview {
