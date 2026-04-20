@@ -375,53 +375,52 @@
   }
   .cal-header button:hover { background: #f1f5f9 !important; color: #334155; }
 
-  /* Tabelle: 100% der Panel-Innenbreite, fixed layout – kein Überlauf */
+  /* Kalender-Grid: 8 Spalten (KW + Mo–So), nie breiter als der Panel */
   .cal-grid {
+    display: grid;
+    grid-template-columns: 20px repeat(7, 1fr);
     width: 100%;
-    border-collapse: collapse; table-layout: fixed;
+    box-sizing: border-box;
   }
-  .cal-grid thead th {
-    font-size: 10px; font-weight: 500; color: #9ca3af !important;
-    text-align: center; padding: 0 0 6px; background: #fff !important;
-    overflow: hidden;
-  }
-  /* KW-Spalte: schmal + linksbündig (ca. 10%) */
-  .cal-grid thead th.cal-kw-th {
-    width: 10%; text-align: left; color: #d1d5db !important;
-  }
-  /* 7 Tagesspalten teilen den Rest gleichmäßig auf */
-  .cal-grid thead th:not(.cal-kw-th) { width: 12.86%; }
 
-  /* Zeilenauswahl */
-  .cal-week-row { cursor: pointer; }
-  .cal-week-row:hover .cal-day-cell,
-  .cal-week-row:hover .cal-kw-cell  { background: #f8fafc !important; }
-  .cal-week-row.selected .cal-day-cell { background: #eff6ff !important; }
-  .cal-week-row.selected .cal-kw-cell  { color: #3b82f6 !important; background: #eff6ff !important; }
+  /* Header-Zellen */
+  .cal-th {
+    font-size: 10px; font-weight: 500; color: #9ca3af;
+    text-align: center; padding: 0 0 6px; overflow: hidden;
+  }
+  .cal-th.cal-kw-th { text-align: left; color: #d1d5db; }
 
-  /* KW-Zelle (Datenzelle) */
+  /* KW-Datenzelle */
   .cal-kw-cell {
     font-size: 10px; font-weight: 500; color: #d1d5db;
-    text-align: left; padding: 0 2px 0 0; vertical-align: middle;
-    overflow: hidden; white-space: nowrap;
+    text-align: left; padding: 0 2px 0 0;
+    display: flex; align-items: center; height: 28px;
+    overflow: hidden; white-space: nowrap; cursor: pointer;
   }
 
-  /* Tageszellen: kein festes width/height – table-layout: fixed übernimmt */
+  /* Tageszellen */
   .cal-day-cell {
     font-size: 12px; color: #1e293b; text-align: center;
-    padding: 2px 0; vertical-align: middle; line-height: 26px; height: 28px;
-    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    height: 28px; overflow: hidden; cursor: pointer;
   }
   .cal-day-cell.cal-other-month { color: #d1d5db; }
   .cal-day-cell.cal-sunday      { color: #9ca3af; }
 
-  /* Heute: ausgefüllter roter Kreis (genau wie im Referenz-Screenshot) */
-  .cal-day-cell.cal-today { line-height: 1; }
+  /* Hover-Highlight (ganze Zeile via JS-Klasse) */
+  .cal-kw-cell.cal-row-hover,
+  .cal-day-cell.cal-row-hover  { background: #f8fafc !important; }
+
+  /* Aktuelle Woche */
+  .cal-day-cell.cal-row-selected { background: #eff6ff !important; }
+  .cal-kw-cell.cal-row-selected  { color: #3b82f6 !important; background: #eff6ff !important; }
+
+  /* Heute: ausgefüllter roter Kreis */
   .cal-day-cell.cal-today .cal-day-num {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 50%;
-    background: #ef4444 !important; color: #fff !important; font-weight: 700;
-    font-size: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #ef4444 !important; color: #fff !important;
+    font-weight: 700; font-size: 12px;
   }
 
   /* Heute-Spalte im Plan */
@@ -1071,15 +1070,7 @@
     <span id="cal-title"></span>
     <button id="cal-next">›</button>
   </div>
-  <table class="cal-grid">
-    <thead>
-      <tr>
-        <th class="cal-kw-th">KW</th>
-        <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
-      </tr>
-    </thead>
-    <tbody id="cal-body"></tbody>
-  </table>
+  <div class="cal-grid" id="cal-body"></div>
 </div>
 
 <script>
@@ -1922,62 +1913,63 @@ function isoKwFromDate(d) {
 
 function renderCalendar() {
   calTitle.textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
-  calBody.innerHTML = "";
 
-  const today = new Date(); today.setHours(0,0,0,0);
+  // Header + alle Wochen als CSS-Grid-Divs (kein <table>, kein Overflow)
+  let html = `<div class="cal-th cal-kw-th">KW</div>
+    <div class="cal-th">Mo</div><div class="cal-th">Di</div>
+    <div class="cal-th">Mi</div><div class="cal-th">Do</div>
+    <div class="cal-th">Fr</div><div class="cal-th">Sa</div>
+    <div class="cal-th">So</div>`;
 
+  const today    = new Date(); today.setHours(0,0,0,0);
   const firstDay = new Date(calYear, calMonth, 1);
   const startDow = (firstDay.getDay() + 6) % 7; // 0=Mo
-  const startDate = new Date(firstDay);
+  const startDate= new Date(firstDay);
   startDate.setDate(1 - startDow);
 
+  const weeks = [];
   for (let week = 0; week < 6; week++) {
     const monday = new Date(startDate);
     monday.setDate(startDate.getDate() + week * 7);
-
     const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
     if (week > 0 && monday.getMonth() !== calMonth && sunday.getMonth() !== calMonth) break;
 
-    const kw = isoKwFromDate(monday);
+    const kw      = isoKwFromDate(monday);
     const inRange = kw >= KW_MIN && kw <= KW_MAX;
-
-    const tr = document.createElement("tr");
-    tr.className = "cal-week-row" + (kw === currentKw ? " selected" : "");
-    if (!inRange) {
-      tr.style.opacity = "0.35";
-      tr.style.cursor  = "default";
-      tr.style.pointerEvents = "none";
-    } else {
-      tr.addEventListener("click", () => {
-        currentKw = kw;
-        loadKw(kw);
-        closeCalendar();
-      });
-    }
+    const selCls  = kw === currentKw ? " cal-row-selected" : "";
+    const opacity = inRange ? "" : ` style="opacity:0.35;pointer-events:none;"`;
 
     // KW-Zelle
-    const kwTd = document.createElement("td");
-    kwTd.className = "cal-kw-cell";
-    kwTd.textContent = inRange ? kw : "";
-    tr.appendChild(kwTd);
+    html += `<div class="cal-kw-cell${selCls}" data-kw="${kw}"${opacity}>${inRange ? kw : ""}</div>`;
 
     // Mo–So
     for (let d = 0; d < 7; d++) {
-      const day = new Date(monday); day.setDate(monday.getDate() + d);
+      const day     = new Date(monday); day.setDate(monday.getDate() + d);
       const isToday = day.getTime() === today.getTime();
-      const td = document.createElement("td");
-      td.className = "cal-day-cell"
-        + (day.getMonth() !== calMonth ? " cal-other-month" : "")
-        + (d === 6 ? " cal-sunday" : "")
-        + (isToday ? " cal-today" : "");
-      // Heute: Zahl in blauem Kreis-Rahmen
-      td.innerHTML = isToday
-        ? `<span class="cal-day-num">${day.getDate()}</span>`
-        : `<span class="cal-day-num">${day.getDate()}</span>`;
-      tr.appendChild(td);
+      const cls     = ["cal-day-cell", selCls,
+        day.getMonth() !== calMonth ? "cal-other-month" : "",
+        d === 6 ? "cal-sunday" : "",
+        isToday ? "cal-today" : ""
+      ].join(" ").replace(/\s+/g, " ").trim();
+      html += `<div class="${cls}" data-kw="${kw}"${opacity}><span class="cal-day-num">${day.getDate()}</span></div>`;
     }
-    calBody.appendChild(tr);
+    weeks.push({ kw, inRange });
   }
+
+  calBody.innerHTML = html;
+
+  // Hover- und Click-Listener für jede Woche
+  weeks.forEach(({ kw, inRange }) => {
+    if (!inRange) return;
+    const cells = calBody.querySelectorAll(`[data-kw="${kw}"]`);
+    cells.forEach(cell => {
+      cell.addEventListener("click", () => { currentKw = kw; loadKw(kw); closeCalendar(); });
+      cell.addEventListener("mouseenter", () =>
+        calBody.querySelectorAll(`[data-kw="${kw}"]`).forEach(c => c.classList.add("cal-row-hover")));
+      cell.addEventListener("mouseleave", () =>
+        calBody.querySelectorAll(`[data-kw="${kw}"]`).forEach(c => c.classList.remove("cal-row-hover")));
+    });
+  });
 }
 
 function openCalendar() {
