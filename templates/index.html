@@ -350,6 +350,7 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.07);
     padding: 14px 12px 10px;
     width: 230px;          /* Gesamtbreite – fest */
+    overflow: hidden;      /* Tabelle darf nie über den Panel hinausragen */
     isolation: isolate;
   }
   #cal-panel.visible { display: block; }
@@ -374,9 +375,9 @@
   }
   .cal-header button:hover { background: #f1f5f9 !important; color: #334155; }
 
-  /* Tabelle: feste Breite, fixed layout – Spaltenbreiten kommen von den TH */
+  /* Tabelle: 100% der Panel-Innenbreite, fixed layout – kein Überlauf */
   .cal-grid {
-    width: 206px;           /* 230px Panel – 2*12px Padding */
+    width: 100%;
     border-collapse: collapse; table-layout: fixed;
   }
   .cal-grid thead th {
@@ -384,12 +385,12 @@
     text-align: center; padding: 0 0 6px; background: #fff !important;
     overflow: hidden;
   }
-  /* KW-Spalte: schmal + linksbündig */
+  /* KW-Spalte: schmal + linksbündig (ca. 10%) */
   .cal-grid thead th.cal-kw-th {
-    width: 20px; text-align: left; color: #d1d5db !important;
+    width: 10%; text-align: left; color: #d1d5db !important;
   }
-  /* 7 Tagesspalten: gleichmäßig (206-20)/7 ≈ 26.6px */
-  .cal-grid thead th:not(.cal-kw-th) { width: 26px; }
+  /* 7 Tagesspalten teilen den Rest gleichmäßig auf */
+  .cal-grid thead th:not(.cal-kw-th) { width: 12.86%; }
 
   /* Zeilenauswahl */
   .cal-week-row { cursor: pointer; }
