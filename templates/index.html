@@ -190,6 +190,7 @@
   .c-anmeldung      { background: #e0e7ff; color: #3730a3; } /* Indigo   – Anmeldung (FD+SD)      */
   .c-fd-beh         { background: #bfdbfe; color: #1e3a8a; } /* Blau     – FD: Behandlung         */
   .c-sd-beh         { background: #fed7aa; color: #9a3412; } /* Orange   – SD: Behandlung         */
+  .c-springer       { background: #f0fdfa; color: #134e4a; } /* Teal     – FD/SD: Springer        */
   .c-assistenz-ulf  { background: #a5f3fc; color: #0e7490; } /* Cyan     – Assistenz Ulf (FD+SD)  */
   .c-assistenz-lisa { background: #c4b5fd; color: #5b21b6; } /* Lila     – Assistenz Lisa (FD+SD) */
   .c-assistenz-wilke{ background: #86efac; color: #166534; } /* Mint     – Assistenz Wilke (FD+SD)*/
@@ -240,10 +241,11 @@
     border: 1px solid #e2e8f0; background: #f8fafc; transition: all 0.1s;
   }
   .quick-pick:hover { background: #f1f5f9; border-color: #cbd5e1; }
-  .qp-fd     { background: #dbeafe; border-color: #bfdbfe; }
-  .qp-sd     { background: #fed7aa; border-color: #fdba74; }
-  .qp-reset  { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-  .qp-urlaub { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; }
+  .qp-fd       { background: #dbeafe; border-color: #bfdbfe; }
+  .qp-sd       { background: #fed7aa; border-color: #fdba74; }
+  .qp-springer { background: #ccfbf1; border-color: #5eead4; color: #134e4a; }
+  .qp-reset    { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+  .qp-urlaub   { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; }
   .popup-actions { display: flex; gap: 6px; justify-content: flex-end; }
   .popup-actions button {
     padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
@@ -697,31 +699,65 @@
   #toast.toast-err { background: #dc2626; }
 
   /* ── Überstunden-Abbau-Box (nur Edit-Modus) ── */
-  #overtime-box {
-    display: none; margin-bottom: 16px;
-    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 16px;
+  /* ── Überstunden-Button in Topbar ── */
+  #btn-overtime {
+    position: relative; display: none;
+    padding: 6px 10px; font-size: 14px;
   }
-  body.edit-mode #overtime-box { display: block; }
-  .overtime-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-    font-size: 13px; font-weight: 700; color: #92400e;
+  body.edit-mode #btn-overtime { display: inline-flex; align-items: center; gap: 4px; }
+  .ot-topbar-badge {
+    background: #ef4444; color: white; border-radius: 10px;
+    padding: 0 6px; font-size: 10px; font-weight: 700; line-height: 16px;
+    min-width: 16px; text-align: center;
   }
-  .overtime-badge {
-    background: #fcd34d; color: #78350f; border-radius: 10px;
-    padding: 1px 8px; font-size: 11px; font-weight: 700;
+
+  /* ── Überstunden-Modal ── */
+  #overtime-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  #overtime-overlay.visible { display: flex; }
+  @media (min-width: 600px) {
+    #overtime-overlay { align-items: center; }
+    #overtime-dialog { border-radius: 14px !important; max-height: 80vh; }
+  }
+  #overtime-dialog {
+    background: white; border-radius: 18px 18px 0 0; padding: 20px 18px 24px;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.18); width: 100%; max-width: 520px;
+    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .overtime-dialog-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .overtime-dialog-header h2 {
+    font-size: 16px; font-weight: 700; color: #1e293b;
+  }
+  #btn-overtime-close {
+    background: #f1f5f9; border: none; border-radius: 50%;
+    width: 30px; height: 30px; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; flex-shrink: 0;
+  }
+  #btn-overtime-close:hover { background: #e2e8f0; }
+  .overtime-dialog-subtitle {
+    font-size: 12px; color: #64748b; margin-bottom: 12px;
+  }
+  #overtime-list {
+    overflow-y: auto; flex: 1;
   }
   .overtime-item {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding: 8px 10px; margin-bottom: 6px; background: white;
-    border: 1px solid #fde68a; border-radius: 7px; font-size: 12px;
+    display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
+    padding: 10px 12px; margin-bottom: 8px; background: #fffbeb;
+    border: 1px solid #fde68a; border-radius: 8px; font-size: 12px;
   }
   .overtime-item:last-child { margin-bottom: 0; }
-  .overtime-day   { font-weight: 700; color: #334155; min-width: 50px; }
-  .overtime-info  { flex: 1; color: #64748b; line-height: 1.4; }
+  .overtime-day   { font-weight: 700; color: #334155; min-width: 55px; padding-top: 1px; }
+  .overtime-info  { flex: 1; color: #64748b; line-height: 1.5; min-width: 140px; }
   .overtime-info b { color: #b45309; }
   .overtime-rotation {
     font-size: 10px; background: #fef3c7; color: #92400e;
-    border-radius: 8px; padding: 1px 6px; white-space: nowrap;
+    border-radius: 8px; padding: 2px 7px; white-space: nowrap; align-self: center;
   }
   .overtime-swap {
     display: inline-block; margin-left: 4px; font-size: 11px;
@@ -729,12 +765,13 @@
     font-weight: 600; white-space: nowrap;
   }
   .overtime-btn {
-    padding: 5px 12px; border-radius: 6px; border: none;
-    background: #f59e0b; color: white; font-size: 11px; font-weight: 700;
-    cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0;
+    padding: 7px 14px; border-radius: 7px; border: none;
+    background: #f59e0b; color: white; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: background 0.15s; white-space: nowrap;
+    flex-shrink: 0; align-self: center; min-height: 36px;
   }
   .overtime-btn:hover { background: #d97706; }
-  .overtime-empty { color: #6b7280; font-size: 12px; font-style: italic; }
+  .overtime-empty { color: #6b7280; font-size: 13px; font-style: italic; padding: 8px 0; }
 
   /* ── Legend ── */
   .legend-wrap { margin-top: 12px; }
@@ -779,17 +816,82 @@
   #popup-overlay { position: fixed; inset: 0; z-index: 999; display: none; }
   #popup-overlay.visible { display: block; }
 
+  /* ── Sticky Personenspalte (Desktop & Mobile) ── */
+  td.person-name {
+    position: sticky; left: 0; z-index: 4;
+    background: white;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+  }
+  tbody tr:hover td.person-name { background: #fafbfc; }
+  thead th:first-child {
+    position: sticky; left: 0; z-index: 12;
+    background: #f8fafc;
+  }
+  tr.group-header td { position: sticky; left: 0; z-index: 3; }
+
+  /* ── Edit-Popup: Desktop ── */
+  #edit-popup { min-width: 270px; max-width: 340px; }
+
   /* ── Mobile ── */
-  @media (max-width: 700px) {
-    .topbar { padding: 0 10px; gap: 6px; height: 52px; flex-wrap: nowrap; overflow-x: auto; }
-    .topbar h1 { font-size: 13px; }
-    .btn { padding: 5px 9px; font-size: 11px; }
+  @media (max-width: 640px) {
+    /* Topbar: kompakter, horizontal scrollbar als Fallback */
+    .topbar {
+      padding: 0 8px; gap: 4px; height: 52px;
+      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .topbar h1 { font-size: 0; }           /* Titel ausblenden */
+    .topbar h1::before { content: "🐾"; font-size: 18px; } /* Nur Icon */
+    .btn { padding: 6px 9px; font-size: 11px; min-height: 36px; }
+    .kw-nav { padding: 3px 6px; gap: 2px; }
+    .kw-nav .kw-label { min-width: 56px; font-size: 12px; }
+    .kw-nav button { font-size: 16px; padding: 2px 4px; }
+    /* Labels in Action-Buttons ausblenden */
     #btn-absence span, #btn-swap span, #btn-vac span { display: none; }
-    .main { padding: 10px 10px; }
-    .kw-nav .kw-label { min-width: 60px; font-size: 13px; }
-    /* Auf Handy Wochenansicht automatisch auf Tagesansicht umstellen */
-    .table-wrap { overflow-x: auto; }
-    .statusbar { font-size: 11px; }
+    #btn-clear-kw span { display: none; }
+    .btn-lock-label-lock   { font-size: 0; }
+    .btn-lock-label-lock::before   { content: "🔒"; font-size: 14px; }
+    .btn-lock-label-unlock { font-size: 0; }
+    .btn-lock-label-unlock::before { content: "🔓"; font-size: 14px; }
+    /* Main */
+    .main { padding: 8px; }
+    .statusbar { font-size: 11px; gap: 6px; }
+    /* Tabelle */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    thead th.day-col { min-width: 110px; }
+    /* Modals: volle Breite, von unten */
+    #swap-dialog, #vac-dialog, #absence-dialog, #pin-dialog {
+      width: 100% !important; max-width: 100% !important;
+      border-radius: 18px 18px 0 0 !important;
+      margin: 0 !important; max-height: 90vh; overflow-y: auto;
+    }
+    #swap-overlay, #vac-overlay, #absence-overlay, #pin-overlay {
+      align-items: flex-end !important;
+    }
+    /* Edit Popup: Bottom Sheet auf Handy */
+    #edit-popup {
+      position: fixed !important;
+      bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+      max-width: 100% !important; min-width: 0 !important; width: 100% !important;
+      border-radius: 18px 18px 0 0 !important;
+      padding: 16px 16px 30px !important;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.18) !important;
+      /* Zieh-Indikator */
+    }
+    #edit-popup::before {
+      content: ""; display: block; width: 36px; height: 4px;
+      background: #e2e8f0; border-radius: 2px; margin: -8px auto 12px;
+    }
+    .quick-picks { gap: 6px; }
+    .quick-pick { padding: 6px 10px; font-size: 12px; min-height: 34px; }
+    #popup-overlay { display: none !important; }  /* Overlay ist der ganze Screen */
+    /* View-Toggle auf Handy */
+    .view-toggle button { padding: 5px 10px; font-size: 11px; }
+  }
+
+  @media (max-width: 400px) {
+    .topbar h1::before { display: none; }
+    #btn-heute { display: none; }
+    #btn-cal { padding: 4px 6px !important; }
   }
 </style>
 </head>
@@ -980,8 +1082,11 @@
   <button class="btn btn-ghost" id="btn-swap"    title="Tausch">⇄ <span>Tausch</span></button>
   <button class="btn btn-ghost" id="btn-vac"     title="Urlaub">🏖 <span>Urlaub</span></button>
 
-  <button class="btn btn-ghost edit-only" id="btn-clear-kw">Zurücksetzen</button>
+  <button class="btn btn-ghost edit-only" id="btn-clear-kw"><span>Zurücksetzen</span></button>
   <button class="btn btn-ghost edit-only" id="btn-regen">⟳ Neu</button>
+  <button class="btn btn-ghost" id="btn-overtime" title="Überstunden-Abbau Vorschläge">
+    ⏱ <span class="ot-topbar-badge" id="overtime-badge" style="display:none">0</span>
+  </button>
 
   <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
     <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
@@ -1009,14 +1114,6 @@
     <div class="suggestion-list" id="suggestion-list"></div>
   </div>
 
-  <!-- Überstunden-Abbau (nur im Bearbeitungsmodus sichtbar) -->
-  <div id="overtime-box">
-    <div class="overtime-header">
-      ⏱ Überstunden-Abbau-Vorschläge
-      <span class="overtime-badge" id="overtime-badge"></span>
-    </div>
-    <div id="overtime-list"><span class="overtime-empty">Keine Vorschläge für diese Woche.</span></div>
-  </div>
 
   <div class="table-wrap">
     <table>
@@ -1037,6 +1134,7 @@
       <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
       <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Behandlung</div>
       <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
+      <div class="legend-item" style="background:#f0fdfa;color:#134e4a"><div class="legend-dot" style="background:#2dd4bf"></div>Springer</div>
       <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
       <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa OP</div>
       <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke OP</div>
@@ -1062,6 +1160,22 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- Überstunden-Abbau Modal -->
+<div id="overtime-overlay">
+  <div id="overtime-dialog">
+    <div class="overtime-dialog-header">
+      <div>
+        <h2>⏱ Überstunden-Abbau</h2>
+      </div>
+      <button id="btn-overtime-close">✕</button>
+    </div>
+    <p class="overtime-dialog-subtitle">Vorschläge bei Arztabwesenheit – nur regelkonforme Tage werden angezeigt.</p>
+    <div id="overtime-list">
+      <span class="overtime-empty">Keine Vorschläge für diese Woche.</span>
+    </div>
+  </div>
+</div>
 
 <!-- Mini-Kalender Popover (außerhalb aller Stacking Contexts) -->
 <div id="cal-panel">
@@ -1134,6 +1248,8 @@ const btnPinCancel = document.getElementById("btn-pin-cancel");
 const QUICK_PICKS = [
   { label: "FD: Behandlung",        cls: "qp-fd" },
   { label: "SD: Behandlung",        cls: "qp-sd" },
+  { label: "FD: Springer",          cls: "qp-springer" },
+  { label: "SD: Springer",          cls: "qp-springer" },
   { label: "FD: Anmeldung",         cls: "qp-fd" },
   { label: "SD: Anmeldung",         cls: "qp-sd" },
   { label: "FD: Assistenz Lisa OP", cls: "qp-fd" },
@@ -1230,6 +1346,7 @@ function cellClass(val) {
   const v = _mainVal(val);  // Note-Teil ignorieren
 
   // Rollenbasierte Farben (FD und SD gleich je Rolle)
+  if (v.includes("Springer"))             return "c-springer";
   if (v.includes("Anmeldung"))            return "c-anmeldung";
   if (v.includes("Assistenz Ulf"))        return "c-assistenz-ulf";
   if (v.includes("Assistenz Lisa"))       return "c-assistenz-lisa";
@@ -1322,8 +1439,21 @@ async function loadKw(kw) {
 }
 
 // ── Überstunden-Abbau ─────────────────────────────────────────────────────
-const overtimeList  = document.getElementById("overtime-list");
-const overtimeBadge = document.getElementById("overtime-badge");
+const overtimeList    = document.getElementById("overtime-list");
+const overtimeBadge   = document.getElementById("overtime-badge");
+const overtimeOverlay = document.getElementById("overtime-overlay");
+const btnOvertime     = document.getElementById("btn-overtime");
+const btnOvertimeClose= document.getElementById("btn-overtime-close");
+
+btnOvertime.addEventListener("click", () => {
+  overtimeOverlay.classList.add("visible");
+});
+btnOvertimeClose.addEventListener("click", () => {
+  overtimeOverlay.classList.remove("visible");
+});
+overtimeOverlay.addEventListener("click", e => {
+  if (e.target === overtimeOverlay) overtimeOverlay.classList.remove("visible");
+});
 
 async function loadOvertimeSuggestions(kw) {
   try {
