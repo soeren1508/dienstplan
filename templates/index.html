@@ -346,64 +346,81 @@
   /* ── Mini-Kalender ── */
   #cal-panel {
     display: none; position: fixed; z-index: 9999;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
-    padding: 16px 14px 12px;
-    width: 248px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.07);
+    padding: 14px 12px 10px;
+    width: 230px;          /* Gesamtbreite – fest */
     isolation: isolate;
   }
   #cal-panel.visible { display: block; }
 
-  /* Alle inneren Elemente explizit weiß */
-  #cal-panel, #cal-panel table, #cal-panel thead,
-  #cal-panel tbody, #cal-panel tr, #cal-panel th, #cal-panel td {
-    background: #ffffff !important;
-  }
+  /* Alle inneren Elemente explizit weiß – kein Durchscheinen */
+  #cal-panel, #cal-panel * { background: #fff !important; }
 
+  /* Header: Pfeile + Monatsname */
   .cal-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
   }
-  .cal-header span { font-size: 15px; font-weight: 700; color: #1e293b; flex: 1; text-align: center; }
+  .cal-header span {
+    font-size: 14px; font-weight: 700; color: #1e293b;
+    flex: 1; text-align: center;
+  }
   .cal-header button {
     background: none !important; border: none; color: #94a3b8;
-    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-    font-size: 17px; display: flex; align-items: center; justify-content: center;
-    transition: background 0.12s; flex-shrink: 0;
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: background 0.12s;
   }
-  .cal-header button:hover { background: #f1f5f9 !important; color: #1e293b; }
+  .cal-header button:hover { background: #f1f5f9 !important; color: #334155; }
 
-  .cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  /* Tabelle: feste Breite, fixed layout – Spaltenbreiten kommen von den TH */
+  .cal-grid {
+    width: 206px;           /* 230px Panel – 2*12px Padding */
+    border-collapse: collapse; table-layout: fixed;
+  }
   .cal-grid thead th {
-    font-size: 11px; font-weight: 500; color: #94a3b8 !important;
-    text-align: center; padding: 0 0 8px; background: #ffffff !important;
+    font-size: 10px; font-weight: 500; color: #9ca3af !important;
+    text-align: center; padding: 0 0 6px; background: #fff !important;
+    overflow: hidden;
   }
+  /* KW-Spalte: schmal + linksbündig */
   .cal-grid thead th.cal-kw-th {
-    color: #cbd5e1 !important; font-size: 10px; width: 22px; text-align: left;
+    width: 20px; text-align: left; color: #d1d5db !important;
   }
+  /* 7 Tagesspalten: gleichmäßig (206-20)/7 ≈ 26.6px */
+  .cal-grid thead th:not(.cal-kw-th) { width: 26px; }
 
-  .cal-week-row { cursor: pointer; border-radius: 8px; }
+  /* Zeilenauswahl */
+  .cal-week-row { cursor: pointer; }
   .cal-week-row:hover .cal-day-cell,
-  .cal-week-row:hover .cal-kw-cell { background: #f8fafc !important; }
-  .cal-week-row.selected .cal-day-cell { background: #f0f9ff !important; }
-  .cal-week-row.selected .cal-kw-cell  { color: #3b82f6 !important; background: #f0f9ff !important; }
+  .cal-week-row:hover .cal-kw-cell  { background: #f8fafc !important; }
+  .cal-week-row.selected .cal-day-cell { background: #eff6ff !important; }
+  .cal-week-row.selected .cal-kw-cell  { color: #3b82f6 !important; background: #eff6ff !important; }
 
+  /* KW-Zelle (Datenzelle) */
   .cal-kw-cell {
-    font-size: 10px; font-weight: 500; color: #cbd5e1;
-    text-align: left; padding: 3px 2px 3px 0; vertical-align: middle; width: 22px;
+    font-size: 10px; font-weight: 500; color: #d1d5db;
+    text-align: left; padding: 0 2px 0 0; vertical-align: middle;
+    overflow: hidden; white-space: nowrap;
   }
+
+  /* Tageszellen: kein festes width/height – table-layout: fixed übernimmt */
   .cal-day-cell {
-    font-size: 13px; color: #1e293b; text-align: center;
-    padding: 3px 1px; vertical-align: middle; width: 32px; height: 32px;
+    font-size: 12px; color: #1e293b; text-align: center;
+    padding: 2px 0; vertical-align: middle; line-height: 26px; height: 28px;
+    overflow: hidden;
   }
   .cal-day-cell.cal-other-month { color: #d1d5db; }
   .cal-day-cell.cal-sunday      { color: #9ca3af; }
-  /* Heute: ausgefüllter roter Kreis wie im Screenshot */
+
+  /* Heute: ausgefüllter roter Kreis (genau wie im Referenz-Screenshot) */
+  .cal-day-cell.cal-today { line-height: 1; }
   .cal-day-cell.cal-today .cal-day-num {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #ef4444; color: #ffffff; font-weight: 700;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #ef4444 !important; color: #fff !important; font-weight: 700;
+    font-size: 12px;
   }
 
   /* Heute-Spalte im Plan */
@@ -1952,9 +1969,9 @@ function openCalendar() {
   calYear  = now.getFullYear();
   renderCalendar();
 
-  // Unter dem 📅-Button positionieren – kompaktes Panel (248px)
+  // Unter dem 📅-Button positionieren – kompaktes Panel (230px)
   const rect   = btnCal.getBoundingClientRect();
-  const panelW = 248;
+  const panelW = 230;
   const panelH = 260;  // geschätzte Höhe
   let left = rect.right - panelW;  // rechtsbündig am Button
   if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
