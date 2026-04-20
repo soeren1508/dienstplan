@@ -215,6 +215,22 @@
   }
   #edit-input:focus { border-color: #6366f1; }
   .quick-picks { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  /* Hinweis-Feld */
+  .hinweis-row { margin: 4px 0 10px; }
+  .hinweis-row label {
+    display: block; font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 3px;
+  }
+  #edit-note {
+    width: 100%; padding: 6px 9px; border: 1.5px solid #e2e8f0;
+    border-radius: 6px; font-size: 12px; color: #1e293b; background: #fffbeb;
+    resize: none; outline: none; font-family: inherit; line-height: 1.4;
+  }
+  #edit-note:focus { border-color: #f59e0b; background: #fffef0; }
+  /* Hinweis in der Zelle */
+  .cell-note {
+    display: block; font-size: 9px; font-style: italic; color: #78716c;
+    margin-top: 2px; line-height: 1.2; white-space: normal; word-break: break-word;
+  }
   .quick-pick {
     padding: 4px 9px; border-radius: 5px; font-size: 11px; cursor: pointer;
     border: 1px solid #e2e8f0; background: #f8fafc; transition: all 0.1s;
@@ -853,8 +869,12 @@
 <!-- Edit Popup -->
 <div id="edit-popup">
   <h3 id="popup-title">Zelle bearbeiten</h3>
-  <input type="text" id="edit-input" placeholder="Wert eingeben…" autocomplete="off">
+  <input type="text" id="edit-input" placeholder="Diensttyp wählen oder eingeben…" autocomplete="off">
   <div class="quick-picks" id="quick-picks"></div>
+  <div class="hinweis-row">
+    <label for="edit-note">📝 Hinweis (optional)</label>
+    <textarea id="edit-note" rows="2" placeholder="z.B. Vertretung für Nadine, bitte früh kommen …"></textarea>
+  </div>
   <div class="popup-actions">
     <button id="btn-reset">↩ Reset</button>
     <button id="btn-cancel">Abbrechen</button>
@@ -1033,6 +1053,7 @@ const toast        = document.getElementById("toast");
 const editPopup    = document.getElementById("edit-popup");
 const popupTitle   = document.getElementById("popup-title");
 const editInput    = document.getElementById("edit-input");
+const editNote     = document.getElementById("edit-note");
 const quickPicks   = document.getElementById("quick-picks");
 const btnSave      = document.getElementById("btn-save");
 const btnCancel    = document.getElementById("btn-cancel");
@@ -1137,9 +1158,12 @@ function closePinDialog() {
 }
 
 // ── Cell colors ───────────────────────────────────────────────────────────
+// Trennzeichen für Hinweise: " || " (wird bei Klassifizierung/Validierung ignoriert)
+function _mainVal(val) { return val ? String(val).split(" || ")[0] : ""; }
+
 function cellClass(val) {
   if (!val || val === "–") return "c-empty";
-  const v = String(val);
+  const v = _mainVal(val);  // Note-Teil ignorieren
 
   // Rollenbasierte Farben (FD und SD gleich je Rolle)
   if (v.includes("Anmeldung"))            return "c-anmeldung";
@@ -1169,7 +1193,9 @@ function cellClass(val) {
 
 function formatCell(val) {
   if (!val || val === "–") return '<span style="color:#cbd5e1">—</span>';
-  const v = String(val);
+  const parts = String(val).split(" || ");
+  const v     = parts[0];
+  const note  = parts[1] || "";
   let main = v, auffl = "";
   if (v.includes("+ Auffüllen")) {
     main  = v.replace("+ Auffüllen","").trim();
@@ -1186,7 +1212,8 @@ function formatCell(val) {
     .replace("Frei (Notdienst)",       "Frei (ND)")
     .replace("SD: Behandlung (ab 15:30)", "SD: Beh. (15:30)")
     .replace("ECVO Congress", "ECVO");
-  return main + auffl;
+  const noteHtml = note ? `<span class="cell-note">📝 ${note}</span>` : "";
+  return main + auffl + noteHtml;
 }
 
 // ── Load & Render ─────────────────────────────────────────────────────────
@@ -1451,7 +1478,9 @@ function renderDayView(data, valid) {
       editPopup.style.left = left + "px";
       editPopup.style.top  = top  + "px";
       popupTitle.textContent = `${person} · ${planData.days[diIdx]} ${planData.dates[diIdx]}`;
-      editInput.value = val === "–" ? "" : val.replace(" + Auffüllen", "");
+      const valParts = (val === "–" ? "" : val).split(" || ");
+      editInput.value = valParts[0].replace(" + Auffüllen", "");
+      editNote.value  = valParts[1] || "";
       quickPicks.innerHTML = "";
       if (msgs.length) {
         const hint = document.createElement("div");
@@ -1463,7 +1492,7 @@ function renderDayView(data, valid) {
         const btn = document.createElement("button");
         btn.className = `quick-pick ${cls}`;
         btn.textContent = label;
-        btn.addEventListener("click", () => saveEdit(label));
+        btn.addEventListener("click", () => { editInput.value = label; editInput.focus(); });
         quickPicks.appendChild(btn);
       });
       editPopup.classList.add("visible");
@@ -1577,7 +1606,9 @@ function onCellClick(e) {
   editPopup.style.top  = top  + "px";
 
   popupTitle.textContent = `${person} · ${planData.days[di]} ${planData.dates[di]}`;
-  editInput.value = val === "–" ? "" : val.replace(" + Auffüllen", "");
+  const valParts2 = (val === "–" ? "" : val).split(" || ");
+  editInput.value = valParts2[0].replace(" + Auffüllen", "");
+  editNote.value  = valParts2[1] || "";
 
   quickPicks.innerHTML = "";
   if (issues.length > 0) {
@@ -1590,7 +1621,7 @@ function onCellClick(e) {
     const btn = document.createElement("button");
     btn.className = `quick-pick ${cls}`;
     btn.textContent = label;
-    btn.addEventListener("click", () => { editInput.value = label; saveEdit(label); });
+    btn.addEventListener("click", () => { editInput.value = label; editInput.focus(); });
     quickPicks.appendChild(btn);
   });
   if (isOv) {
@@ -1609,6 +1640,10 @@ function onCellClick(e) {
 
 editInput.addEventListener("keydown", e => {
   if (e.key === "Enter")  { e.preventDefault(); saveEdit(editInput.value.trim()); }
+  if (e.key === "Escape") { closePopup(); }
+});
+editNote.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveEdit(editInput.value.trim()); }
   if (e.key === "Escape") { closePopup(); }
 });
 btnSave.addEventListener("click",   () => saveEdit(editInput.value.trim()));
@@ -1639,13 +1674,16 @@ async function reloadAndNotify(label) {
 
 async function saveEdit(value) {
   if (!editState) return;
-  if (!value || value === editState.originalValue) { closePopup(); return; }
+  // Hinweis-Feld auslesen und anhängen (Trennzeichen " || ")
+  const note      = editNote ? editNote.value.trim() : "";
+  const fullValue = (value && note) ? `${value} || ${note}` : (value || "");
+  if (!fullValue || fullValue === editState.originalValue) { closePopup(); return; }
   const { person, di } = editState;
   closePopup();
   try {
     const r = await fetch("/api/override", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kw: currentKw, person, di, value })
+      body: JSON.stringify({ kw: currentKw, person, di, value: fullValue })
     });
     if (r.status === 403) { showToast("Nicht autorisiert – bitte entsperren", "err"); return; }
     if (!r.ok) throw new Error(`Fehler ${r.status}`);

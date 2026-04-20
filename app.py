@@ -666,6 +666,12 @@ def _suggest_fixes(plan: dict, issues: dict, kw: int) -> list:
 # Regel-Validierung
 # ---------------------------------------------------------------------------
 
+def _strip_note(val) -> str:
+    """Entfernt optionalen Hinweis-Text (nach ' || ') aus dem Zellwert."""
+    s = str(val) if val else "–"
+    return s.split(" || ")[0] if " || " in s else s
+
+
 def _validate_plan(plan: dict, kw: int) -> dict:
     from scheduler import week_dates
     from config    import FEIERTAGE_HH_2026
@@ -673,7 +679,7 @@ def _validate_plan(plan: dict, kw: int) -> dict:
     dates  = week_dates(kw)
     issues = {"day": {}, "cell": {p: {} for p in ALL_PERSONS}}
 
-    def v(val):    return str(val) if val else "–"
+    def v(val):    return _strip_note(val)  # Note-Teil ignorieren bei Validierung
     def shift(val):
         s = v(val)
         return "FD" if s.startswith("FD") else ("SD" if s.startswith("SD") else None)
