@@ -16,10 +16,14 @@
       "0": "SD: Behandlung"
     },
     "Imke": {
-      "4": "FD: Behandlung || Bis 12 Uhr"
+      "4": "FD: Behandlung || Bis 12 Uhr",
+      "1": "FD: Anmeldung"
     },
     "Lisa": {
       "1": "SD (12-19): Behandlung"
+    },
+    "Alyssa": {
+      "1": "FD: Behandlung"
     }
   },
   "18": {
