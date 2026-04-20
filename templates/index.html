@@ -12,10 +12,14 @@
 <meta name="apple-mobile-web-app-title" content="Dienstplan">
 <link rel="apple-touch-icon" href="/static/logo.png">
 <link rel="icon" type="image/png" href="/static/logo.png">
+<!-- CI-Schrift Roboto -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #f5f6fa; color: #1e293b; min-height: 100vh;
   }
 
@@ -344,63 +348,62 @@
     display: none; position: fixed; z-index: 9999;
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
-    padding: 14px 14px 10px;
-    width: 292px;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    padding: 16px 14px 12px;
+    width: 248px;
     isolation: isolate;
   }
   #cal-panel.visible { display: block; }
 
-  /* Alle inneren Elemente explizit weiß – verhindert Durchscheinen */
+  /* Alle inneren Elemente explizit weiß */
   #cal-panel, #cal-panel table, #cal-panel thead,
   #cal-panel tbody, #cal-panel tr, #cal-panel th, #cal-panel td {
     background: #ffffff !important;
   }
 
   .cal-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
   }
-  .cal-header span { font-size: 15px; font-weight: 700; color: #1e293b; }
+  .cal-header span { font-size: 15px; font-weight: 700; color: #1e293b; flex: 1; text-align: center; }
   .cal-header button {
-    background: #f1f5f9 !important; border: none; color: #64748b;
-    width: 28px; height: 28px; border-radius: 7px; cursor: pointer;
-    font-size: 15px; display: flex; align-items: center; justify-content: center;
-    transition: background 0.12s;
+    background: none !important; border: none; color: #94a3b8;
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    font-size: 17px; display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s; flex-shrink: 0;
   }
-  .cal-header button:hover { background: #e2e8f0 !important; color: #1e293b; }
+  .cal-header button:hover { background: #f1f5f9 !important; color: #1e293b; }
 
-  .cal-grid { width: 100%; border-collapse: collapse; }
+  .cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
   .cal-grid thead th {
-    font-size: 11px; font-weight: 600; color: #94a3b8 !important;
-    text-align: center; padding: 0 0 7px; letter-spacing: .3px;
-    background: #ffffff !important;
+    font-size: 11px; font-weight: 500; color: #94a3b8 !important;
+    text-align: center; padding: 0 0 8px; background: #ffffff !important;
   }
-  .cal-grid thead th.cal-kw-th { color: #cbd5e1 !important; font-size: 10px; width: 26px; text-align: left; }
+  .cal-grid thead th.cal-kw-th {
+    color: #cbd5e1 !important; font-size: 10px; width: 22px; text-align: left;
+  }
 
-  .cal-week-row { cursor: pointer; }
-  .cal-week-row:hover td { background: #f8fafc !important; }
-  .cal-week-row.selected td { background: #eff6ff !important; }
-  .cal-week-row.selected .cal-kw-cell { color: #3b82f6 !important; }
+  .cal-week-row { cursor: pointer; border-radius: 8px; }
+  .cal-week-row:hover .cal-day-cell,
+  .cal-week-row:hover .cal-kw-cell { background: #f8fafc !important; }
+  .cal-week-row.selected .cal-day-cell { background: #f0f9ff !important; }
+  .cal-week-row.selected .cal-kw-cell  { color: #3b82f6 !important; background: #f0f9ff !important; }
 
   .cal-kw-cell {
-    font-size: 10px; font-weight: 700; color: #cbd5e1;
-    text-align: left; padding: 5px 3px; vertical-align: middle; width: 26px;
+    font-size: 10px; font-weight: 500; color: #cbd5e1;
+    text-align: left; padding: 3px 2px 3px 0; vertical-align: middle; width: 22px;
   }
   .cal-day-cell {
     font-size: 13px; color: #1e293b; text-align: center;
-    padding: 4px 2px; vertical-align: middle;
+    padding: 3px 1px; vertical-align: middle; width: 32px; height: 32px;
   }
-  .cal-day-cell.cal-other-month { color: #cbd5e1; }
-  .cal-day-cell.cal-sunday      { color: #94a3b8; }
-  /* Heute: dezenter blauer Rahmen um die Zahl */
-  .cal-day-cell.cal-today {
-    font-weight: 700;
-  }
+  .cal-day-cell.cal-other-month { color: #d1d5db; }
+  .cal-day-cell.cal-sunday      { color: #9ca3af; }
+  /* Heute: ausgefüllter roter Kreis wie im Screenshot */
   .cal-day-cell.cal-today .cal-day-num {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 26px; height: 26px; border-radius: 50%;
-    border: 2px solid #3b82f6; color: #2563eb;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #ef4444; color: #ffffff; font-weight: 700;
   }
 
   /* Heute-Spalte im Plan */
@@ -1949,13 +1952,17 @@ function openCalendar() {
   calYear  = now.getFullYear();
   renderCalendar();
 
-  // Unter dem 📅-Button positionieren
-  const rect  = btnCal.getBoundingClientRect();
-  const panelW = 292;
-  let left = rect.left;
+  // Unter dem 📅-Button positionieren – kompaktes Panel (248px)
+  const rect   = btnCal.getBoundingClientRect();
+  const panelW = 248;
+  const panelH = 260;  // geschätzte Höhe
+  let left = rect.right - panelW;  // rechtsbündig am Button
   if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
   if (left < 8) left = 8;
-  calPanel.style.top  = (rect.bottom + 6) + "px";
+  // Nach unten öffnen, aber bei wenig Platz nach oben
+  let top = rect.bottom + 6;
+  if (top + panelH > window.innerHeight - 8) top = rect.top - panelH - 6;
+  calPanel.style.top  = top + "px";
   calPanel.style.left = left + "px";
   calPanel.classList.add("visible");
 }
