@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Dienstplan 2026 – Tierarztpraxis Hamburg</title>
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json">
@@ -18,19 +18,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; }
   body {
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f5f6fa; color: #1e293b; min-height: 100vh;
+    background: #f5f6fa; color: #1e293b;
+    min-height: 100%; min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
   }
+  button, a, [role="button"] { touch-action: manipulation; }
 
   /* ── Top Bar ── */
   .topbar {
-    background: #1e293b; color: white; padding: 0 20px; height: 56px;
-    display: flex; align-items: center; gap: 12px; position: sticky;
+    background: #1e293b; color: white; padding: 0 16px; height: 56px;
+    display: flex; align-items: center; gap: 10px; position: sticky;
     top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
   .topbar h1 { font-size: 15px; font-weight: 600; white-space: nowrap; }
   .topbar .spacer { flex: 1; }
+  /* Zeile 1: auf Desktop ist sie der "normale" flex-Container-Inhalt */
+  .topbar-row1 {
+    display: contents; /* Kinder nehmen direkt am topbar-flex teil */
+  }
+  /* Action-Gruppe: auf Desktop transparent (Contents), auf Mobile eigene Zeile */
+  .topbar-actions { display: contents; }
 
   .kw-nav {
     display: flex; align-items: center; gap: 4px;
@@ -773,6 +785,58 @@
   .overtime-btn:hover { background: #d97706; }
   .overtime-empty { color: #6b7280; font-size: 13px; font-style: italic; padding: 8px 0; }
 
+  /* ── Vac-Picker Action Sheet ── */
+  #vac-picker-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2100;
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  #vac-picker-overlay.visible { display: flex; }
+  #vac-picker {
+    background: white; border-radius: 18px 18px 0 0;
+    width: 100%; max-width: 480px; padding: 10px 16px 20px;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.18);
+  }
+  #vac-picker::before {
+    content: ""; display: block; width: 40px; height: 4px;
+    background: #e2e8f0; border-radius: 2px; margin: 0 auto 16px;
+  }
+  .vac-picker-title {
+    font-size: 13px; font-weight: 600; color: #94a3b8;
+    text-align: center; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .vac-picker-btn {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; padding: 14px 16px; margin-bottom: 8px;
+    border-radius: 12px; border: 1.5px solid #e2e8f0;
+    background: #f8fafc; cursor: pointer; text-align: left;
+    transition: all 0.15s;
+  }
+  .vac-picker-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .vac-picker-btn:active { transform: scale(0.98); }
+  .vac-picker-btn .vpb-icon { font-size: 24px; flex-shrink: 0; }
+  .vac-picker-btn .vpb-text { display: flex; flex-direction: column; gap: 2px; }
+  .vac-picker-btn .vpb-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+  .vac-picker-btn .vpb-sub   { font-size: 12px; color: #64748b; }
+  .vac-picker-cancel {
+    display: block; width: 100%; padding: 14px; margin-top: 4px;
+    border-radius: 12px; border: none; background: #fee2e2;
+    color: #dc2626; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .vac-picker-cancel:hover { background: #fecaca; }
+
+  /* ── Manuelles ÜS-Frei Modal ── */
+  #us-frei-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+  }
+  #us-frei-overlay.visible { display: flex; }
+  #us-frei-dialog {
+    background: white; border-radius: 14px; padding: 24px 24px 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 360px; max-width: 95vw;
+  }
+  #us-frei-dialog h2 { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 3px; }
+
   /* ── Legend ── */
   .legend-wrap { margin-top: 12px; }
   .legend-toggle {
@@ -816,82 +880,150 @@
   #popup-overlay { position: fixed; inset: 0; z-index: 999; display: none; }
   #popup-overlay.visible { display: block; }
 
-  /* ── Sticky Personenspalte (Desktop & Mobile) ── */
+  /* ── Sticky Personenspalte ── */
   td.person-name {
     position: sticky; left: 0; z-index: 4;
-    background: white;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+    background: white; box-shadow: 2px 0 4px rgba(0,0,0,0.06);
   }
   tbody tr:hover td.person-name { background: #fafbfc; }
-  thead th:first-child {
-    position: sticky; left: 0; z-index: 12;
-    background: #f8fafc;
-  }
-  tr.group-header td { position: sticky; left: 0; z-index: 3; }
+  thead th:first-child { position: sticky; left: 0; z-index: 12; background: #f8fafc; }
+  tr.group-header td   { position: sticky; left: 0; z-index: 3; }
 
   /* ── Edit-Popup: Desktop ── */
   #edit-popup { min-width: 270px; max-width: 340px; }
 
-  /* ── Mobile ── */
+  /* ══════════════════════════════════════════════
+     MOBILE – Native-App-Feel (<= 640px)
+  ══════════════════════════════════════════════ */
   @media (max-width: 640px) {
-    /* Topbar: kompakter, horizontal scrollbar als Fallback */
+
+    /* ── Topbar: 2-Zeilen-Layout ── */
     .topbar {
-      padding: 0 8px; gap: 4px; height: 52px;
-      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      flex-wrap: wrap; height: auto;
+      padding: 0; gap: 0;
     }
-    .topbar h1 { font-size: 0; }           /* Titel ausblenden */
-    .topbar h1::before { content: "🐾"; font-size: 18px; } /* Nur Icon */
-    .btn { padding: 6px 9px; font-size: 11px; min-height: 36px; }
-    .kw-nav { padding: 3px 6px; gap: 2px; }
-    .kw-nav .kw-label { min-width: 56px; font-size: 12px; }
-    .kw-nav button { font-size: 16px; padding: 2px 4px; }
-    /* Labels in Action-Buttons ausblenden */
-    #btn-absence span, #btn-swap span, #btn-vac span { display: none; }
-    #btn-clear-kw span { display: none; }
-    .btn-lock-label-lock   { font-size: 0; }
-    .btn-lock-label-lock::before   { content: "🔒"; font-size: 14px; }
-    .btn-lock-label-unlock { font-size: 0; }
-    .btn-lock-label-unlock::before { content: "🔓"; font-size: 14px; }
-    /* Main */
+    /* Zeile 1: Nav + Lock */
+    .topbar > *:not(.topbar-actions) {
+      padding: 0; margin: 0;
+    }
+    .topbar-row1 {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 0 10px; height: 52px;
+      flex-shrink: 0;
+    }
+    /* Zeile 2: Action-Buttons */
+    .topbar-actions {
+      display: flex !important; align-items: stretch;
+      width: 100%; border-top: 1px solid rgba(255,255,255,0.1);
+      background: #162032;
+    }
+    .topbar-actions .btn {
+      flex: 1; border-radius: 0 !important;
+      padding: 0 4px; min-height: 44px; height: 44px;
+      font-size: 11px; font-weight: 500;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; border-right: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+    .topbar-actions .btn:last-child { border-right: none; }
+    .topbar-actions .btn .btn-icon { font-size: 16px; line-height: 1; }
+    .topbar-actions .btn .btn-lbl  { font-size: 9px; opacity: 0.8; }
+    /* edit-only in Row 2 */
+    .topbar-actions .edit-only { display: none !important; }
+    body.edit-mode .topbar-actions .edit-only { display: flex !important; }
+
+    /* Zeile 1 Elemente anpassen */
+    .topbar h1 { font-size: 14px; font-weight: 700; flex-shrink: 0; }
+    .kw-nav { padding: 4px 8px; gap: 0; }
+    .kw-nav .kw-label { min-width: 62px; font-size: 13px; font-weight: 700; }
+    .kw-nav button { font-size: 20px; padding: 2px 6px; min-height: 40px; }
+    #btn-cal { font-size: 18px !important; padding: 6px 8px !important; }
+    .view-toggle { gap: 0; }
+    .view-toggle button { padding: 6px 10px; font-size: 12px; min-height: 36px; }
+    /* Elemente in Zeile 1 verstecken */
+    #btn-heute, #mod-count, #person-filter { display: none; }
+    .topbar .spacer { display: none; }
+    .day-header-topbar { max-width: 100px; }
+    /* Lock-Button */
+    #btn-lock {
+      margin-left: auto; font-size: 12px;
+      padding: 6px 12px; min-height: 36px; white-space: nowrap;
+    }
+    .btn-lock-label-lock::before   { content: "🔒 "; }
+    .btn-lock-label-unlock::before { content: "🔓 "; }
+
+    /* ── Main ── */
     .main { padding: 8px; }
-    .statusbar { font-size: 11px; gap: 6px; }
-    /* Tabelle */
+    .statusbar { font-size: 11px; gap: 5px; flex-wrap: wrap; }
+
+    /* ── Tabelle ── */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    thead th.day-col { min-width: 110px; }
-    /* Modals: volle Breite, von unten */
-    #swap-dialog, #vac-dialog, #absence-dialog, #pin-dialog {
-      width: 100% !important; max-width: 100% !important;
-      border-radius: 18px 18px 0 0 !important;
-      margin: 0 !important; max-height: 90vh; overflow-y: auto;
+    thead th.day-col { min-width: 105px; }
+
+    /* ── iOS: Inputs 16px damit kein Auto-Zoom ── */
+    input, select, textarea {
+      font-size: 16px !important;
     }
-    #swap-overlay, #vac-overlay, #absence-overlay, #pin-overlay {
+    /* Aber Quick-Picks-Buttons trotzdem klein */
+    .quick-pick { font-size: 13px !important; }
+
+    /* ── Bottom Sheet für alle Modals ── */
+    #swap-overlay, #vac-overlay, #absence-overlay, #pin-overlay,
+    #us-frei-overlay {
       align-items: flex-end !important;
     }
-    /* Edit Popup: Bottom Sheet auf Handy */
+    #swap-dialog, #vac-dialog, #absence-dialog, #pin-dialog,
+    #us-frei-dialog {
+      width: 100% !important; max-width: 100% !important;
+      border-radius: 20px 20px 0 0 !important;
+      margin: 0 !important;
+      max-height: 92vh; overflow-y: auto;
+      padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    }
+    #swap-dialog::before, #vac-dialog::before, #absence-dialog::before,
+    #pin-dialog::before, #us-frei-dialog::before {
+      content: ""; display: block; width: 40px; height: 4px;
+      background: #e2e8f0; border-radius: 2px; margin: -8px auto 14px;
+    }
+    /* Modal-Buttons Touch-freundlich */
+    .modal-actions button, .abs-actions button, .pin-buttons button {
+      min-height: 48px; font-size: 15px !important;
+    }
+    .modal-row select, .modal-row input[type="date"],
+    .abs-row select, .abs-row input[type="date"] {
+      min-height: 48px; padding: 12px 14px !important;
+    }
+
+    /* ── Edit Popup: Bottom Sheet ── */
     #edit-popup {
       position: fixed !important;
       bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
       max-width: 100% !important; min-width: 0 !important; width: 100% !important;
-      border-radius: 18px 18px 0 0 !important;
-      padding: 16px 16px 30px !important;
-      box-shadow: 0 -4px 30px rgba(0,0,0,0.18) !important;
-      /* Zieh-Indikator */
+      border-radius: 20px 20px 0 0 !important;
+      padding: 6px 16px max(20px, env(safe-area-inset-bottom)) !important;
+      box-shadow: 0 -6px 30px rgba(0,0,0,0.22) !important;
     }
     #edit-popup::before {
-      content: ""; display: block; width: 36px; height: 4px;
-      background: #e2e8f0; border-radius: 2px; margin: -8px auto 12px;
+      content: ""; display: block; width: 40px; height: 4px;
+      background: #e2e8f0; border-radius: 2px; margin: 4px auto 12px;
     }
-    .quick-picks { gap: 6px; }
-    .quick-pick { padding: 6px 10px; font-size: 12px; min-height: 34px; }
-    #popup-overlay { display: none !important; }  /* Overlay ist der ganze Screen */
-    /* View-Toggle auf Handy */
-    .view-toggle button { padding: 5px 10px; font-size: 11px; }
+    #edit-popup h3 { font-size: 15px; margin-bottom: 10px; }
+    #edit-input { min-height: 48px; font-size: 16px !important; padding: 12px 14px; }
+    #edit-note  { font-size: 16px !important; }
+    .quick-picks { gap: 7px; margin-bottom: 12px; }
+    .quick-pick  { padding: 8px 13px; min-height: 40px; }
+    #btn-save, #btn-cancel, #btn-reset {
+      min-height: 46px; font-size: 14px !important; padding: 10px 16px;
+    }
+    #popup-overlay { display: none !important; }
+
+    /* ── Vac-Picker Action Sheet ── */
+    #vac-picker { padding-bottom: max(16px, env(safe-area-inset-bottom)) !important; }
   }
 
-  @media (max-width: 400px) {
-    .topbar h1::before { display: none; }
-    #btn-heute { display: none; }
-    #btn-cal { padding: 4px 6px !important; }
+  @media (max-width: 380px) {
+    .topbar h1 { display: none; }
+    .kw-nav .kw-label { min-width: 52px; font-size: 12px; }
   }
 </style>
 </head>
@@ -955,6 +1087,48 @@
       <button class="btn-modal-cancel" id="btn-swap-cancel">Abbrechen</button>
       <button class="btn-modal-preview" id="btn-swap-preview">Vorschau</button>
       <button class="btn-modal-ok" id="btn-swap-ok" disabled>Tausch bestätigen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vac / ÜS-Frei Picker (Action Sheet) -->
+<div id="vac-picker-overlay">
+  <div id="vac-picker">
+    <div class="vac-picker-title">Was möchtest du tun?</div>
+    <button class="vac-picker-btn" id="btn-pick-vac">
+      <span class="vpb-icon">🏖</span>
+      <span class="vpb-text">
+        <span class="vpb-title">Urlaub anpassen</span>
+        <span class="vpb-sub">Urlaubstage eintragen oder entfernen</span>
+      </span>
+    </button>
+    <button class="vac-picker-btn" id="btn-pick-us-frei">
+      <span class="vpb-icon">⏱</span>
+      <span class="vpb-text">
+        <span class="vpb-title">Frei (Überstunden-Abbau)</span>
+        <span class="vpb-sub">Freien Tag für ÜS-Abbau manuell eintragen</span>
+      </span>
+    </button>
+    <button class="vac-picker-cancel" id="btn-pick-cancel">Abbrechen</button>
+  </div>
+</div>
+
+<!-- Manuelles ÜS-Frei Modal -->
+<div id="us-frei-overlay">
+  <div id="us-frei-dialog">
+    <h2>⏱ Frei (Überstunden-Abbau)</h2>
+    <p class="modal-subtitle">Trägt einen Freien Tag (ÜS-Abbau) manuell ein.</p>
+    <div class="modal-row">
+      <label>Person</label>
+      <select id="us-frei-person"></select>
+    </div>
+    <div class="modal-row">
+      <label>Tag</label>
+      <input type="date" id="us-frei-date">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" id="btn-us-frei-cancel">Abbrechen</button>
+      <button class="btn-modal-ok"     id="btn-us-frei-ok">⏱ Frei eintragen</button>
     </div>
   </div>
 </div>
@@ -1046,52 +1220,65 @@
 
 <!-- Top Bar -->
 <div class="topbar">
-  <h1>🐾 Dienstplan 2026</h1>
+  <!-- ── Zeile 1 (immer sichtbar) ── -->
+  <div class="topbar-row1">
+    <h1>🐾 Dienstplan 2026</h1>
 
-  <!-- Wochen-Navigation -->
-  <div class="kw-nav">
-    <button id="btn-prev">‹</button>
-    <span class="kw-label" id="kw-label">KW 17</span>
-    <button id="btn-next">›</button>
+    <div class="kw-nav">
+      <button id="btn-prev">‹</button>
+      <span class="kw-label" id="kw-label">KW 17</span>
+      <button id="btn-next">›</button>
+    </div>
+
+    <div class="day-header-topbar">
+      <span class="dh-day" id="dh-day">Montag</span>
+      <span class="dh-date" id="dh-date"></span>
+    </div>
+
+    <button class="btn btn-ghost" id="btn-cal" title="Kalender" style="font-size:17px;padding:5px 10px">📅</button>
+    <button class="btn btn-ghost" id="btn-heute" title="Aktuelle Woche">Heute</button>
+    <span id="mod-count" class="mod-count"></span>
+
+    <div class="view-toggle">
+      <button id="btn-view-week" class="active">Woche</button>
+      <button id="btn-view-day">Tag</button>
+    </div>
+
+    <select id="person-filter" title="Person filtern">
+      <option value="">👥 Alle</option>
+    </select>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
+      <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
+      <span class="btn-lock-label-unlock">🔓 Sperren</span>
+    </button>
   </div>
 
-  <!-- Tag-Anzeige in der Topbar (nur Tagesansicht) -->
-  <div class="day-header-topbar">
-    <span class="dh-day" id="dh-day">Montag</span>
-    <span class="dh-date" id="dh-date"></span>
+  <!-- ── Zeile 2: Action-Buttons (auf Mobile eigene Zeile) ── -->
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" id="btn-absence" title="Abwesenheit">
+      <span class="btn-icon">🤒</span><span class="btn-lbl">Abwesenheit</span>
+    </button>
+    <button class="btn btn-ghost" id="btn-swap" title="Tausch">
+      <span class="btn-icon">⇄</span><span class="btn-lbl">Tausch</span>
+    </button>
+    <button class="btn btn-ghost" id="btn-vac" title="Urlaub / ÜS-Frei">
+      <span class="btn-icon">🏖</span><span class="btn-lbl">Urlaub</span>
+    </button>
+    <button class="btn btn-ghost" id="btn-overtime" title="Überstunden-Vorschläge">
+      <span class="btn-icon">⏱</span>
+      <span class="ot-topbar-badge" id="overtime-badge" style="display:none">0</span>
+      <span class="btn-lbl">ÜS-Abbau</span>
+    </button>
+    <button class="btn btn-ghost edit-only" id="btn-clear-kw">
+      <span class="btn-icon">↩</span><span class="btn-lbl">Reset</span>
+    </button>
+    <button class="btn btn-ghost edit-only" id="btn-regen">
+      <span class="btn-icon">⟳</span><span class="btn-lbl">Neu</span>
+    </button>
   </div>
-
-  <button class="btn btn-ghost" id="btn-cal"   title="Kalender" style="font-size:16px;padding:4px 10px">📅</button>
-  <button class="btn btn-ghost" id="btn-heute" title="Aktuelle Woche" style="font-size:12px">Heute</button>
-  <span id="mod-count" class="mod-count"></span>
-
-  <!-- Ansicht-Umschalter -->
-  <div class="view-toggle">
-    <button id="btn-view-week"  class="active">Woche</button>
-    <button id="btn-view-day">Tag</button>
-  </div>
-
-  <!-- Person-Filter -->
-  <select id="person-filter" title="Person filtern">
-    <option value="">👥 Alle</option>
-  </select>
-
-  <div class="spacer"></div>
-
-  <button class="btn btn-ghost" id="btn-absence" title="Abwesenheit">🤒 <span>Abwesenheit</span></button>
-  <button class="btn btn-ghost" id="btn-swap"    title="Tausch">⇄ <span>Tausch</span></button>
-  <button class="btn btn-ghost" id="btn-vac"     title="Urlaub">🏖 <span>Urlaub</span></button>
-
-  <button class="btn btn-ghost edit-only" id="btn-clear-kw"><span>Zurücksetzen</span></button>
-  <button class="btn btn-ghost edit-only" id="btn-regen">⟳ Neu</button>
-  <button class="btn btn-ghost" id="btn-overtime" title="Überstunden-Abbau Vorschläge">
-    ⏱ <span class="ot-topbar-badge" id="overtime-badge" style="display:none">0</span>
-  </button>
-
-  <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
-    <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
-    <span class="btn-lock-label-unlock">🔓 Sperren</span>
-  </button>
 </div>
 
 <!-- Main -->
@@ -2353,7 +2540,81 @@ function _showVacModal() {
   vacOverlay.classList.add("visible");
 }
 
-btnVac.addEventListener("click", openVacModal);
+// ── Vac-Picker & ÜS-Frei ──────────────────────────────────────────────────
+const vacPickerOverlay = document.getElementById("vac-picker-overlay");
+const btnPickVac       = document.getElementById("btn-pick-vac");
+const btnPickUsFrei    = document.getElementById("btn-pick-us-frei");
+const btnPickCancel    = document.getElementById("btn-pick-cancel");
+const usFreiOverlay    = document.getElementById("us-frei-overlay");
+const usFreiPersonSel  = document.getElementById("us-frei-person");
+const usFreiDateInput  = document.getElementById("us-frei-date");
+const btnUsFreiCancel  = document.getElementById("btn-us-frei-cancel");
+const btnUsFreiOk      = document.getElementById("btn-us-frei-ok");
+
+function openVacPicker() {
+  if (!isEditMode) { _pendingVacOpen = true; _showPinForAction(); return; }
+  vacPickerOverlay.classList.add("visible");
+}
+
+btnVac.addEventListener("click", openVacPicker);
+vacPickerOverlay.addEventListener("click", e => {
+  if (e.target === vacPickerOverlay) vacPickerOverlay.classList.remove("visible");
+});
+btnPickCancel.addEventListener("click", () => vacPickerOverlay.classList.remove("visible"));
+
+btnPickVac.addEventListener("click", () => {
+  vacPickerOverlay.classList.remove("visible");
+  _showVacModal();
+});
+
+btnPickUsFrei.addEventListener("click", () => {
+  vacPickerOverlay.classList.remove("visible");
+  _showUsFreiModal();
+});
+
+function _showUsFreiModal() {
+  const persons = planData?.persons || [];
+  usFreiPersonSel.innerHTML = persons.map(p => `<option>${p}</option>`).join("");
+  usFreiDateInput.value = new Date().toISOString().slice(0, 10);
+  usFreiOverlay.classList.add("visible");
+  setTimeout(() => usFreiPersonSel.focus(), 80);
+}
+
+btnUsFreiCancel.addEventListener("click", () => usFreiOverlay.classList.remove("visible"));
+usFreiOverlay.addEventListener("click", e => {
+  if (e.target === usFreiOverlay) usFreiOverlay.classList.remove("visible");
+});
+
+btnUsFreiOk.addEventListener("click", async () => {
+  const person  = usFreiPersonSel.value;
+  const dateStr = usFreiDateInput.value;
+  if (!person || !dateStr) { showToast("Bitte Person und Datum wählen", "err"); return; }
+
+  // Datum → KW + Wochentag-Index
+  const d  = new Date(dateStr + "T12:00:00");
+  const kw = isoKwFromDate(d);
+  const di = (d.getDay() + 6) % 7;   // 0=Mo … 5=Sa, 6=So
+
+  if (di > 5) { showToast("Sonntage können nicht eingetragen werden", "err"); return; }
+
+  btnUsFreiOk.disabled = true; btnUsFreiOk.textContent = "…";
+  try {
+    const r = await fetch("/api/overtime/apply", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kw, di, person, swap: null })
+    });
+    if (r.status === 403) { showToast("Nicht autorisiert – bitte einloggen", "err"); return; }
+    const data = await r.json();
+    if (!data.ok) { showToast("Fehler: " + (data.error || "?"), "err"); return; }
+    const dayNames = ["Mo","Di","Mi","Do","Fr","Sa"];
+    showToast(`${person}: Frei (ÜS-Abbau) am ${dayNames[di]} (KW ${kw}) eingetragen`, "ok");
+    usFreiOverlay.classList.remove("visible");
+    if (kw === currentKw) await loadKw(kw);
+  } catch(e) { showToast("Fehler: " + e.message, "err"); }
+  finally { btnUsFreiOk.disabled = false; btnUsFreiOk.textContent = "⏱ Frei eintragen"; }
+});
+
+// ── Vacation Modal ─────────────────────────────────────────────────────────
 btnVacCancel.addEventListener("click", () => vacOverlay.classList.remove("visible"));
 vacOverlay.addEventListener("click", e => { if (e.target === vacOverlay) vacOverlay.classList.remove("visible"); });
 [btnVacAdd, btnVacRemove].forEach(btn => {
