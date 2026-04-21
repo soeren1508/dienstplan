@@ -18,7 +18,8 @@
     },
     "Imke": {
       "4": "Frei (ÜS-Abbau)",
-      "1": "FD: Anmeldung"
+      "1": "FD: Anmeldung",
+      "2": "SD: Behandlung"
     },
     "Lisa": {
       "1": "SD (12-19): Behandlung"
@@ -30,7 +31,7 @@
       "2": "FD: Assistenz Ulf"
     },
     "Natalie": {
-      "2": "SD: Behandlung"
+      "2": "FD: Behandlung"
     }
   },
   "18": {
