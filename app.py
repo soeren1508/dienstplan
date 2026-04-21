@@ -211,7 +211,7 @@ def _generate_all():
     all_vac = _get_all_vac()
     auffl   = {p: 0 for p in ALL_PERSONS}
     plans   = {}
-    for kw in range(17, 24):
+    for kw in range(17, 28):
         plans[kw] = generate_week(kw, all_vac, auffl)
     _plan_cache = plans
 
@@ -993,7 +993,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     print("Synchronisiere Overrides von GitHub …")
     _sync_from_github()
-    print("Generiere Plan KW 17–23 …")
+    print("Generiere Plan KW 17–27 …")
     _generate_all()
     ip = _get_local_ip()
     print(f"""
