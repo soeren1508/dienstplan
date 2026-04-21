@@ -219,14 +219,18 @@ def generate_week(kw_num, vacations, auffl):
                 fd_prio = ["Natalie", "Kristin", "Deborah"]
                 sd_prio = ["Natalie", "Kristin", "Deborah", "Imke"]
 
-        # FD-Slot
+        # FD-Slot — Deborah nur in geraden KWs (Paritätspflicht)
         for fp in fd_prio:
+            if fp == "Deborah" and not is_even:
+                continue   # ungerade KW → Deborah niemals FD
             if free(fp, di) and not pa(fp, di):
                 s(fp, di, "FD: Assistenz Ulf")
                 break
 
-        # SD-Slot (anderer Candidate)
+        # SD-Slot — Deborah nur in ungeraden KWs (Paritätspflicht)
         for sp in sd_prio:
+            if sp == "Deborah" and is_even:
+                continue   # gerade KW → Deborah niemals SD
             if free(sp, di) and not pa(sp, di):
                 s(sp, di, "SD: Assistenz Ulf")
                 break
