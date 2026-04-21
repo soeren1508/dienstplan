@@ -895,76 +895,123 @@
   /* ══════════════════════════════════════════════
      MOBILE – Native-App-Feel (<= 640px)
   ══════════════════════════════════════════════ */
+  /* ══════════════════════════════════════════════
+     MOBILE – Native-App-Feel (<= 640px)
+     Architektur: Fixed Topbar oben + Fixed Tab-Bar unten
+     Content scrollt frei dazwischen (wie iOS/Android)
+  ══════════════════════════════════════════════ */
   @media (max-width: 640px) {
 
-    /* ── Topbar: 2-Zeilen-Layout ── */
+    /* ── Topbar: FIXED oben (nicht sticky) ── */
     .topbar {
-      flex-wrap: wrap; height: auto;
-      padding: 0; gap: 0;
-    }
-    /* Zeile 1: Nav + Lock */
-    .topbar > *:not(.topbar-actions) {
-      padding: 0; margin: 0;
+      position: fixed !important;
+      top: 0; left: 0; right: 0;
+      height: auto !important;
+      /* Notch / Dynamic Island */
+      padding: env(safe-area-inset-top) 0 0 0 !important;
+      flex-wrap: nowrap !important;
+      gap: 0 !important;
     }
     .topbar-row1 {
-      display: flex; align-items: center; gap: 6px;
-      width: 100%; padding: 0 10px; height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      height: 52px;
+      padding: 0 10px;
       flex-shrink: 0;
     }
-    /* Zeile 2: Action-Buttons */
+
+    /* ── Bottom Tab-Bar: Action-Buttons FIXED unten ── */
     .topbar-actions {
-      display: flex !important; align-items: stretch;
-      width: 100%; border-top: 1px solid rgba(255,255,255,0.1);
-      background: #162032;
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      display: flex !important;
+      align-items: stretch;
+      background: #1e293b;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 101;
+      height: auto !important;
+      width: 100% !important;
     }
     .topbar-actions .btn {
-      flex: 1; border-radius: 0 !important;
-      padding: 0 4px; min-height: 44px; height: 44px;
+      flex: 1;
+      border-radius: 0 !important;
+      padding: 0 4px;
+      min-height: 52px;
+      height: 52px;
       font-size: 11px; font-weight: 500;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 2px; border-right: 1px solid rgba(255,255,255,0.08);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px;
+      border-right: 1px solid rgba(255,255,255,0.08);
       white-space: nowrap;
+      transition: background 0.12s;
     }
     .topbar-actions .btn:last-child { border-right: none; }
-    .topbar-actions .btn .btn-icon { font-size: 16px; line-height: 1; }
-    .topbar-actions .btn .btn-lbl  { font-size: 9px; opacity: 0.8; }
-    /* edit-only in Row 2 */
+    .topbar-actions .btn:active { background: rgba(255,255,255,0.15); }
+    .topbar-actions .btn .btn-icon { font-size: 20px; line-height: 1; }
+    .topbar-actions .btn .btn-lbl  { font-size: 9px; opacity: 0.75; letter-spacing: 0.3px; }
+    /* edit-only in Tab-Bar */
     .topbar-actions .edit-only { display: none !important; }
     body.edit-mode .topbar-actions .edit-only { display: flex !important; }
+    /* ÜS-Button in Tab-Bar korrekt ausrichten */
+    body.edit-mode #btn-overtime {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 3px !important;
+    }
+    /* In Tagesansicht: Tab-Bar ausblenden (Bottom-Nav übernimmt) */
+    body.day-view .topbar-actions { display: none !important; }
 
-    /* Zeile 1 Elemente anpassen */
-    .topbar h1 { font-size: 14px; font-weight: 700; flex-shrink: 0; }
-    .kw-nav { padding: 4px 8px; gap: 0; }
-    .kw-nav .kw-label { min-width: 62px; font-size: 13px; font-weight: 700; }
-    .kw-nav button { font-size: 20px; padding: 2px 6px; min-height: 40px; }
+    /* ── Content: Platz für Fixed-Bars ── */
+    .main {
+      padding-top: calc(52px + env(safe-area-inset-top) + 10px) !important;
+      padding-bottom: calc(52px + env(safe-area-inset-bottom) + 10px) !important;
+      padding-left: 8px !important;
+      padding-right: 8px !important;
+    }
+
+    /* ── Toast: unterhalb der Topbar ── */
+    #toast {
+      top: calc(52px + env(safe-area-inset-top) + 8px) !important;
+    }
+
+    /* ── Topbar Zeile-1 Elemente ── */
+    .topbar h1 { font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .kw-nav { padding: 4px 6px; gap: 0; }
+    .kw-nav .kw-label { min-width: 60px; font-size: 13px; font-weight: 700; }
+    .kw-nav button { font-size: 22px; padding: 2px 6px; min-height: 40px; min-width: 36px; }
     #btn-cal { font-size: 18px !important; padding: 6px 8px !important; }
     .view-toggle { gap: 0; }
     .view-toggle button { padding: 6px 10px; font-size: 12px; min-height: 36px; }
-    /* Elemente in Zeile 1 verstecken */
+    /* Unwichtige Elemente verstecken */
     #btn-heute, #mod-count, #person-filter { display: none; }
     .topbar .spacer { display: none; }
     .day-header-topbar { max-width: 100px; }
     /* Lock-Button */
     #btn-lock {
-      margin-left: auto; font-size: 12px;
-      padding: 6px 12px; min-height: 36px; white-space: nowrap;
+      margin-left: auto;
+      font-size: 11px;
+      padding: 6px 10px;
+      min-height: 36px;
+      white-space: nowrap;
     }
     .btn-lock-label-lock::before   { content: "🔒 "; }
     .btn-lock-label-unlock::before { content: "🔓 "; }
 
-    /* ── Main ── */
-    .main { padding: 8px; }
+    /* ── Statusbar ── */
     .statusbar { font-size: 11px; gap: 5px; flex-wrap: wrap; }
 
     /* ── Tabelle ── */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
     thead th.day-col { min-width: 105px; }
 
-    /* ── iOS: Inputs 16px damit kein Auto-Zoom ── */
-    input, select, textarea {
-      font-size: 16px !important;
-    }
-    /* Aber Quick-Picks-Buttons trotzdem klein */
+    /* ── iOS: Inputs 16px → kein Auto-Zoom ── */
+    input, select, textarea { font-size: 16px !important; }
     .quick-pick { font-size: 13px !important; }
 
     /* ── Bottom Sheet für alle Modals ── */
@@ -978,16 +1025,16 @@
       border-radius: 20px 20px 0 0 !important;
       margin: 0 !important;
       max-height: 92vh; overflow-y: auto;
-      padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+      padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
     }
     #swap-dialog::before, #vac-dialog::before, #absence-dialog::before,
     #pin-dialog::before, #us-frei-dialog::before {
       content: ""; display: block; width: 40px; height: 4px;
-      background: #e2e8f0; border-radius: 2px; margin: -8px auto 14px;
+      background: #e2e8f0; border-radius: 2px; margin: -6px auto 16px;
     }
     /* Modal-Buttons Touch-freundlich */
     .modal-actions button, .abs-actions button, .pin-buttons button {
-      min-height: 48px; font-size: 15px !important;
+      min-height: 50px; font-size: 15px !important;
     }
     .modal-row select, .modal-row input[type="date"],
     .abs-row select, .abs-row input[type="date"] {
@@ -1000,7 +1047,7 @@
       bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
       max-width: 100% !important; min-width: 0 !important; width: 100% !important;
       border-radius: 20px 20px 0 0 !important;
-      padding: 6px 16px max(20px, env(safe-area-inset-bottom)) !important;
+      padding: 6px 16px max(24px, env(safe-area-inset-bottom)) !important;
       box-shadow: 0 -6px 30px rgba(0,0,0,0.22) !important;
     }
     #edit-popup::before {
@@ -1011,19 +1058,25 @@
     #edit-input { min-height: 48px; font-size: 16px !important; padding: 12px 14px; }
     #edit-note  { font-size: 16px !important; }
     .quick-picks { gap: 7px; margin-bottom: 12px; }
-    .quick-pick  { padding: 8px 13px; min-height: 40px; }
+    .quick-pick  { padding: 8px 13px; min-height: 42px; }
     #btn-save, #btn-cancel, #btn-reset {
-      min-height: 46px; font-size: 14px !important; padding: 10px 16px;
+      min-height: 48px; font-size: 14px !important; padding: 10px 16px;
     }
     #popup-overlay { display: none !important; }
 
-    /* ── Vac-Picker Action Sheet ── */
-    #vac-picker { padding-bottom: max(16px, env(safe-area-inset-bottom)) !important; }
+    /* ── Vac-Picker / ÜS Action Sheet ── */
+    #vac-picker { padding-bottom: max(20px, env(safe-area-inset-bottom)) !important; }
+
+    /* ── Tagesansicht: kein doppeltes Bottom-Padding ── */
+    body.day-view .main {
+      padding-bottom: 8px !important;
+    }
   }
 
   @media (max-width: 380px) {
     .topbar h1 { display: none; }
     .kw-nav .kw-label { min-width: 52px; font-size: 12px; }
+    .kw-nav button { min-width: 32px; }
   }
 </style>
 </head>
