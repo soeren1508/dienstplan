@@ -5,7 +5,7 @@
       "2": "SD: Anmeldung || Ab 15 Uhr"
     },
     "Nadine": {
-      "2": "SD: Behandlung+Auffüllen || +Auffüllen",
+      "2": "SD: Behandlung || +Auffüllen",
       "3": "SD: Assistenz Lisa OP",
       "4": "FD: Springer"
     },
@@ -28,8 +28,7 @@
     },
     "Alyssa": {
       "1": "FD: Behandlung",
-      "2": "FD: Behandlung",
-      "4": "SD: Behandlung (ab 15:30) || +Auffüllen"
+      "2": "FD: Behandlung"
     },
     "Kristin": {
       "2": "FD: Assistenz Ulf"
