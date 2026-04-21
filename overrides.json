@@ -10,7 +10,8 @@
       "4": "SD: Anmeldung"
     },
     "Deborah": {
-      "0": "FD: Behandlung"
+      "0": "FD: Behandlung",
+      "2": "SD: Assistenz Ulf"
     },
     "Pauline": {
       "0": "SD: Behandlung"
@@ -24,6 +25,9 @@
     },
     "Alyssa": {
       "1": "FD: Behandlung"
+    },
+    "Kristin": {
+      "2": "SD: Behandlung"
     }
   },
   "18": {
