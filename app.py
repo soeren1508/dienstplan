@@ -131,10 +131,20 @@ def _sync_from_github():
                 print(f"[GitHub] {filename} ungültig: {e}")
 
 app = Flask(__name__)
-CORS(app)  # Erlaubt Netlify-Frontend → Render-Backend
+CORS(app, supports_credentials=True)
 
-# SECRET_KEY: stabil aus Env-Var (wichtig für Render.com, sonst verliert jeder Restart Sessions)
-app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+# SECRET_KEY: deterministisch ableiten, damit Sessions auch nach Server-Neustarts
+# (Render Auto-Deploy nach GitHub-Push!) gültig bleiben.
+# Priorität: Env-Var SECRET_KEY → Hash aus PIN → zufällig (nur Notfall)
+_key_base   = os.environ.get("SECRET_KEY") or ("dienstplan-2026-" + EDIT_PIN)
+app.secret_key = hashlib.sha256(_key_base.encode()).hexdigest()
+
+from datetime import timedelta
+app.config.update(
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8),
+    SESSION_COOKIE_SAMESITE    = "Lax",
+    SESSION_COOKIE_HTTPONLY    = True,
+)
 
 # _sync_from_github() und _generate_all() werden NACH deren Definition aufgerufen
 # (siehe unten, nach _generate_all)
@@ -331,7 +341,7 @@ def api_auth():
     pin  = str(data.get("pin", ""))
     if pin == EDIT_PIN:
         session["authenticated"] = True
-        session.permanent = False   # Läuft mit Browser-Session ab
+        session.permanent = True    # 8 h (PERMANENT_SESSION_LIFETIME)
         return jsonify({"ok": True})
     return jsonify({"ok": False, "error": "Falscher PIN"}), 401
 
