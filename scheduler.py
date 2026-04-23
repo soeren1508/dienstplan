@@ -183,39 +183,38 @@ def generate_week(kw_num, vacations, auffl):
             continue
 
         # Prioritäten je nach Parität und Deborah-Status
+        # Deborah ist nur in ihrem Paritäts-Shift (gerade→FD, ungerade→SD) erlaubt.
+        # Pauline übernimmt SD-Assistenz Ulf (Mo) damit Deborah/Kristin für Anmeldung frei bleiben.
         if is_even:
             if di == 0:  # Mo gerade
                 if deborah_deckt_anmeldung_mo:
                     fd_prio = ["Kristin", "Deborah", "Natalie"]
-                    sd_prio = ["Natalie", "Kristin", "Deborah"]
+                    sd_prio = ["Pauline", "Natalie", "Kristin"]   # Pauline: kein Anmeldungs-Verbot für Assistenz
                 else:
                     fd_prio = ["Deborah", "Kristin", "Natalie"]
-                    sd_prio = ["Kristin", "Natalie", "Deborah"]
+                    sd_prio = ["Pauline", "Natalie", "Kristin"]   # Pauline entlastet Kristin/Deborah
             elif di == 1:  # Di gerade
-                # Natalie nimmt FD wenn verfügbar (SCHUL_AUSFALL), sonst Deborah
                 if not pa("Natalie", 1) and free("Natalie", 1):
                     fd_prio = ["Natalie", "Deborah", "Kristin"]
                     sd_prio = ["Kristin", "Imke", "Deborah", "Natalie"]
                 else:
-                    # Natalie weg (KW26+): Deborah FD, Kristin SD
                     fd_prio = ["Deborah", "Kristin", "Natalie"]
                     sd_prio = ["Kristin", "Natalie", "Deborah"]
             else:  # Mi gerade
-                # KW27+: Natalie weg → Deborah FD, Kristin SD
                 if kw_num >= 27:
                     fd_prio = ["Deborah", "Kristin", "Natalie"]
                 else:
                     fd_prio = ["Kristin", "Deborah", "Natalie"]
-                sd_prio = ["Natalie", "Kristin", "Deborah"]
+                sd_prio = ["Natalie", "Kristin", "Nicolas", "Deborah"]  # Nicolas als Fallback vor Deborah
         else:
             # Ungerade KW
-            if di == 0:  # Mo: Natalie FD, Kristin SD; Deborah macht Anmeldung
+            if di == 0:  # Mo: Natalie FD, Kristin SD; Pauline hält SD:Assistenz Ulf → Deborah für Anmeldung frei
                 fd_prio = ["Natalie", "Kristin", "Deborah"]
+                sd_prio = ["Pauline", "Kristin", "Natalie"]   # Pauline erst → Deborah frei für SD:Anmeldung
+            elif di == 1:  # Di ungerade: Imke+Nicolas als Fallbacks für FD (wenn Natalie+Kristin fehlen)
+                fd_prio = ["Natalie", "Kristin", "Imke", "Nicolas", "Deborah"]
                 sd_prio = ["Kristin", "Deborah", "Natalie"]
-            elif di == 1:  # Di ungerade
-                fd_prio = ["Natalie", "Kristin", "Deborah"]
-                sd_prio = ["Kristin", "Deborah", "Natalie"]
-            else:  # Mi ungerade: erweiterter SD-Pool damit Slot auch bei Ausfällen besetzt wird
+            else:  # Mi ungerade
                 fd_prio = ["Natalie", "Kristin", "Deborah"]
                 sd_prio = ["Natalie", "Kristin", "Deborah", "Imke"]
 
@@ -275,8 +274,8 @@ def generate_week(kw_num, vacations, auffl):
         kr_shift = "SD" if imke_fr_shift == "FD" else "FD"
         if kr_shift == "FD":
             s("Kristin", 4, "FD: Anmeldung + Bestellungen")
-        else:  # SD
-            s("Kristin", 4, "SD: Behandlung + Bestellungen")
+        else:  # SD — auch SD braucht Anmeldung
+            s("Kristin", 4, "SD: Anmeldung + Bestellungen")
     elif "Assistenz Wilke OP" in g("Kristin", 4) and "+ Bestellungen" not in g("Kristin", 4):
         s("Kristin", 4, g("Kristin", 4) + " + Bestellungen")
 
@@ -327,6 +326,58 @@ def generate_week(kw_num, vacations, auffl):
         for di in range(6):
             if plan[p][di] == "FREI_SCHUTZ":
                 plan[p][di] = "–"
+
+    # ── 15b) Post-Fix: verbleibende Anmeldungs- und Assistenz-Ulf-Lücken schließen ─
+    # Sicherheitsnetz: läuft nach allen anderen Schritten und konvertiert
+    # Behandlung → Anmeldung/Assistenz Ulf wo nötig.
+    for di in range(5):
+        if is_feiertag(di, dates):
+            continue
+
+        def _fd_anm():
+            return any("FD" in plan[p][di] and "Anmeldung" in plan[p][di] for p in TFAS)
+        def _sd_anm():
+            return any("SD" in plan[p][di] and "Anmeldung" in plan[p][di] for p in TFAS)
+        def _fd_ulf():
+            return any("FD" in plan[p][di] and "Assistenz Ulf" in plan[p][di] for p in TFAS)
+        def _sd_ulf():
+            return any("SD" in plan[p][di] and "Assistenz Ulf" in plan[p][di] for p in TFAS)
+
+        # FD:Anmeldung fehlt → ersten FD:Behandlung (nicht Pauline) umwandeln
+        if not _fd_anm():
+            for p in TFAS:
+                if p == "Pauline":
+                    continue
+                v = plan[p][di]
+                if v.startswith("FD") and "Behandlung" in v and "Assistenz" not in v:
+                    plan[p][di] = "FD: Anmeldung"
+                    break
+
+        # SD:Anmeldung fehlt → ersten SD:Behandlung (nicht Pauline) umwandeln
+        if not _sd_anm():
+            for p in TFAS:
+                if p == "Pauline":
+                    continue
+                v = plan[p][di]
+                if v.startswith("SD") and "Behandlung" in v and "Assistenz" not in v:
+                    plan[p][di] = "SD: Anmeldung"
+                    break
+
+        # Ulf anwesend: FD:Assistenz Ulf fehlt → ersten FD:Behandlung umwandeln
+        if ulf_da(di) and not _fd_ulf():
+            for p in TFAS:
+                v = plan[p][di]
+                if v.startswith("FD") and "Behandlung" in v and "Assistenz" not in v:
+                    plan[p][di] = "FD: Assistenz Ulf"
+                    break
+
+        # Ulf anwesend: SD:Assistenz Ulf fehlt → ersten SD:Behandlung umwandeln
+        if ulf_da(di) and not _sd_ulf():
+            for p in TFAS:
+                v = plan[p][di]
+                if v.startswith("SD") and "Behandlung" in v and "Assistenz" not in v:
+                    plan[p][di] = "SD: Assistenz Ulf"
+                    break
 
     return plan
 
@@ -388,23 +439,24 @@ def _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
             if not can_fill(person, di):
                 continue
 
-            # Deborah: Parität + Anmeldung nur Mo wenn Nadine fehlt und noch nicht belegt
+            # Deborah: Paritätspflicht (gerade→FD, ungerade→SD).
+            # Übernimmt Anmeldung ihrer Schicht wenn noch keine vorhanden → sonst Behandlung.
             if person == "Deborah":
                 shift = "FD" if is_even else "SD"
-                if deborah_deckt_anmeldung_mo and di == 0:
-                    fd_anm_now, sd_anm_now = anm_covered(di)
-                    anm_now = fd_anm_now if shift == "FD" else sd_anm_now
-                    plan[person][di] = f"{shift}: Anmeldung" if not anm_now else f"{shift}: Behandlung"
-                else:
-                    plan[person][di] = f"{shift}: Behandlung"
+                fd_anm_now, sd_anm_now = anm_covered(di)
+                anm_now = fd_anm_now if shift == "FD" else sd_anm_now
+                plan[person][di] = f"{shift}: Anmeldung" if not anm_now else f"{shift}: Behandlung"
                 continue
 
-            # Imke: Mo in geraden KWs bevorzugt FD:Anmeldung, dann SD:Anmeldung
+            # Imke: Mo in geraden KWs — Anmeldungs-Verteilung
             if person == "Imke" and is_even and di == 0:
                 fd_anm_now, sd_anm_now = anm_covered(di)
                 fd_now, sd_now = balance(di)
                 shift = "FD" if fd_now <= sd_now else "SD"
-                if not fd_anm_now:
+                if not fd_anm_now and not sd_anm_now and deborah_deckt_anmeldung_mo:
+                    # Deborah übernimmt FD:Anmeldung → Imke deckt SD:Anmeldung ab
+                    plan[person][di] = "SD: Anmeldung"
+                elif not fd_anm_now:
                     plan[person][di] = "FD: Anmeldung"
                 elif not sd_anm_now:
                     plan[person][di] = "SD: Anmeldung"
@@ -431,6 +483,21 @@ def _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
                 fd_now, sd_now = balance(di)
                 shift = "FD" if fd_now <= sd_now else "SD"
                 if not fd_anm_now:
+                    plan[person][di] = "FD: Anmeldung"
+                elif not sd_anm_now:
+                    plan[person][di] = "SD: Anmeldung"
+                else:
+                    plan[person][di] = f"{shift}: Behandlung"
+                continue
+
+            # Nadine Do: bevorzugt SD:Anmeldung (wenn fehlt) → Deborah/andere decken FD:Anmeldung ab
+            if person == "Nadine" and di == 3:
+                fd_anm_now, sd_anm_now = anm_covered(di)
+                fd_now, sd_now = balance(di)
+                shift = "FD" if fd_now <= sd_now else "SD"
+                if not sd_anm_now and not fd_anm_now:
+                    plan[person][di] = "SD: Anmeldung"   # SD:Anmeldung Priorität → FD wird durch Deborah gedeckt
+                elif not fd_anm_now:
                     plan[person][di] = "FD: Anmeldung"
                 elif not sd_anm_now:
                     plan[person][di] = "SD: Anmeldung"
