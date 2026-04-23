@@ -211,8 +211,51 @@ def _generate_all():
     all_vac = _get_all_vac()
     auffl   = {p: 0 for p in ALL_PERSONS}
     plans   = {}
-    for kw in range(17, 28):
+
+    # KW17–23: aus finalisertem Excel laden (unveränderter Referenzplan)
+    # Die Datei hat je ein Blatt "KW17"…"KW23"; Person in Spalte A, Mo–Sa in B–G.
+    _excel_kw17_23 = DIENSTPLAN_DIR / "Dienstplan_KW17-23.xlsx"
+    _SKIP_ROWS = {"ÄRZTE", "TFAS", "Person"}   # Abschnitt-Header überspringen
+
+    def _load_kw_sheet(wb, kw: int) -> dict | None:
+        """Liest ein KW-Blatt und gibt {person: [mo..sa]} zurück, oder None."""
+        sheet_name = f"KW{kw}"
+        if sheet_name not in wb.sheetnames:
+            return None
+        ws = wb[sheet_name]
+        result = {}
+        for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=7, values_only=True):
+            cell0 = str(row[0]).strip() if row[0] is not None else ""
+            if not cell0 or cell0 in _SKIP_ROWS or cell0.startswith("Dienstplan") or cell0.startswith("Farben"):
+                continue
+            if cell0 in ALL_PERSONS:
+                result[cell0] = [str(v).strip() if v is not None else "–" for v in row[1:7]]
+        return result if result else None
+
+    if _excel_kw17_23.exists():
+        try:
+            import openpyxl as _opx
+            _wb = _opx.load_workbook(_excel_kw17_23, data_only=True)
+            for kw in range(17, 24):
+                raw = _load_kw_sheet(_wb, kw)
+                if raw:
+                    plans[kw] = {p: raw.get(p, ["–"] * 6) for p in ALL_PERSONS}
+                else:
+                    print(f"[WARNUNG] KW{kw} nicht in Excel gefunden – generiere")
+                    plans[kw] = generate_week(kw, all_vac, auffl)
+        except Exception as e:
+            print(f"[WARNUNG] Dienstplan_KW17-23.xlsx konnte nicht geladen werden: {e}")
+            for kw in range(17, 24):
+                plans[kw] = generate_week(kw, all_vac, auffl)
+    else:
+        print("[WARNUNG] Dienstplan_KW17-23.xlsx nicht gefunden – generiere KW17–23")
+        for kw in range(17, 24):
+            plans[kw] = generate_week(kw, all_vac, auffl)
+
+    # KW24–52: auto-generiert
+    for kw in range(24, 53):
         plans[kw] = generate_week(kw, all_vac, auffl)
+
     _plan_cache = plans
 
 
@@ -993,7 +1036,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     print("Synchronisiere Overrides von GitHub …")
     _sync_from_github()
-    print("Generiere Plan KW 17–27 …")
+    print("Generiere Plan KW 17–52 …")
     _generate_all()
     ip = _get_local_ip()
     print(f"""
