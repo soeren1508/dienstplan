@@ -55,10 +55,14 @@
       "0": "FD: Assistenz Ulf"
     },
     "Nadine": {
-      "2": "FD: Anmeldung"
+      "2": "FD: Anmeldung",
+      "3": "FD: Anmeldung"
     },
     "Deborah": {
       "0": "Frei"
+    },
+    "Kristin": {
+      "3": "SD: Anmeldung"
     }
   },
   "21": {
