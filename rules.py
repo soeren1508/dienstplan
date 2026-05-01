@@ -21,7 +21,8 @@ SKIP_VALUES = {
     "Urlaub", "Feiertag", "SCHULE",
     "Krank", "Krank (OP)",
     "ECVO Congress", "Abschlussprüfung",
-    "Dienst",   # Sa-Marker zählt nicht als Schicht
+    "Dienst",          # Sa-Marker zählt nicht als Schicht
+    "Weiterbildung",   # Fortbildung = Abwesenheit
 }
 
 TFA_NAMES = frozenset({

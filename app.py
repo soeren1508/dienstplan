@@ -765,7 +765,7 @@ def _check_overtime(plan: dict, kw: int) -> list:
     def tfa_active(val: str) -> bool:
         skip = {"–", "Urlaub", "Feiertag", "SCHULE", "FREI_SCHUTZ",
                 "Abschlussprüfung", "Krank", "ECVO Congress",
-                "Notdienst (20–8 Uhr)", "Frei (ÜS-Abbau)"}
+                "Notdienst (20–8 Uhr)", "Frei (ÜS-Abbau)", "Weiterbildung"}
         return val not in skip and not val.startswith("Frei")
 
     def sim_plan(overrides: list[tuple]) -> dict:
@@ -889,7 +889,7 @@ def _validate_plan(plan: dict, kw: int) -> dict:
     def working(val):
         s = v(val)
         return s not in ("–", "Urlaub", "Feiertag", "SCHULE", "FREI_SCHUTZ",
-                         "Abschlussprüfung") and "Frei" not in s
+                         "Abschlussprüfung", "Weiterbildung") and "Frei" not in s
     def add_day(di, msg):
         issues["day"].setdefault(str(di), []).append(msg)
     def add_cell(p, di, msg):
