@@ -118,7 +118,7 @@
       "3": "SD: Anmeldung"
     },
     "Nadine": {
-      "1": "FD: Anmeldung",
+      "1": "SD: Anmeldung",
       "3": "FD: Behandlung"
     },
     "Alyssa": {
@@ -131,6 +131,9 @@
     "Kristin": {
       "0": "SD: Assistenz Ulf || Ab 13:00 Uhr",
       "3": "SD: Assistenz Lisa OP"
+    },
+    "Nicolas": {
+      "1": "FD: Anmeldung"
     }
   },
   "20": {
