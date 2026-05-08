@@ -182,7 +182,7 @@
     "Deborah": {
       "0": "FD: Anmeldung",
       "2": "FD: Anmeldung",
-      "1": "FD: Anmeldung"
+      "1": "FD: Assistenz Ulf"
     },
     "Imke": {
       "0": "FD: Assistenz Lisa OP",
@@ -205,7 +205,8 @@
       "5": "Dienst"
     },
     "Natalie": {
-      "4": "FD: Anmeldung"
+      "4": "FD: Anmeldung",
+      "1": "FD: Anmeldung"
     }
   },
   "24": {
