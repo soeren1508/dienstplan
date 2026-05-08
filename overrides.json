@@ -163,12 +163,13 @@
     },
     "Imke": {
       "0": "FD: Behandlung",
-      "1": "SD: Anmeldung"
+      "1": "SD: Behandlung"
     },
     "Alyssa": {
       "2": "SD: Behandlung",
       "4": "SD: Anmeldung",
-      "0": "Krank"
+      "0": "Krank",
+      "1": "Krank"
     },
     "Nicolas": {
       "0": "SD: Anmeldung || Ab 15 Uhr + Anmeldung"
