@@ -68,11 +68,10 @@
   "21": {
     "Nicolas": {
       "4": "SD: Anmeldung",
-      "0": "FD: Anmeldung",
-      "2": "SD: Behandlung"
+      "0": "FD: Anmeldung"
     },
     "Nadine": {
-      "2": "FD: Behandlung",
+      "2": "FD: Anmeldung",
       "4": "FD: Behandlung",
       "3": "SD: Assistenz Lisa OP + Auffüllen"
     },
