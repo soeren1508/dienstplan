@@ -248,9 +248,6 @@
       "1": "Weiterbildung",
       "2": "Weiterbildung",
       "3": "Weiterbildung"
-    },
-    "Wilke": {
-      "2": "SD (12-19)"
     }
   },
   "31": {
@@ -281,6 +278,11 @@
     },
     "Florian": {
       "1": "FD (09-14)"
+    }
+  },
+  "29": {
+    "Florian": {
+      "1": "Krank"
     }
   }
 }
