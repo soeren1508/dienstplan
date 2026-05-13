@@ -72,7 +72,7 @@
       "2": "FD: Springer"
     },
     "Nadine": {
-      "2": "FD: Anmeldung",
+      "2": "SD: Behandlung",
       "4": "FD: Behandlung",
       "3": "SD: Assistenz Lisa OP + Auffüllen"
     },
@@ -98,7 +98,7 @@
       "3": "SD: Anmeldung || Ab Mittags Bestellung"
     },
     "Natalie": {
-      "2": "SD: Behandlung",
+      "2": "FD: Anmeldung",
       "3": "FD: Behandlung || Bis 14 Uhr, SG"
     }
   },
