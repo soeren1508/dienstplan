@@ -1802,7 +1802,7 @@ function balanceCls(fd, sd) {
 }
 
 function renderPlan(data, valid) {
-  const { kw, dates, plan, days, arzte, tfas, overrides } = data;
+  const { kw, dates, plan, days, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
   const dayIssues  = valid?.day  || {};
   const cellIssues = valid?.cell || {};
 
@@ -1861,10 +1861,13 @@ function renderPlan(data, valid) {
 
   // Body
   let html = "";
-  for (const { label, persons: grp } of [
-    { label:"Ärzte", persons:arzte },
-    { label:"TFAs",  persons:tfas  }
-  ]) {
+  const groups = [
+    { label:"Ärzte",     persons: arzte    },
+    { label:"TFAs",      persons: tfas     },
+  ];
+  if (azubis.length)    groups.push({ label:"Azubis",    persons: azubis    });
+  if (aushilfen.length) groups.push({ label:"Aushilfen", persons: aushilfen });
+  for (const { label, persons: grp } of groups) {
     html += `<tr class="group-header"><td colspan="7">${label}</td></tr>`;
     for (const person of grp) {
       const row      = plan[person] || Array(6).fill("–");
@@ -1908,7 +1911,7 @@ function _todayDayIndex() {
 
 function renderDayView(data, valid) {
   if (!data) return;
-  const { kw, dates, plan, arzte, tfas, overrides } = data;
+  const { kw, dates, plan, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
   const cellIssues = valid?.cell || {};
   const dayIssues  = valid?.day  || {};
   const di = currentDay;
@@ -1952,10 +1955,13 @@ function renderDayView(data, valid) {
       ${balBadge}
     </div>
   </div>`;
-  for (const { label, persons: grp } of [
-    { label: "Ärzte", persons: arzte },
-    { label: "TFAs",  persons: tfas  }
-  ]) {
+  const dayGroups = [
+    { label: "Ärzte",     persons: arzte    },
+    { label: "TFAs",      persons: tfas     },
+  ];
+  if (azubis.length)    dayGroups.push({ label: "Azubis",    persons: azubis    });
+  if (aushilfen.length) dayGroups.push({ label: "Aushilfen", persons: aushilfen });
+  for (const { label, persons: grp } of dayGroups) {
     const visible = grp.filter(p => !personFilter || p === personFilter);
     if (!visible.length) continue;
     html += `<div class="day-group-header">${label}</div>`;

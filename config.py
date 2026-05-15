@@ -171,6 +171,11 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
     "Andic":      "Alyssa",
     "Bormann":    "Pauline",
     "Lepak":      "Natalie",
+    # Neue Mitarbeiter 2026
+    "Schrodt":    "Molly",
+    "Sternbach":  "Matthias",
+    "Miehlitz":   "Maria",
+    "Pfeiffer":   "Ronja",
 }
 
 # ---------------------------------------------------------------------------
@@ -180,9 +185,14 @@ ALL_PERSONS = [
     "Ulf", "Wilke", "Florian", "Lisa",
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
     "Alyssa", "Natalie", "Pauline",
+    # Neue Mitarbeiter — nur manuell planbar
+    "Molly", "Matthias",        # Azubis
+    "Maria", "Ronja",           # Aushilfen
 ]
-ARZTE = ["Ulf", "Wilke", "Florian", "Lisa"]
-TFAS  = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
+ARZTE    = ["Ulf", "Wilke", "Florian", "Lisa"]
+TFAS     = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
+AZUBIS   = ["Molly", "Matthias"]
+AUSHILFEN = ["Maria", "Ronja"]
 
 # ---------------------------------------------------------------------------
 # Tage-Mapping
