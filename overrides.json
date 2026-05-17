@@ -125,10 +125,14 @@
       "2": "FD || FD bis 12 Uhr + Lernen vor Ort"
     },
     "Nicolas": {
-      "2": "SD: Behandlung"
+      "2": "SD: Behandlung",
+      "4": "FD: Anmeldung"
     },
     "Deborah": {
       "2": "FD: Anmeldung"
+    },
+    "Nadine": {
+      "4": "SD: Anmeldung"
     }
   },
   "23": {
