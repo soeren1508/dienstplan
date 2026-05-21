@@ -74,7 +74,7 @@
     "Nadine": {
       "2": "SD: Behandlung",
       "4": "FD: Behandlung",
-      "3": "SD: Assistenz Lisa OP + Auffüllen",
+      "3": "FD: Anmeldung",
       "0": "FD: Anmeldung"
     },
     "Deborah": {
@@ -92,7 +92,8 @@
       "0": "SD: Assistenz Lisa OP"
     },
     "Imke": {
-      "1": "FD: Anmeldung"
+      "1": "FD: Anmeldung",
+      "3": "SD: Assistenz Lisa OP"
     },
     "Kristin": {
       "2": "Tagdienst 09-19 Uhr || Ganzen Tag Herzsono",
