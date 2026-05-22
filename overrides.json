@@ -143,7 +143,8 @@
     "Imke": {
       "1": "Frei Notdienst",
       "3": "FD: Assistenz Lisa OP",
-      "5": "Dienst"
+      "5": "Dienst",
+      "0": "Notdienst 00:00 Uhr - 08:00 Uhr"
     },
     "Florian": {
       "1": "SD (12-19)"
