@@ -93,6 +93,15 @@
   body:not(.edit-mode) td.cell { cursor: default; }
   body:not(.edit-mode) td.cell:hover { filter: none; }
 
+  /* ── Probleme/Violations nur im Bearbeitungsmodus anzeigen ── */
+  body:not(.edit-mode) #status-issues                      { display: none; }
+  body:not(.edit-mode) #day-issues-bar                     { display: none !important; }
+  body:not(.edit-mode) .day-warn                           { display: none; }
+  body:not(.edit-mode) thead th.day-col.has-issue          { background: #f8fafc !important; }
+  body:not(.edit-mode) .cell-inner.has-issue               { outline: none; }
+  body:not(.edit-mode) .cell-inner.has-issue::before       { display: none; }
+  body:not(.edit-mode) .day-card.has-issue .day-card-badge { outline: none; }
+
   /* ── Main ── */
   .main { padding: 16px 20px; max-width: 1500px; margin: 0 auto; }
 
