@@ -441,11 +441,23 @@
     font-weight: 700; font-size: 12px;
   }
 
-  /* Heute-Spalte im Plan */
-  th.today-col { background: #eff6ff !important; }
-  th.today-col .day-name { color: #2563eb; font-weight: 800; }
-  th.today-col .day-date { color: #60a5fa; }
-  td.cell.today-col { box-shadow: inset 2px 0 0 #3b82f6, inset -2px 0 0 #3b82f6; }
+  /* Heute-Spalte im Plan — sichtbarer Rahmen */
+  th.today-col {
+    background: #dbeafe !important;
+    border-top: 3px solid #3b82f6 !important;
+    border-left: 2px solid #93c5fd !important;
+    border-right: 2px solid #93c5fd !important;
+  }
+  th.today-col .day-name { color: #1d4ed8; font-weight: 800; }
+  th.today-col .day-date { color: #2563eb; font-weight: 600; }
+  td.cell.today-col {
+    background: rgba(219,234,254,0.35);
+    box-shadow: inset 2px 0 0 #93c5fd, inset -2px 0 0 #93c5fd;
+  }
+  /* Letzte Zelle der Heute-Spalte bekommt auch unten einen Rahmen */
+  td.cell.today-col-last {
+    box-shadow: inset 2px 0 0 #93c5fd, inset -2px 0 0 #93c5fd, inset 0 -2px 0 #93c5fd;
+  }
 
   /* ── FD/SD-Balance-Zeile ── */
   tr.balance-row td {
@@ -1801,10 +1813,39 @@ function balanceCls(fd, sd) {
   return diff <= 1 ? "bal-ok" : diff <= 3 ? "bal-warn" : "bal-bad";
 }
 
+// ── Vergangene Tage aus Violations herausfiltern ──────────────────────────
+// Tage, die bereits vorbei sind, brauchen keine Warnungen mehr anzuzeigen.
+function filterPastIssues(rawDay, rawCell, dates) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  function parseDate(s) {
+    const m = s && s.match(/^(\d+)\.(\d+)\.$/);
+    if (!m) return null;
+    return new Date(2026, parseInt(m[2]) - 1, parseInt(m[1]));
+  }
+  const dayOut = {}, cellOut = {};
+  for (const [di, msgs] of Object.entries(rawDay)) {
+    const d = parseDate(dates[parseInt(di)]);
+    if (!d || d >= today) dayOut[di] = msgs;
+  }
+  for (const [person, pIssues] of Object.entries(rawCell)) {
+    for (const [di, msgs] of Object.entries(pIssues)) {
+      const d = parseDate(dates[parseInt(di)]);
+      if (!d || d >= today) {
+        if (!cellOut[person]) cellOut[person] = {};
+        cellOut[person][di] = msgs;
+      }
+    }
+  }
+  return { dayIssues: dayOut, cellIssues: cellOut };
+}
+
 function renderPlan(data, valid) {
   const { kw, dates, plan, days, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
-  const dayIssues  = valid?.day  || {};
-  const cellIssues = valid?.cell || {};
+  const { dayIssues, cellIssues } = filterPastIssues(
+    valid?.day  || {},
+    valid?.cell || {},
+    dates
+  );
 
   kwLabel.textContent     = `KW ${kw}`;
   statusKw.textContent    = `KW ${kw}`;
@@ -1889,6 +1930,12 @@ function renderPlan(data, valid) {
   }
   tbody.innerHTML = html;
   tbody.querySelectorAll("td.cell").forEach(td => td.addEventListener("click", onCellClick));
+  // Letzte Heute-Zelle mit unterem Rahmen versehen (vervollständigt den Rahmen)
+  if (todayDi >= 0) {
+    const allTodayCells = tbody.querySelectorAll("td.today-col");
+    if (allTodayCells.length > 0)
+      allTodayCells[allTodayCells.length - 1].classList.add("today-col-last");
+  }
   applyPersonFilter();
 }
 
@@ -1912,8 +1959,11 @@ function _todayDayIndex() {
 function renderDayView(data, valid) {
   if (!data) return;
   const { kw, dates, plan, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
-  const cellIssues = valid?.cell || {};
-  const dayIssues  = valid?.day  || {};
+  const { dayIssues, cellIssues } = filterPastIssues(
+    valid?.day  || {},
+    valid?.cell || {},
+    dates
+  );
   const di = currentDay;
 
   // Topbar + Bottom-Nav aktualisieren
