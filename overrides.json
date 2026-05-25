@@ -124,7 +124,8 @@
     },
     "Wilke": {
       "2": "FD OP || bis 17:30 Uhr",
-      "1": "Frei Notdienst"
+      "1": "Frei Notdienst",
+      "0": "21:00-08:00"
     },
     "Alyssa": {
       "2": "Urlaub || FD bis 12 Uhr + Lernen vor Ort",
