@@ -93,14 +93,17 @@
   body:not(.edit-mode) td.cell { cursor: default; }
   body:not(.edit-mode) td.cell:hover { filter: none; }
 
-  /* ── Probleme/Violations nur im Bearbeitungsmodus anzeigen ── */
+  /* ── Probleme/Violations/Vorschläge nur im Bearbeitungsmodus anzeigen ── */
   body:not(.edit-mode) #status-issues                      { display: none; }
+  body:not(.edit-mode) #status-mods                        { display: none; }
   body:not(.edit-mode) #day-issues-bar                     { display: none !important; }
+  body:not(.edit-mode) #suggestions-bar                    { display: none !important; }
   body:not(.edit-mode) .day-warn                           { display: none; }
   body:not(.edit-mode) thead th.day-col.has-issue          { background: #f8fafc !important; }
   body:not(.edit-mode) .cell-inner.has-issue               { outline: none; }
   body:not(.edit-mode) .cell-inner.has-issue::before       { display: none; }
   body:not(.edit-mode) .day-card.has-issue .day-card-badge { outline: none; }
+  body:not(.edit-mode) .legend-issue                       { display: none; }
 
   /* ── Main ── */
   .main { padding: 16px 20px; max-width: 1500px; margin: 0 auto; }
@@ -1025,8 +1028,8 @@
       min-height: 36px;
       white-space: nowrap;
     }
-    .btn-lock-label-lock::before   { content: "🔒 "; }
-    .btn-lock-label-unlock::before { content: "🔓 "; }
+    .btn-lock-label-lock::before   { content: ""; }
+    .btn-lock-label-unlock::before { content: ""; }
 
     /* ── Statusbar ── */
     .statusbar { font-size: 11px; gap: 5px; flex-wrap: wrap; }
@@ -1330,8 +1333,8 @@
     <div class="spacer"></div>
 
     <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
-      <span class="btn-lock-label-lock">🔒 Bearbeiten</span>
-      <span class="btn-lock-label-unlock">🔓 Sperren</span>
+      <span class="btn-lock-label-lock">🔒</span>
+      <span class="btn-lock-label-unlock">🔓</span>
     </button>
   </div>
 
