@@ -177,10 +177,14 @@
       "3": "Tagdienst 09-19 Uhr"
     },
     "Imke": {
-      "4": "SD: Behandlung"
+      "4": "SD: Behandlung",
+      "3": "SD: Anmeldung"
     },
     "Deborah": {
       "4": "SD: Anmeldung"
+    },
+    "Kristin": {
+      "3": "FD: Anmeldung"
     }
   },
   "19": {
@@ -358,9 +362,6 @@
     },
     "Nicolas": {
       "4": "Urlaub"
-    },
-    "Imke": {
-      "5": "Dienst"
     }
   }
 }
