@@ -375,11 +375,12 @@
       "0": "SD: Assistenz Ulf"
     },
     "Imke": {
-      "2": "FD: Assistenz Ulf"
+      "2": "FD: Assistenz Ulf",
+      "1": "FD: Anmeldung"
     },
     "Nadine": {
       "2": "SD: Anmeldung",
-      "1": "FD: Anmeldung",
+      "1": "FD: Assistenz Ulf",
       "0": "FD: Anmeldung"
     },
     "Nicolas": {
