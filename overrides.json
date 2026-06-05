@@ -340,7 +340,8 @@
   },
   "26": {
     "Deborah": {
-      "0": "– || Überstundenabbau Kita geschlossen"
+      "0": "– || Überstundenabbau Kita geschlossen",
+      "2": "FD: Assistenz Ulf || 09:00 Uhr - 14:00 Uhr"
     },
     "Nadine": {
       "0": "SD: Anmeldung"
@@ -355,9 +356,6 @@
     "Nicolas": {
       "4": "Urlaub",
       "2": "SD: Assistenz Ulf || Beginn 12:00 Uhr bis 17:00 Uhr Sono und ab 17:00 Uhr Unterstützung Flo bis 19:00 Uhr"
-    },
-    "Wilke": {
-      "2": "FD OP 09:00-17:00 Uhr"
     }
   },
   "25": {
