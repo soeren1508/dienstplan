@@ -352,7 +352,7 @@
     "Nadine": {
       "0": "SD: Anmeldung",
       "2": "FD: Anmeldung || 08:30 Uhr bis 17:00 Uhr",
-      "3": "FD: Assistenz Lisa OP"
+      "3": "FD: Assistenz Lisa OP || 09:00 Uhr - 17:00 Uhr"
     },
     "Florian": {
       "0": "SD (13-17)",
@@ -362,8 +362,7 @@
     },
     "Lisa": {
       "0": "OP (09-17)",
-      "4": "SD (12–17)",
-      "3": "OP Ganztag || 09:00 Uhr - 17:00 Uhr"
+      "4": "SD (12–17)"
     },
     "Nicolas": {
       "4": "Urlaub",
