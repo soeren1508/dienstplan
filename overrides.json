@@ -268,7 +268,8 @@
     },
     "Nicolas": {
       "4": "SD: Springer",
-      "0": "SD: Assistenz Lisa OP"
+      "0": "SD: Assistenz Lisa OP",
+      "2": "SD: Behandlung"
     },
     "Wilke": {
       "2": "SD (12-19 Uhr)"
@@ -280,8 +281,7 @@
       "0": "FD: Behandlung"
     },
     "Alyssa": {
-      "0": "SD: Assistenz Lisa OP",
-      "2": "SD: Assistenz Ulf"
+      "0": "SD: Assistenz Lisa OP"
     }
   },
   "30": {
