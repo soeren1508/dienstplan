@@ -439,7 +439,8 @@
       "4": "–"
     },
     "Deborah": {
-      "0": "SD: Assistenz Ulf"
+      "0": "SD: Assistenz Ulf",
+      "1": "FD: Assistenz Ulf"
     },
     "Imke": {
       "2": "FD: Assistenz Ulf",
@@ -447,7 +448,7 @@
     },
     "Nadine": {
       "2": "SD: Anmeldung",
-      "1": "FD: Assistenz Ulf",
+      "1": "SD: Assistenz Ulf",
       "0": "FD: Anmeldung"
     },
     "Nicolas": {
