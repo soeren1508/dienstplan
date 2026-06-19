@@ -515,7 +515,8 @@
     },
     "Imke": {
       "1": "FD: Springer || 11:30-19:00 Uhr",
-      "2": "FD: Assistenz Wilke OP || 08:30-17:00 Uhr"
+      "2": "FD: Assistenz Wilke OP || 08:30-17:00 Uhr",
+      "0": "FD: Assistenz Lisa OP || 08:30-17:00 Uhr"
     },
     "Molly": {
       "0": "FD: Behandlung || 09:00-14:00 Uhr",
@@ -524,9 +525,6 @@
     },
     "Kristin": {
       "2": "FD: Assistenz Ulf || 08:30-17:00 Uhr"
-    },
-    "Pauline": {
-      "0": "FD: Behandlung || 08:30-17:00 Uhr"
     }
   }
 }
