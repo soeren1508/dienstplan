@@ -414,7 +414,8 @@
       "2": "FD OP || 09:00 Uhr - 17:00 Uhr",
       "3": "SD (09–17)",
       "4": "FD OP (09-17)",
-      "1": "SD (12–17)"
+      "1": "SD (12–17)",
+      "0": "FD (09–17)"
     },
     "Pauline": {
       "0": "FD: Assistenz Lisa OP || Dienst 08:30 Uhr - 17:00 Uhr",
