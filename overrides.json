@@ -342,7 +342,8 @@
       "4": "FD: Assistenz Wilke OP + Bestellungen || 12:00-17:00 Uhr"
     },
     "Nadine": {
-      "4": "FD: Anmeldung || 08:30-17:00 Uhr"
+      "4": "FD: Anmeldung || 08:30-17:00 Uhr",
+      "0": "FD: Assistenz Lisa OP || 08:30-17:00 Uhr"
     },
     "Pauline": {
       "4": "FD: Behandlung || 08:30-17:00 Uhr",
