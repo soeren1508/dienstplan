@@ -498,7 +498,8 @@
       "4": "SD (09-17)"
     },
     "Deborah": {
-      "0": "FD: Anmeldung"
+      "0": "FD: Anmeldung",
+      "2": "SD: Assistenz Ulf || 14:30-19:00 Uhr"
     },
     "Nadine": {
       "0": "FD: Springer || 11:30 - 19:00 Uhr",
@@ -517,8 +518,7 @@
     },
     "Molly": {
       "0": "FD: Behandlung || 09:00-14:00 Uhr",
-      "1": "FD: Behandlung || 09:00-14:00 Uhr",
-      "3": "FD: Behandlung || 09:00-14:00 Uhr"
+      "1": "FD: Behandlung || 09:00-14:00 Uhr"
     }
   }
 }
