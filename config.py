@@ -187,12 +187,14 @@ ALL_PERSONS = [
     "Alyssa", "Natalie", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis
-    "Maria", "Ronja", "Nina",   # Aushilfen / neue TFAs
+    "Maria", "Ronja",           # Aushilfen
+    "Nina",                     # TFA (manuell, noch nicht in Auto-Rotation)
 ]
-ARZTE    = ["Ulf", "Wilke", "Florian", "Lisa"]
-TFAS     = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
-AZUBIS   = ["Molly", "Matthias"]
-AUSHILFEN = ["Maria", "Ronja", "Nina"]
+ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
+TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
+TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
+AZUBIS       = ["Molly", "Matthias"]
+AUSHILFEN    = ["Maria", "Ronja"]
 
 # ---------------------------------------------------------------------------
 # Tage-Mapping
