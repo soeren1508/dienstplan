@@ -187,12 +187,12 @@ ALL_PERSONS = [
     "Alyssa", "Natalie", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis
-    "Maria", "Ronja",           # Aushilfen
+    "Maria", "Ronja", "Nina",   # Aushilfen / neue TFAs
 ]
 ARZTE    = ["Ulf", "Wilke", "Florian", "Lisa"]
 TFAS     = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
 AZUBIS   = ["Molly", "Matthias"]
-AUSHILFEN = ["Maria", "Ronja"]
+AUSHILFEN = ["Maria", "Ronja", "Nina"]
 
 # ---------------------------------------------------------------------------
 # Tage-Mapping
