@@ -10,7 +10,6 @@ from datetime import date
 # ---------------------------------------------------------------------------
 SCHULTAGE = {
     "Alyssa":   [3],   # Do
-    "Natalie":  [1],   # Di
     "Pauline":  [2],   # Mi
     "Molly":    [3],   # Do (Platzhalter)
     "Matthias": [1],   # Di (Platzhalter)
@@ -19,7 +18,6 @@ SCHULTAGE = {
 # KWs, in denen kein Schultag stattfindet (Schulferien, Prüfungsblöcke etc.)
 # Abgeleitet aus AKTUELL_Dienstplan_07Apr.xlsx
 SCHUL_AUSFALL: dict[str, set[int]] = {
-    "Natalie": {16, 20},                     # KW16=Osterferien, KW20=Pfingstferien
     "Pauline": {16, 29, 30, 33, 34, 43, 52}, # Osterferien, Sommerferien, Herbstferien, Weihnachten
     "Alyssa":  {16},                          # Osterferien (KW15: Halbtagsschule+OP)
 }
@@ -53,8 +51,7 @@ ARZT_PATTERNS = {
 # Personalzeitlinie
 # ---------------------------------------------------------------------------
 PERSONAL_EXIT = {
-    "Natalie": 26,   # ab KW26 ← alle Felder '–'
-    "Alyssa":  26,
+    "Alyssa": 26,
 }
 
 PERSONAL_ENTRY = {
@@ -67,8 +64,6 @@ PERSONAL_ENTRY = {
 # Urlaub-Korrekturen (Person, kw, di) — Tage die in der Urlaubsplanung fehlen
 # ---------------------------------------------------------------------------
 VACATION_OVERRIDES: list[tuple] = [
-    ("Natalie", 23, 0),   # KW23 Mo: fehlt in Urlaubsdatei, Ref zeigt Urlaub
-    ("Natalie", 23, 5),   # KW23 Sa
     ("Alyssa",  23, 5),   # KW23 Sa
     ("Florian", 24, 5),   # KW24 Sa
     ("Kristin", 25, 5),   # KW25 Sa
@@ -87,10 +82,8 @@ VACATION_OVERRIDES: list[tuple] = [
 # Prüfungstage (Person, kw, di)  — di=0..4
 # ---------------------------------------------------------------------------
 PRUEFUNGSTAGE: list[tuple] = [
-    ("Natalie", 23, 1),   # KW23 Di
-    ("Natalie", 23, 2),   # KW23 Mi
-    ("Alyssa",  23, 1),
-    ("Alyssa",  23, 2),
+    ("Alyssa", 23, 1),
+    ("Alyssa", 23, 2),
 ]
 
 # ---------------------------------------------------------------------------
@@ -170,7 +163,6 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
     "Engel":      "Nadine",
     "Andic":      "Alyssa",
     "Bormann":    "Pauline",
-    "Lepak":      "Natalie",
     # Neue Mitarbeiter 2026
     "Schrodt":    "Molly",
     "Sternbach":  "Matthias",
@@ -184,14 +176,14 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
 ALL_PERSONS = [
     "Ulf", "Wilke", "Florian", "Lisa",
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
-    "Alyssa", "Natalie", "Pauline",
+    "Alyssa", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis
     "Maria", "Ronja",           # Aushilfen
     "Nina",                     # TFA (manuell, noch nicht in Auto-Rotation)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
-TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Natalie", "Pauline"]
+TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
 AZUBIS       = ["Molly", "Matthias"]
 AUSHILFEN    = ["Maria", "Ronja"]
