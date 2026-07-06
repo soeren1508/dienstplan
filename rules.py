@@ -27,7 +27,7 @@ SKIP_VALUES = {
 
 TFA_NAMES = frozenset({
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
-    "Alyssa", "Natalie", "Pauline",
+    "Alyssa", "Pauline",
 })
 
 
@@ -152,18 +152,6 @@ def validate_week(kw_num: int, week_data: Dict[str, List]) -> List[str]:
                 )
 
     # ────────────────────────────────────────────────────────────────────────
-    # REGEL 5  Natalie + Alyssa ab KW26: alle Felder '–' oder Feiertag
-    # ────────────────────────────────────────────────────────────────────────
-    if kw_num >= 26:
-        for person in ("Natalie", "Alyssa"):
-            for di in range(6):
-                val = c(person, di)
-                if val not in ("–", "—", "-", "", "Feiertag"):
-                    violations.append(
-                        f"KW{kw_num} {person} {DAYS[di]}: ab KW26 soll leer/'–'/Feiertag, ist '{val}'"
-                    )
-
-    # ────────────────────────────────────────────────────────────────────────
     # REGEL 6  Lisa OP Ganztag (Mo + Do) → Nicolas FD, Nadine SD
     #   Geprüft wird: wenn "Assistenz Lisa OP" im Zellenwert steht, muss der Shift stimmen.
     #   Hintergrund: Bei Imke-Abwesenheit deckt Nadine FD-Wilke-OP-Dienste und kann dann
@@ -257,13 +245,12 @@ def validate_week(kw_num: int, week_data: Dict[str, List]) -> List[str]:
             )
 
     # ────────────────────────────────────────────────────────────────────────
-    # REGEL 10  Alyssa Fr = SD Balance-Lock (bis KW25)
+    # REGEL 10  Alyssa Fr = SD Balance-Lock (dauerhaft: Schule Do + Fr ab 15:30)
     # ────────────────────────────────────────────────────────────────────────
-    if kw_num <= 25:
-        alyssa_fr = c("Alyssa", 4)
-        if not is_skip(alyssa_fr) and get_shift(alyssa_fr) != "SD":
-            violations.append(
-                f"KW{kw_num} Alyssa Fr: Balance-Lock → soll SD, ist '{alyssa_fr}'"
-            )
+    alyssa_fr = c("Alyssa", 4)
+    if not is_skip(alyssa_fr) and get_shift(alyssa_fr) != "SD":
+        violations.append(
+            f"KW{kw_num} Alyssa Fr: Balance-Lock → soll SD, ist '{alyssa_fr}'"
+        )
 
     return violations

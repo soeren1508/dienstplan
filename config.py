@@ -9,9 +9,8 @@ from datetime import date
 # Platzhalter – leicht änderbar
 # ---------------------------------------------------------------------------
 SCHULTAGE = {
-    "Alyssa":   [3],   # Do
+    "Alyssa":   [3],   # Do — dauerhaft, Fr ab 15:30 nach der Schule zur Arbeit
     "Pauline":  [2],   # Mi
-    "Molly":    [3],   # Do (Platzhalter)
     "Matthias": [1],   # Di (Platzhalter)
 }
 
@@ -50,15 +49,20 @@ ARZT_PATTERNS = {
 # ---------------------------------------------------------------------------
 # Personalzeitlinie
 # ---------------------------------------------------------------------------
-PERSONAL_EXIT = {
-    "Alyssa": 26,
-}
+# Alyssa bleibt dauerhaft (kein Austritt mehr ab KW26) — arbeitet fortlaufend
+# mit Do-Schule + Fr ab 15:30.
+PERSONAL_EXIT: dict[str, int] = {}
 
 PERSONAL_ENTRY = {
-    "Molly_mini":  {"kw_start": 19, "kw_end": 27, "mode": "minijob"},
-    "Matthias":    {"kw_start": 31, "mode": "tandem"},
-    "Molly_azubi": {"kw_start": 31, "mode": "tandem"},
+    "Matthias": {"kw_start": 31, "mode": "tandem"},
 }
+
+# Nina: befristetes Default-Muster für Juli, solange kein manueller Eintrag
+# vorliegt (Di–Do 08:30–17:00, Fr 15:00–19:00). Manuelle Overrides haben
+# immer Vorrang. Ab August wird das Muster überarbeitet.
+NINA_JULI_KWS = [28, 29, 30, 31]
+NINA_JULI_MUSTER_DI_DO = "08:30–17:00 Uhr"
+NINA_JULI_MUSTER_FR    = "15:00–19:00 Uhr"
 
 # ---------------------------------------------------------------------------
 # Urlaub-Korrekturen (Person, kw, di) — Tage die in der Urlaubsplanung fehlen
@@ -178,14 +182,15 @@ ALL_PERSONS = [
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
     "Alyssa", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
-    "Molly", "Matthias",        # Azubis
+    # Molly (Azubi) erst ab August (Ausbildungsbeginn) wieder aufnehmen
+    "Matthias",                 # Azubi
     "Maria", "Ronja",           # Aushilfen
-    "Nina",                     # TFA (manuell, noch nicht in Auto-Rotation)
+    "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
-AZUBIS       = ["Molly", "Matthias"]
+AZUBIS       = ["Matthias"]
 AUSHILFEN    = ["Maria", "Ronja"]
 
 # ---------------------------------------------------------------------------

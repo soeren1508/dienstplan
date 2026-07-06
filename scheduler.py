@@ -10,6 +10,7 @@ from config import (
     SA_ARZT, SA_TFA, NOTDIENSTE, ECVO_TAGE, SPEZIAL,
     PERSONAL_EXIT, PRUEFUNGSTAGE, VACATION_OVERRIDES,
     ALL_PERSONS, ARZTE, TFAS, DAYS,
+    NINA_JULI_KWS, NINA_JULI_MUSTER_DI_DO, NINA_JULI_MUSTER_FR,
 )
 
 
@@ -78,6 +79,15 @@ def generate_week(kw_num, vacations, auffl):
     for (person, kw, di) in VACATION_OVERRIDES:
         if kw_num == kw and g(person, di) == "–":
             s(person, di, "Urlaub")
+
+    # ── 1c) Nina Default-Muster für Juli (nur solange kein manueller Eintrag
+    # existiert; manuelle Overrides werden später drübergelegt und haben Vorrang) ──
+    if kw_num in NINA_JULI_KWS:
+        for di in (1, 2, 3):   # Di, Mi, Do
+            if free("Nina", di) and not pa("Nina", di):
+                s("Nina", di, NINA_JULI_MUSTER_DI_DO)
+        if free("Nina", 4) and not pa("Nina", 4):   # Fr
+            s("Nina", 4, NINA_JULI_MUSTER_FR)
 
     # ── 2) Personal-Exits ───────────────────────────────────────────────────
     for person, exit_kw in PERSONAL_EXIT.items():
@@ -188,35 +198,31 @@ def generate_week(kw_num, vacations, auffl):
         if is_even:
             if di == 0:  # Mo gerade
                 if deborah_deckt_anmeldung_mo:
-                    fd_prio = ["Kristin", "Deborah", "Natalie"]
-                    sd_prio = ["Pauline", "Natalie", "Kristin"]   # Pauline: kein Anmeldungs-Verbot für Assistenz
+                    fd_prio = ["Kristin", "Deborah"]
+                    sd_prio = ["Pauline", "Kristin"]   # Pauline: kein Anmeldungs-Verbot für Assistenz
                 else:
-                    fd_prio = ["Deborah", "Kristin", "Natalie"]
-                    sd_prio = ["Pauline", "Natalie", "Kristin"]   # Pauline entlastet Kristin/Deborah
+                    fd_prio = ["Deborah", "Kristin"]
+                    sd_prio = ["Pauline", "Kristin"]   # Pauline entlastet Kristin/Deborah
             elif di == 1:  # Di gerade
-                if not pa("Natalie", 1) and free("Natalie", 1):
-                    fd_prio = ["Natalie", "Deborah", "Kristin"]
-                    sd_prio = ["Kristin", "Imke", "Deborah", "Natalie"]
-                else:
-                    fd_prio = ["Deborah", "Kristin", "Natalie"]
-                    sd_prio = ["Kristin", "Natalie", "Deborah"]
+                fd_prio = ["Deborah", "Kristin"]
+                sd_prio = ["Kristin", "Imke", "Deborah"]
             else:  # Mi gerade
                 if kw_num >= 27:
-                    fd_prio = ["Deborah", "Kristin", "Natalie"]
+                    fd_prio = ["Deborah", "Kristin"]
                 else:
-                    fd_prio = ["Kristin", "Deborah", "Natalie"]
-                sd_prio = ["Natalie", "Kristin", "Nicolas", "Deborah"]  # Nicolas als Fallback vor Deborah
+                    fd_prio = ["Kristin", "Deborah"]
+                sd_prio = ["Kristin", "Nicolas", "Deborah"]  # Nicolas als Fallback vor Deborah
         else:
             # Ungerade KW
-            if di == 0:  # Mo: Natalie FD, Kristin SD; Pauline hält SD:Assistenz Ulf → Deborah für Anmeldung frei
-                fd_prio = ["Natalie", "Kristin", "Deborah"]
-                sd_prio = ["Pauline", "Kristin", "Natalie"]   # Pauline erst → Deborah frei für SD:Anmeldung
-            elif di == 1:  # Di ungerade: Imke+Nicolas als Fallbacks für FD (wenn Natalie+Kristin fehlen)
-                fd_prio = ["Natalie", "Kristin", "Imke", "Nicolas", "Deborah"]
-                sd_prio = ["Kristin", "Deborah", "Natalie"]
+            if di == 0:  # Mo: Kristin SD; Pauline hält SD:Assistenz Ulf → Deborah für Anmeldung frei
+                fd_prio = ["Kristin", "Deborah"]
+                sd_prio = ["Pauline", "Kristin"]   # Pauline erst → Deborah frei für SD:Anmeldung
+            elif di == 1:  # Di ungerade: Imke+Nicolas als Fallbacks für FD (wenn Kristin fehlt)
+                fd_prio = ["Kristin", "Imke", "Nicolas", "Deborah"]
+                sd_prio = ["Kristin", "Deborah"]
             else:  # Mi ungerade
-                fd_prio = ["Natalie", "Kristin", "Deborah"]
-                sd_prio = ["Natalie", "Kristin", "Deborah", "Imke"]
+                fd_prio = ["Kristin", "Deborah"]
+                sd_prio = ["Kristin", "Deborah", "Imke"]
 
         # FD-Slot — Deborah nur in geraden KWs (Paritätspflicht)
         for fp in fd_prio:
@@ -239,22 +245,6 @@ def generate_week(kw_num, vacations, auffl):
             if free("Imke", 1) and not pa("Imke", 1):
                 s("Imke", 1, "SD: Assistenz Ulf")
 
-        # In gerader KW Mo: Natalie + Auffüllen hinzufügen, falls sie SD: Assistenz Ulf bekommen hat
-        # ODER (wenn Deborah nicht Anmeldung deckt) als Extra-SD einsetzen, falls kein SD-Slot belegt
-        if is_even and di == 0:
-            natalie_val = g("Natalie", 0)
-            if "SD: Assistenz Ulf" in natalie_val and "+ Auffüllen" not in natalie_val:
-                # Natalie hat den SD-Slot via sd_prio bekommen → Auffüllen dranhängen
-                s("Natalie", 0, auffl_add("Natalie", natalie_val, auffl))
-            elif not deborah_deckt_anmeldung_mo and free("Natalie", 0) and not pa("Natalie", 0):
-                # Nur zuweisen wenn der SD-Assistenz-Ulf-Slot noch nicht belegt ist
-                sd_ulf_belegt = any(
-                    "SD: Assistenz Ulf" in plan[p][0]
-                    for p in ("Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline")
-                )
-                if not sd_ulf_belegt:
-                    s("Natalie", 0, auffl_add("Natalie", "SD: Assistenz Ulf", auffl))
-
     # Auffüllen für Ulf-Assistenz Di: Parität bestimmt wer es bekommt
     # Gerade KW → Kristin, Ungerade KW → Deborah
     if ulf_da(1):
@@ -264,8 +254,9 @@ def generate_week(kw_num, vacations, auffl):
             s(auffl_person_di, 1, auffl_add(auffl_person_di, g(auffl_person_di, 1), auffl))
 
     # ── 12) Fr-Vorplanung: Alyssa SD-Lock + Kristin-Shift ──────────────────────
-    # Alyssa Fr = SD-Lock (bis KW25): früh setzen damit Fill-Balance stimmt
-    if kw_num <= 25 and free("Alyssa", 4) and not pa("Alyssa", 4):
+    # Alyssa Fr = SD-Lock (dauerhaft, Schule Do + Fr ab 15:30 zur Arbeit):
+    # früh setzen damit Fill-Balance stimmt
+    if free("Alyssa", 4) and not pa("Alyssa", 4):
         s("Alyssa", 4, "SD: Behandlung (ab 15:30)")
     # Kristin Fr: Shift gegenläufig zu Imke (Wilke-OP-Tage); Anmeldung wenn noch offen
     if free("Kristin", 4) and not pa("Kristin", 4):
@@ -408,7 +399,7 @@ def _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
     def balance(di):
         fd = sd = 0
         for p in ("Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
-                  "Alyssa", "Natalie", "Pauline"):
+                  "Alyssa", "Pauline"):
             v = plan[p][di]
             if is_skip(v): continue
             sh = get_shift(v)
@@ -421,15 +412,15 @@ def _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
     if is_even:
         # Gerade KW: Nadine=FD:Anmeldung, Nicolas=SD:Anmeldung (aus Excel-Muster)
         FILL_ORDER = ("Nadine", "Nicolas", "Alyssa", "Imke", "Deborah",
-                      "Natalie", "Kristin", "Pauline")
+                      "Kristin", "Pauline")
         FD_ANM_PRIO = ("Nadine", "Nicolas", "Alyssa", "Imke", "Kristin")
         SD_ANM_PRIO = ("Nicolas", "Nadine", "Alyssa", "Imke", "Kristin")
     else:
         # Ungerade KW: Imke vor Nadine → Imke nimmt SD:Anmeldung zuerst
         FILL_ORDER = ("Alyssa", "Nicolas", "Imke", "Nadine", "Deborah",
-                      "Natalie", "Kristin", "Pauline")
-        # Erweitert: Nicolas, Natalie, Imke, Nadine können FD:Anmeldung übernehmen
-        FD_ANM_PRIO = ("Alyssa", "Nicolas", "Natalie", "Imke", "Nadine", "Kristin")
+                      "Kristin", "Pauline")
+        # Erweitert: Nicolas, Imke, Nadine können FD:Anmeldung übernehmen
+        FD_ANM_PRIO = ("Alyssa", "Nicolas", "Imke", "Nadine", "Kristin")
         SD_ANM_PRIO = ("Imke", "Nadine", "Alyssa", "Nicolas", "Kristin")
 
     for di in range(5):
