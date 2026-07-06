@@ -82,9 +82,13 @@ def _github_pull(filename: str) -> str | None:
         return None
 
 def _github_push(filename: str, content: str, message: str = "Auto-save"):
-    """Schreibt eine Datei in das GitHub-Repo (im Hintergrund)."""
+    """Schreibt eine Datei in das GitHub-Repo (im Hintergrund).
+    [skip deploy] verhindert, dass Render bei Daten-Commits neu startet."""
     if not GITHUB_TOKEN:
         return
+    # Sicherstellen, dass Daten-Commits keinen Render-Deploy auslösen
+    if "[skip deploy]" not in message:
+        message = message + " [skip deploy]"
     def _do():
         url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{filename}"
         headers = _gh_headers()
@@ -195,7 +199,11 @@ def _save_vac_overrides(data: dict):
 
 def _get_all_vac():
     """Excel-Urlaub + manuelle Korrekturen zusammenführen."""
-    all_vac = load_vacations(URLAUB_PATH)
+    try:
+        all_vac = load_vacations(URLAUB_PATH)
+    except Exception as e:
+        print(f"[WARNUNG] Urlaubsplanung konnte nicht geladen werden: {e}")
+        all_vac = {}
     for person, changes in _load_vac_overrides().items():
         if person not in all_vac:
             all_vac[person] = set()
