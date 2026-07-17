@@ -459,7 +459,8 @@
       "4": "SD (09:00-17:00 Uhr"
     },
     "Nadine": {
-      "4": "FD: Anmeldung || 08:30-17:00 Uhr"
+      "4": "FD: Anmeldung || 08:30-17:00 Uhr",
+      "2": "FD: Anmeldung"
     },
     "Alyssa": {
       "4": "FD: Behandlung || 08:30-17:00 Uhr",
