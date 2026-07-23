@@ -539,7 +539,11 @@
     },
     "Imke": {
       "3": "Urlaub",
-      "4": "Urlaub"
+      "4": "Urlaub",
+      "0": "FD: Anmeldung"
+    },
+    "Alyssa": {
+      "0": "SD: Anmeldung"
     }
   },
   "29": {
