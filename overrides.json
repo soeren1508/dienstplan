@@ -847,7 +847,8 @@
       "0": "FD: Assistenz Lisa OP"
     },
     "Nina": {
-      "0": "SD: Behandlung || 15:00-19:00 Uhr"
+      "0": "SD: Behandlung || 15:00-19:00 Uhr",
+      "1": "FD: Behandlung"
     },
     "Imke": {
       "1": "FD: Anmeldung"
