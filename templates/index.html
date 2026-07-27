@@ -215,9 +215,10 @@
   .c-fd-beh         { background: #bfdbfe; color: #1e3a8a; } /* Blau     – FD: Behandlung         */
   .c-sd-beh         { background: #fed7aa; color: #9a3412; } /* Orange   – SD: Behandlung         */
   .c-springer       { background: #f0fdfa; color: #134e4a; } /* Teal     – FD/SD: Springer        */
-  .c-assistenz-ulf  { background: #a5f3fc; color: #0e7490; } /* Cyan     – Assistenz Ulf (FD+SD)  */
-  .c-assistenz-lisa { background: #c4b5fd; color: #5b21b6; } /* Lila     – Assistenz Lisa (FD+SD) */
-  .c-assistenz-wilke{ background: #86efac; color: #166534; } /* Mint     – Assistenz Wilke (FD+SD)*/
+  .c-assistenz-ulf     { background: #a5f3fc; color: #0e7490; } /* Cyan   – Assistenz Ulf (FD+SD)     */
+  .c-assistenz-lisa    { background: #c4b5fd; color: #5b21b6; } /* Lila   – Assistenz Lisa (FD+SD)    */
+  .c-assistenz-wilke   { background: #86efac; color: #166534; } /* Mint   – Assistenz Wilke (FD+SD)   */
+  .c-assistenz-florian { background: #fde68a; color: #92400e; } /* Amber  – Assistenz Florian (FD+SD) */
   /* ── Sonstige ── */
   .c-urlaub    { background: #e2e8f0; color: #64748b; }
   .c-krank     { background: #fee2e2; color: #991b1b; }
@@ -1405,8 +1406,9 @@
       <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
       <div class="legend-item" style="background:#f0fdfa;color:#134e4a"><div class="legend-dot" style="background:#2dd4bf"></div>Springer</div>
       <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
-      <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa OP</div>
-      <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke OP</div>
+      <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke</div>
+      <div class="legend-item" style="background:#fde68a;color:#92400e"><div class="legend-dot" style="background:#fbbf24"></div>Ass. Florian</div>
+      <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa</div>
       <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
       <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
       <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
@@ -1523,10 +1525,14 @@ const QUICK_PICKS = [
   { label: "SD: Springer",          cls: "qp-springer" },
   { label: "FD: Anmeldung",         cls: "qp-fd" },
   { label: "SD: Anmeldung",         cls: "qp-sd" },
-  { label: "FD: Assistenz Lisa OP", cls: "qp-fd" },
-  { label: "SD: Assistenz Lisa OP", cls: "qp-sd" },
   { label: "FD: Assistenz Ulf",     cls: "qp-fd" },
   { label: "SD: Assistenz Ulf",     cls: "qp-sd" },
+  { label: "FD: Assistenz Wilke",   cls: "qp-fd" },
+  { label: "SD: Assistenz Wilke",   cls: "qp-sd" },
+  { label: "FD: Assistenz Florian", cls: "qp-fd" },
+  { label: "SD: Assistenz Florian", cls: "qp-sd" },
+  { label: "FD: Assistenz Lisa",    cls: "qp-fd" },
+  { label: "SD: Assistenz Lisa",    cls: "qp-sd" },
   { label: "Tagdienst 09-19 Uhr",   cls: "qp-tagdienst" },
   { label: "Urlaub",                cls: "qp-urlaub" },
   { label: "–",                     cls: "" },
@@ -1623,6 +1629,7 @@ function cellClass(val) {
   if (v.includes("Assistenz Ulf"))        return "c-assistenz-ulf";
   if (v.includes("Assistenz Lisa"))       return "c-assistenz-lisa";
   if (v.includes("Assistenz Wilke"))      return "c-assistenz-wilke";
+  if (v.includes("Assistenz Florian"))    return "c-assistenz-florian";
   if (v.includes("Assistenz"))            return "c-assistenz-ulf"; // Fallback
 
   // FD / SD Behandlung (einzige Unterscheidung nach Schicht)
@@ -1657,11 +1664,7 @@ function formatCell(val) {
     auffl = '<span class="auffullen-badge">+ Auffüllen</span>';
   }
   main = main
-    .replace("FD: Assistenz Lisa OP",  "FD: Ass. Lisa OP")
-    .replace("SD: Assistenz Lisa OP",  "SD: Ass. Lisa OP")
-    .replace("FD: Assistenz Wilke OP", "FD: Ass. Wilke OP")
-    .replace("FD: Assistenz Ulf",      "FD: Ass. Ulf")
-    .replace("SD: Assistenz Ulf",      "SD: Ass. Ulf")
+    .replace("Assistenz",              "Ass.")
     .replace("Abschlussprüfung",       "Prüfung")
     .replace("Notdienst (20–8 Uhr)",  "Notdienst")
     .replace("Frei (Notdienst)",       "Frei (ND)")

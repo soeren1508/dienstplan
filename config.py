@@ -11,7 +11,8 @@ from datetime import date
 SCHULTAGE = {
     "Alyssa":   [3],   # Do — dauerhaft, Fr ab 15:30 nach der Schule zur Arbeit
     "Pauline":  [2],   # Mi
-    "Matthias": [1],   # Di (Platzhalter)
+    "Molly":    [3],   # Do (Platzhalter, ab Ausbildungsbeginn 03.08.)
+    "Matthias": [1],   # Di (Platzhalter, ab Ausbildungsbeginn 03.08.)
 }
 
 # KWs, in denen kein Schultag stattfindet (Schulferien, Prüfungsblöcke etc.)
@@ -54,7 +55,9 @@ ARZT_PATTERNS = {
 PERSONAL_EXIT: dict[str, int] = {}
 
 PERSONAL_ENTRY = {
-    "Matthias": {"kw_start": 31, "mode": "tandem"},
+    # Ausbildungsbeginn 03.08.2026 = KW32
+    "Molly":    {"kw_start": 32, "mode": "tandem"},
+    "Matthias": {"kw_start": 32, "mode": "tandem"},
 }
 
 # Nina: befristetes Default-Muster für Juli, solange kein manueller Eintrag
@@ -182,15 +185,14 @@ ALL_PERSONS = [
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
     "Alyssa", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
-    # Molly (Azubi) erst ab August (Ausbildungsbeginn) wieder aufnehmen
-    "Matthias",                 # Azubi
+    "Molly", "Matthias",        # Azubis (Ausbildungsbeginn 03.08. = KW32)
     "Maria", "Ronja",           # Aushilfen
     "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
-AZUBIS       = ["Matthias"]
+AZUBIS       = ["Molly", "Matthias"]
 AUSHILFEN    = ["Maria", "Ronja"]
 
 # ---------------------------------------------------------------------------
