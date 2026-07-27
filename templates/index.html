@@ -133,9 +133,17 @@
   }
   .issue-list { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
   .issue-item {
-    font-size: 12px; padding: 2px 9px; border-radius: 5px;
+    font-size: 12px; padding: 2px 6px 2px 9px; border-radius: 5px;
     background: #fee2e2; color: #991b1b; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 6px;
   }
+  .issue-dismiss {
+    border: none; background: rgba(255,255,255,0.6); color: #166534;
+    font-weight: 800; font-size: 11px; width: 16px; height: 16px;
+    line-height: 16px; border-radius: 50%; cursor: pointer; padding: 0;
+    flex-shrink: 0;
+  }
+  .issue-dismiss:hover { background: #bbf7d0; }
 
   /* ── Table ── */
   .table-wrap {
@@ -231,7 +239,7 @@
   .c-empty     { background: white;   color: #cbd5e1; }
   .c-pruefung       { background: #fce7f3; color: #9d174d; }
   .c-weiterbildung  { background: #e0f2fe; color: #0369a1; } /* Sky-Blau – Weiterbildung */
-  .c-tagdienst      { background: #cffafe; color: #0e7490; } /* Cyan     – Tagdienst    */
+  .c-mitteldienst   { background: #cffafe; color: #0e7490; } /* Cyan     – Mitteldienst */
 
   /* ── Edit Popup ── */
   #edit-popup {
@@ -260,7 +268,7 @@
   #edit-note:focus { border-color: #f59e0b; background: #fffef0; }
   /* Hinweis in der Zelle */
   .cell-note {
-    display: block; font-size: 9px; font-style: italic; color: #78716c;
+    display: block; font-size: 9px; font-style: normal; color: #78716c;
     margin-top: 2px; line-height: 1.2; white-space: normal; word-break: break-word;
   }
   .quick-pick {
@@ -273,7 +281,7 @@
   .qp-springer { background: #ccfbf1; border-color: #5eead4; color: #134e4a; }
   .qp-reset      { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
   .qp-urlaub     { background: #e2e8f0; border-color: #cbd5e1; color: #64748b; }
-  .qp-tagdienst  { background: #cffafe; border-color: #67e8f9; color: #0e7490; }
+  .qp-mitteldienst { background: #cffafe; border-color: #67e8f9; color: #0e7490; }
   .popup-actions { display: flex; gap: 6px; justify-content: flex-end; }
   .popup-actions button {
     padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
@@ -1416,7 +1424,7 @@
       <div class="legend-item" style="background:#ede9fe;color:#5b21b6"><div class="legend-dot" style="background:#c4b5fd"></div>Schule</div>
       <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
       <div class="legend-item" style="background:#e0f2fe;color:#0369a1"><div class="legend-dot" style="background:#7dd3fc"></div>Weiterbildung</div>
-      <div class="legend-item" style="background:#cffafe;color:#0e7490"><div class="legend-dot" style="background:#67e8f9"></div>Tagdienst</div>
+      <div class="legend-item" style="background:#cffafe;color:#0e7490"><div class="legend-dot" style="background:#67e8f9"></div>Mitteldienst</div>
       <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
     </div>
   </div>
@@ -1533,7 +1541,7 @@ const QUICK_PICKS = [
   { label: "SD: Assistenz Florian", cls: "qp-sd" },
   { label: "FD: Assistenz Lisa",    cls: "qp-fd" },
   { label: "SD: Assistenz Lisa",    cls: "qp-sd" },
-  { label: "Tagdienst 09-19 Uhr",   cls: "qp-tagdienst" },
+  { label: "Mitteldienst 09-19 Uhr", cls: "qp-mitteldienst" },
   { label: "Urlaub",                cls: "qp-urlaub" },
   { label: "–",                     cls: "" },
 ];
@@ -1643,7 +1651,7 @@ function cellClass(val) {
   if (v === "SCHULE")                     return "c-schule";
   if (v === "Dienst")                     return "c-dienst";
   if (v === "Weiterbildung")              return "c-weiterbildung";
-  if (v.includes("Tagdienst"))            return "c-tagdienst";
+  if (v.includes("Mitteldienst"))          return "c-mitteldienst";
   if (v.includes("Notdienst"))            return "c-notdienst";
   if (v.includes("Abschlussprüfung"))     return "c-pruefung";
   if (v.includes("Frei"))                 return "c-frei";
@@ -1676,6 +1684,23 @@ function formatCell(val) {
 
 // ── Load & Render ─────────────────────────────────────────────────────────
 let suggestionsData = [];
+
+// Bestätigt eine automatische Fehlermeldung dauerhaft (bleibt auch nach Neuladen weg)
+async function dismissIssue(kw, di, msg, person) {
+  try {
+    const body = person ? { scope: "cell", di, msg, person } : { scope: "day", di, msg };
+    const r = await fetch(`/api/validate/${kw}/dismiss`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) { showToast("Fehler beim Bestätigen", "err"); return; }
+    showToast("Meldung bestätigt ✓", "ok");
+    loadKw(kw);
+  } catch (e) {
+    showToast("Fehler: " + e.message, "err");
+  }
+}
 
 async function loadKw(kw) {
   showLoading(`KW ${kw} …`);
@@ -1855,7 +1880,7 @@ function filterPastIssues(rawDay, rawCell, dates) {
 }
 
 function renderPlan(data, valid) {
-  const { kw, dates, plan, days, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
+  const { kw, dates, plan, days, arzte, tfas, azubis = [], aushilfen = [], empfang = [], overrides } = data;
   const { dayIssues, cellIssues } = filterPastIssues(
     valid?.day  || {},
     valid?.cell || {},
@@ -1884,7 +1909,15 @@ function renderPlan(data, valid) {
     for (const msg of msgs) {
       const li = document.createElement("li");
       li.className = "issue-item";
-      li.textContent = `${d} ${dt}: ${msg}`;
+      const span = document.createElement("span");
+      span.textContent = `${d} ${dt}: ${msg}`;
+      li.appendChild(span);
+      const btn = document.createElement("button");
+      btn.className = "issue-dismiss";
+      btn.title = "Bestätigen: dauerhaft ausblenden";
+      btn.textContent = "✓";
+      btn.addEventListener("click", () => dismissIssue(kw, parseInt(di), msg));
+      li.appendChild(btn);
       issueList.appendChild(li);
     }
   }
@@ -1923,6 +1956,7 @@ function renderPlan(data, valid) {
   ];
   if (azubis.length)    groups.push({ label:"Azubis",    persons: azubis    });
   if (aushilfen.length) groups.push({ label:"Aushilfen", persons: aushilfen });
+  if (empfang.length)   groups.push({ label:"Empfang",   persons: empfang   });
   for (const { label, persons: grp } of groups) {
     html += `<tr class="group-header"><td colspan="7">${label}</td></tr>`;
     for (const person of grp) {
@@ -1973,7 +2007,7 @@ function _todayDayIndex() {
 
 function renderDayView(data, valid) {
   if (!data) return;
-  const { kw, dates, plan, arzte, tfas, azubis = [], aushilfen = [], overrides } = data;
+  const { kw, dates, plan, arzte, tfas, azubis = [], aushilfen = [], empfang = [], overrides } = data;
   const { dayIssues, cellIssues } = filterPastIssues(
     valid?.day  || {},
     valid?.cell || {},
@@ -2026,6 +2060,7 @@ function renderDayView(data, valid) {
   ];
   if (azubis.length)    dayGroups.push({ label: "Azubis",    persons: azubis    });
   if (aushilfen.length) dayGroups.push({ label: "Aushilfen", persons: aushilfen });
+  if (empfang.length)   dayGroups.push({ label: "Empfang",   persons: empfang   });
   for (const { label, persons: grp } of dayGroups) {
     const visible = grp.filter(p => !personFilter || p === personFilter);
     if (!visible.length) continue;
@@ -2046,15 +2081,28 @@ function renderDayView(data, valid) {
     }
   }
 
-  // Issues für diesen Tag
-  if (dayIssueList.length) {
+  // Issues für diesen Tag (nur im Bearbeitungsmodus sichtbar)
+  if (isEditMode && dayIssueList.length) {
     html += `<div style="margin:12px 16px;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#92400e;">
-      <strong>⚠ ${dayIssueList.length} Regelhinweis${dayIssueList.length!==1?"e":""}</strong><br>
-      ${dayIssueList.map(m=>`• ${m}`).join("<br>")}
+      <strong>⚠ ${dayIssueList.length} Regelhinweis${dayIssueList.length!==1?"e":""}</strong>
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:4px;">
+        ${dayIssueList.map((m,i)=>`<div style="display:flex;align-items:center;gap:6px;">
+          <span style="flex:1;">• ${m}</span>
+          <button class="day-issue-dismiss" data-di="${di}" data-idx="${i}" title="Bestätigen: dauerhaft ausblenden"
+                  style="border:none;background:#fed7aa;color:#92400e;font-weight:800;font-size:11px;width:18px;height:18px;line-height:18px;border-radius:50%;cursor:pointer;padding:0;flex-shrink:0;">✓</button>
+        </div>`).join("")}
+      </div>
     </div>`;
   }
 
   dayContainer.innerHTML = html;
+
+  dayContainer.querySelectorAll(".day-issue-dismiss").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.idx);
+      dismissIssue(kw, parseInt(btn.dataset.di), dayIssueList[idx]);
+    });
+  });
 
   // Klick-Handler für Karten (Edit-Modus)
   dayContainer.querySelectorAll(".day-card").forEach(card => {

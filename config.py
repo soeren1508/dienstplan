@@ -173,7 +173,6 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
     # Neue Mitarbeiter 2026
     "Schrodt":    "Molly",
     "Sternbach":  "Matthias",
-    "Miehlitz":   "Maria",
     "Pfeiffer":   "Ronja",
 }
 
@@ -186,14 +185,21 @@ ALL_PERSONS = [
     "Alyssa", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis (Ausbildungsbeginn 03.08. = KW32)
-    "Maria", "Ronja",           # Aushilfen
+    "Ronja",                    # Aushilfe (Maria ausgeschieden)
     "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
+    "Nicolette",                # Empfang (ab September, nur Anmeldung, 08:30-17:00)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
 AZUBIS       = ["Molly", "Matthias"]
-AUSHILFEN    = ["Maria", "Ronja"]
+AUSHILFEN    = ["Ronja"]
+EMPFANG      = ["Nicolette"]   # nur Anmeldung, fester Zeitblock, kein FD/SD
+
+# Ab wann Nicolette ihr Default-Muster bekommt (Mo-Fr, 08:30-17:00 Anmeldung),
+# solange kein manueller Eintrag vorliegt. Manuelle Overrides haben Vorrang.
+NICOLETTE_START = date(2026, 9, 1)
+NICOLETTE_MUSTER = "Anmeldung (08:30–17:00 Uhr)"
 
 # ---------------------------------------------------------------------------
 # Tage-Mapping

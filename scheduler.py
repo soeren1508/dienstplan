@@ -11,6 +11,7 @@ from config import (
     PERSONAL_EXIT, PRUEFUNGSTAGE, VACATION_OVERRIDES,
     ALL_PERSONS, ARZTE, TFAS, DAYS,
     NINA_JULI_KWS, NINA_JULI_MUSTER_DI_DO, NINA_JULI_MUSTER_FR,
+    NICOLETTE_START, NICOLETTE_MUSTER,
 )
 
 
@@ -88,6 +89,12 @@ def generate_week(kw_num, vacations, auffl):
                 s("Nina", di, NINA_JULI_MUSTER_DI_DO)
         if free("Nina", 4) and not pa("Nina", 4):   # Fr
             s("Nina", 4, NINA_JULI_MUSTER_FR)
+
+    # ── 1d) Nicolette Default-Muster ab September (Mo-Fr, solange kein
+    # manueller Eintrag existiert; manuelle Overrides haben Vorrang) ──────────
+    for di in range(5):   # Mo-Fr
+        if dates[di] >= NICOLETTE_START and free("Nicolette", di) and not pa("Nicolette", di):
+            s("Nicolette", di, NICOLETTE_MUSTER)
 
     # ── 2) Personal-Exits ───────────────────────────────────────────────────
     for person, exit_kw in PERSONAL_EXIT.items():

@@ -33,7 +33,7 @@ sys.path.insert(0, str(DIENSTPLAN_DIR))
 
 from scheduler import generate_week
 from vacations import load_vacations
-from config    import ALL_PERSONS, ARZTE, TFAS, TFAS_MANUAL, AZUBIS, AUSHILFEN, DAYS
+from config    import ALL_PERSONS, ARZTE, TFAS, TFAS_MANUAL, AZUBIS, AUSHILFEN, EMPFANG, DAYS
 
 # Excel-Datei: erst im selben Verzeichnis suchen (Deployment), dann im Repo-Root (lokal)
 _urlaub_candidates = [
@@ -47,6 +47,7 @@ if not URLAUB_PATH.exists():
 OVERRIDES_PATH     = DIENSTPLAN_DIR / "overrides.json"
 VAC_OVERRIDES_PATH = DIENSTPLAN_DIR / "vacation_overrides.json"
 OT_ROTATION_PATH   = DIENSTPLAN_DIR / "overtime_rotation.json"
+DISMISSED_PATH     = DIENSTPLAN_DIR / "dismissed_issues.json"
 
 # PIN für den Bearbeitungsmodus (Umgebungsvariable EDIT_PIN, Fallback "1234")
 EDIT_PIN = os.environ.get("EDIT_PIN", "1234")
@@ -124,6 +125,7 @@ def _sync_from_github():
         (OVERRIDES_PATH,     "overrides.json"),
         (VAC_OVERRIDES_PATH, "vacation_overrides.json"),
         (OT_ROTATION_PATH,   "overtime_rotation.json"),
+        (DISMISSED_PATH,     "dismissed_issues.json"),
     ]:
         content = _github_pull(filename)
         if content:
@@ -290,6 +292,19 @@ def _save_overrides(data: dict):
     _github_push("overrides.json", content, "Auto-save: Dienstplan-Änderung")
 
 
+def _load_dismissed() -> dict:
+    if DISMISSED_PATH.exists():
+        with open(DISMISSED_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def _save_dismissed(data: dict):
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    DISMISSED_PATH.write_text(content, encoding="utf-8")
+    _github_push("dismissed_issues.json", content, "Auto-save: Fehlermeldung bestätigt")
+
+
 def _plan_for_kw(kw: int, overrides: dict) -> dict:
     base  = _plan_cache.get(kw, {})
     kw_ov = overrides.get(str(kw), {})
@@ -359,6 +374,7 @@ def api_plan(kw):
         "tfas":      TFAS + TFAS_MANUAL,
         "azubis":    AZUBIS,
         "aushilfen": AUSHILFEN,
+        "empfang":   EMPFANG,
         "overrides": kw_ov,
     })
 
@@ -371,6 +387,38 @@ def api_validate(kw):
     plan      = _plan_for_kw(kw, overrides)
     issues    = _validate_plan(plan, kw)
     return jsonify(issues)
+
+
+@app.route("/api/validate/<int:kw>/dismiss", methods=["POST"])
+@require_auth
+def api_dismiss_issue(kw):
+    """
+    Bestätigt (entfernt dauerhaft) eine automatische Fehlermeldung.
+    Body: { scope: "day"|"cell", di, msg, person? (nur bei scope="cell") }
+    """
+    data   = request.get_json()
+    scope  = data.get("scope")
+    di     = str(int(data["di"]))
+    msg    = data.get("msg", "")
+    person = data.get("person")
+
+    if not msg:
+        return jsonify({"ok": False, "error": "Keine Meldung angegeben"}), 400
+
+    dismissed = _load_dismissed()
+    entry = dismissed.setdefault(str(kw), {"day": {}, "cell": {}})
+
+    if scope == "day":
+        lst = entry.setdefault("day", {}).setdefault(di, [])
+        if msg not in lst: lst.append(msg)
+    elif scope == "cell" and person:
+        lst = entry.setdefault("cell", {}).setdefault(person, {}).setdefault(di, [])
+        if msg not in lst: lst.append(msg)
+    else:
+        return jsonify({"ok": False, "error": "Ungültiger scope"}), 400
+
+    _save_dismissed(dismissed)
+    return jsonify({"ok": True})
 
 
 @app.route("/api/validate/<int:kw>/suggestions")
@@ -735,11 +783,15 @@ def _suggest_fixes(plan: dict, issues: dict, kw: int) -> list:
 # Überstunden-Abbau-Rotation
 # ---------------------------------------------------------------------------
 
+# Alle Helfer im Rotations-Pool (nicht nur die Stamm-TFAs), damit auch
+# manuell geplante TFAs/Aushilfen fair mit rotiert werden.
+OT_POOL = TFAS + TFAS_MANUAL + AUSHILFEN
+
 def _load_ot_rotation() -> dict:
     if OT_ROTATION_PATH.exists():
         with open(OT_ROTATION_PATH, encoding="utf-8") as f:
             return json.load(f)
-    return {"counts": {p: 0 for p in TFAS}}
+    return {"counts": {p: 0 for p in OT_POOL}}
 
 
 def _save_ot_rotation(data: dict):
@@ -765,7 +817,7 @@ def _check_overtime(plan: dict, kw: int) -> list:
 
     dates    = week_dates(kw)
     rotation = _load_ot_rotation()
-    counts   = rotation.get("counts", {p: 0 for p in TFAS})
+    counts   = rotation.get("counts", {p: 0 for p in OT_POOL})
 
     ABSENT_STATES = {"Urlaub", "Krank"}
 
@@ -804,12 +856,12 @@ def _check_overtime(plan: dict, kw: int) -> list:
         if not absent_docs:
             continue
 
-        active_tfas = [p for p in TFAS if tfa_active(row[p])]
+        active_tfas = [p for p in OT_POOL if tfa_active(row[p])]
         if len(active_tfas) < 4:
             continue  # zu wenig Personal – kein Spielraum
 
-        # Kandidaten: aktive TFAs, sortiert nach Rotationszähler (fairste Verteilung)
-        pool = sorted(active_tfas, key=lambda p: (counts.get(p, 0), TFAS.index(p)))
+        # Kandidaten: aktive Helfer, sortiert nach Rotationszähler (fairste Verteilung)
+        pool = sorted(active_tfas, key=lambda p: (counts.get(p, 0), OT_POOL.index(p)))
 
         found = False
         for candidate in pool:
@@ -963,6 +1015,20 @@ def _validate_plan(plan: dict, kw: int) -> dict:
         sd_n = sum(1 for p in TFAS if shift(row[p]) == "SD")
         if active_tfas and abs(fd_n - sd_n) >= 4:
             add_day(di, f"FD/SD-Ungleichgewicht: FD={fd_n}, SD={sd_n}")
+
+    # Bestätigte (bewusst weggeklickte) Meldungen dauerhaft herausfiltern
+    dismissed = _load_dismissed().get(str(kw), {})
+    d_day  = dismissed.get("day", {})
+    d_cell = dismissed.get("cell", {})
+    for di_str in list(issues["day"].keys()):
+        keep = [m for m in issues["day"][di_str] if m not in d_day.get(di_str, [])]
+        if keep: issues["day"][di_str] = keep
+        else:    del issues["day"][di_str]
+    for p, per_day in issues["cell"].items():
+        for di_str in list(per_day.keys()):
+            keep = [m for m in per_day[di_str] if m not in d_cell.get(p, {}).get(di_str, [])]
+            if keep: per_day[di_str] = keep
+            else:    del per_day[di_str]
 
     return issues
 
