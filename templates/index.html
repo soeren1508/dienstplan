@@ -1667,11 +1667,8 @@ function formatCell(val) {
   const parts = String(val).split(" || ");
   const v     = parts[0];
   const note  = parts[1] || "";
-  let main = v, auffl = "";
-  if (v.includes("+ Auffüllen")) {
-    main  = v.replace("+ Auffüllen","").trim();
-    auffl = '<span class="auffullen-badge">+ Auffüllen</span>';
-  }
+  // "+ Auffüllen"-Hinweis vorerst nicht anzeigen (Daten bleiben intern erhalten)
+  let main = v.includes("+ Auffüllen") ? v.replace("+ Auffüllen","").trim() : v;
   main = main
     .replace("Assistenz",              "Ass.")
     .replace("Abschlussprüfung",       "Prüfung")
@@ -1680,7 +1677,7 @@ function formatCell(val) {
     .replace("SD: Behandlung (ab 15:30)", "SD: Beh. (15:30)")
     .replace("ECVO Congress", "ECVO");
   const noteHtml = note ? `<span class="cell-note">📝 ${note}</span>` : "";
-  return main + auffl + noteHtml;
+  return main + noteHtml;
 }
 
 // ── Load & Render ─────────────────────────────────────────────────────────
