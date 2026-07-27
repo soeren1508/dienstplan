@@ -174,6 +174,7 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
     "Schrodt":    "Molly",
     "Sternbach":  "Matthias",
     "Pfeiffer":   "Ronja",
+    "Jaß":        "Nina",
 }
 
 # ---------------------------------------------------------------------------

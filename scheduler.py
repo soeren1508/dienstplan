@@ -29,6 +29,9 @@ def week_dates(kw: int) -> List[date]:
 def is_vacation(person, di, vacations, dates):
     return dates[di] in vacations.get(person, set())
 
+def is_krank(person, di, krank, dates):
+    return dates[di] in (krank or {}).get(person, set())
+
 def is_feiertag(di, dates):
     return dates[di] in FEIERTAGE_HH_2026
 
@@ -37,10 +40,11 @@ def is_schule(person, di, kw_num):
         return False
     return kw_num not in SCHUL_AUSFALL.get(person, set())
 
-def person_absent(person, di, vacations, dates, kw_num):
+def person_absent(person, di, vacations, dates, kw_num, krank=None):
     if kw_num >= PERSONAL_EXIT.get(person, 999):
         return True   # ausgetretene Person → immer abwesend
     return (is_vacation(person, di, vacations, dates)
+            or is_krank(person, di, krank, dates)
             or is_feiertag(di, dates)
             or is_schule(person, di, kw_num))
 
@@ -58,7 +62,7 @@ def auffl_add(person, val, auffl):
 # Hauptfunktion
 # ---------------------------------------------------------------------------
 
-def generate_week(kw_num, vacations, auffl):
+def generate_week(kw_num, vacations, auffl, krank=None):
     dates = week_dates(kw_num)
     is_even = kw_num % 2 == 0
     plan = {p: ["–"] * 6 for p in ALL_PERSONS}
@@ -66,15 +70,17 @@ def generate_week(kw_num, vacations, auffl):
     def s(p, di, v): plan[p][di] = v
     def g(p, di): return plan[p][di]
     def free(p, di): return plan[p][di] == "–"
-    def pa(p, di): return person_absent(p, di, vacations, dates, kw_num)
+    def pa(p, di): return person_absent(p, di, vacations, dates, kw_num, krank)
 
-    # ── 1) Feiertage + Urlaub ───────────────────────────────────────────────
+    # ── 1) Feiertage + Urlaub + geplante Krankheit ──────────────────────────
     for p in ALL_PERSONS:
         for di in range(6):
             if is_feiertag(di, dates):
                 s(p, di, "Feiertag")
             elif is_vacation(p, di, vacations, dates):
                 s(p, di, "Urlaub")
+            elif is_krank(p, di, krank, dates):
+                s(p, di, "Krank")
 
     # ── 1b) Urlaub-Korrekturen (fehlende Tage in Urlaubsdatei) ─────────────
     for (person, kw, di) in VACATION_OVERRIDES:
@@ -302,7 +308,7 @@ def generate_week(kw_num, vacations, auffl):
 
     # ── 14) Füll-Logik ───────────────────────────────────────────────────────
     _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
-                    deborah_deckt_anmeldung_mo)
+                    deborah_deckt_anmeldung_mo, krank)
 
     # ── 14b) Lisa OP Do Auffüllen (nach fill_remaining, ohne Nicolas) ────────
     if g("Lisa", 3) == "OP Ganztag":
@@ -385,13 +391,13 @@ def generate_week(kw_num, vacations, auffl):
 # ---------------------------------------------------------------------------
 
 def _fill_remaining(plan, kw_num, is_even, vacations, dates, auffl,
-                     deborah_deckt_anmeldung_mo):
+                     deborah_deckt_anmeldung_mo, krank=None):
     from rules import get_shift, is_skip
 
     def can_fill(p, di):
         """Gibt True zurück, wenn die Zelle befüllt werden kann (nicht geschützt, nicht absent)."""
         return (plan[p][di] == "–"                       # nur echte Leerstellen
-                and not person_absent(p, di, vacations, dates, kw_num)
+                and not person_absent(p, di, vacations, dates, kw_num, krank)
                 and kw_num < PERSONAL_EXIT.get(p, 999))
 
     def anm_covered(di):

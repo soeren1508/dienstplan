@@ -21,11 +21,9 @@ _START_DATE = date(2026, 1, 1)
 _PERSON_ROWS = range(7, 19)
 
 
-def load_vacations(path: str | Path) -> Dict[str, Set[date]]:
-    """
-    Parst die Urlaubsplanung und gibt Urlaubstage pro Person zurück.
-    Berücksichtigt nur 'U'-Einträge (Urlaub).
-    """
+def _load_marker(path: str | Path, marker: str) -> Dict[str, Set[date]]:
+    """Parst die Urlaubsplanung und gibt Tage mit dem angegebenen Kürzel
+    (z.B. 'U' für Urlaub, 'K' für Krank) pro Person zurück."""
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb.active
     max_col = ws.max_column
@@ -46,15 +44,25 @@ def load_vacations(path: str | Path) -> Dict[str, Set[date]]:
         if not vorname:
             continue
 
-        vacation_days: Set[date] = set()
+        days: Set[date] = set()
         for ci, val in enumerate(row[_START_COL - 1:], _START_COL):
-            if val == "U" or val == "u":
+            if isinstance(val, str) and val.strip().upper() == marker:
                 d = _START_DATE + timedelta(days=ci - _START_COL)
-                vacation_days.add(d)
+                days.add(d)
 
-        result[vorname] = vacation_days
+        result[vorname] = days
 
     return result
+
+
+def load_vacations(path: str | Path) -> Dict[str, Set[date]]:
+    """Parst die Urlaubsplanung, gibt Urlaubstage ('U'-Einträge) pro Person zurück."""
+    return _load_marker(path, "U")
+
+
+def load_krank(path: str | Path) -> Dict[str, Set[date]]:
+    """Parst die Urlaubsplanung, gibt geplante Krank-Tage ('K'-Einträge) pro Person zurück."""
+    return _load_marker(path, "K")
 
 
 def vacations_for_week(

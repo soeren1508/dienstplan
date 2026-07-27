@@ -32,7 +32,7 @@ REPO_DIR       = DIENSTPLAN_DIR.parent
 sys.path.insert(0, str(DIENSTPLAN_DIR))
 
 from scheduler import generate_week
-from vacations import load_vacations
+from vacations import load_vacations, load_krank
 from config    import ALL_PERSONS, ARZTE, TFAS, TFAS_MANUAL, AZUBIS, AUSHILFEN, EMPFANG, DAYS
 
 # Excel-Datei: erst im selben Verzeichnis suchen (Deployment), dann im Repo-Root (lokal)
@@ -216,9 +216,19 @@ def _get_all_vac():
     return all_vac
 
 
+def _get_all_krank():
+    """Geplante Krank-Tage ('K'-Einträge) aus der Urlaubsplanung."""
+    try:
+        return load_krank(URLAUB_PATH)
+    except Exception as e:
+        print(f"[WARNUNG] Krank-Tage konnten nicht geladen werden: {e}")
+        return {}
+
+
 def _generate_all():
     global _plan_cache
-    all_vac = _get_all_vac()
+    all_vac   = _get_all_vac()
+    all_krank = _get_all_krank()
     auffl   = {p: 0 for p in ALL_PERSONS}
     plans   = {}
 
@@ -252,19 +262,19 @@ def _generate_all():
                     plans[kw] = {p: raw.get(p, ["–"] * 6) for p in ALL_PERSONS}
                 else:
                     print(f"[WARNUNG] KW{kw} nicht in Excel gefunden – generiere")
-                    plans[kw] = generate_week(kw, all_vac, auffl)
+                    plans[kw] = generate_week(kw, all_vac, auffl, all_krank)
         except Exception as e:
             print(f"[WARNUNG] Dienstplan_KW17-23.xlsx konnte nicht geladen werden: {e}")
             for kw in range(17, 24):
-                plans[kw] = generate_week(kw, all_vac, auffl)
+                plans[kw] = generate_week(kw, all_vac, auffl, all_krank)
     else:
         print("[WARNUNG] Dienstplan_KW17-23.xlsx nicht gefunden – generiere KW17–23")
         for kw in range(17, 24):
-            plans[kw] = generate_week(kw, all_vac, auffl)
+            plans[kw] = generate_week(kw, all_vac, auffl, all_krank)
 
     # KW24–52: auto-generiert
     for kw in range(24, 53):
-        plans[kw] = generate_week(kw, all_vac, auffl)
+        plans[kw] = generate_week(kw, all_vac, auffl, all_krank)
 
     _plan_cache = plans
 
