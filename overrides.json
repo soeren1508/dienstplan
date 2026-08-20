@@ -545,7 +545,8 @@
   },
   "36": {
     "Wilke": {
-      "2": "Notdienst"
+      "2": "Notdienst",
+      "3": "Frei (ND)"
     },
     "Florian": {
       "1": "Krank",
