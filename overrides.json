@@ -576,7 +576,8 @@
       "0": "FD: Assistenz Ulf"
     },
     "Pauline": {
-      "4": "FD: Behandlung"
+      "4": "FD: Behandlung",
+      "0": "SD: Behandlung"
     },
     "Nadine": {
       "5": "Dienst"
