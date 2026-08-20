@@ -1035,12 +1035,13 @@
       "4": "–"
     },
     "Nicolas": {
-      "3": "FD: Anmeldung",
+      "3": "SD: Anmeldung",
       "5": "Dienst",
       "0": "SD: Anmeldung"
     },
     "Kristin": {
-      "4": "FD: Anmeldung + Bestellungen || Bis 12 Uhr Anmeldung dann Bestellung"
+      "4": "FD: Anmeldung + Bestellungen || Bis 12 Uhr Anmeldung dann Bestellung",
+      "3": "FD: Anmeldung"
     },
     "Deborah": {
       "0": "Urlaub",
