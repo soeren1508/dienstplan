@@ -1084,7 +1084,7 @@
     },
     "Kristin": {
       "4": "FD: Anmeldung + Bestellungen || Bis 12 Uhr Anmeldung dann Bestellung",
-      "3": "FD: Anmeldung"
+      "3": "SD: Assistenz Lisa OP"
     },
     "Deborah": {
       "0": "Urlaub",
@@ -1130,7 +1130,8 @@
     "Imke": {
       "1": "SD: Anmeldung",
       "2": "FD: Springer || Trauerkarten und Räume",
-      "4": "SD: Springer"
+      "4": "SD: Springer",
+      "3": "FD: Anmeldung"
     },
     "Lisa": {
       "5": "Dienst"
