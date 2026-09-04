@@ -523,7 +523,8 @@
     },
     "Imke": {
       "4": "FD: Anmeldung",
-      "0": "FD: Anmeldung"
+      "0": "FD: Anmeldung",
+      "2": "SD: Anmeldung"
     },
     "Deborah": {
       "0": "Urlaub",
@@ -549,7 +550,7 @@
     "Nina": {
       "0": "SD: Assistenz Ulf ab 15:00 Uhr",
       "1": "FD: Anmeldung",
-      "2": "SD: Anmeldung"
+      "2": "FD: Assistenz Wilke OP"
     },
     "Alyssa": {
       "0": "–",
