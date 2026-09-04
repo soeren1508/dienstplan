@@ -1181,7 +1181,7 @@
       "3": "Schule",
       "4": "SD: Behandlung Ab 15:30 Uhr",
       "0": "FD: Behandlung",
-      "1": "FD: Behandlung",
+      "1": "SD: Assistenz Ulf",
       "2": "FD: Behandlung"
     },
     "Nicolas": {
@@ -1210,6 +1210,9 @@
     },
     "Pauline": {
       "0": "SD: Behandlung"
+    },
+    "Deborah": {
+      "1": "FD: Behandlung"
     }
   }
 }
