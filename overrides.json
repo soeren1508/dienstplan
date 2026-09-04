@@ -1278,7 +1278,7 @@
       "0": "Frei",
       "3": "Frei || Frei unter Vorbehalt und Dienstplan",
       "2": "SD: Anmeldung",
-      "4": "Frei",
+      "4": "FD: Anmeldung",
       "5": "Dienst"
     },
     "Alyssa": {
@@ -1298,7 +1298,8 @@
       "0": "FD: Anmeldung",
       "1": "FD: Anmeldung",
       "2": "FD: Anmeldung",
-      "3": "FD: Anmeldung"
+      "3": "FD: Anmeldung",
+      "4": "Frei"
     },
     "Pauline": {
       "0": "SD: Behandlung"
