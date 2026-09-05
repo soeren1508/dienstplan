@@ -1308,11 +1308,13 @@
       "4": "Strahlenkurs/ SD ab 15: Behandlung"
     },
     "Deborah": {
-      "1": "FD: Assistenz Ulf || Bis 14 Uhr"
+      "1": "FD: Assistenz Ulf || Bis 14 Uhr",
+      "0": "FD: Assistenz Ulf"
     },
     "Kristin": {
       "5": "–",
-      "1": "Frei"
+      "1": "Frei",
+      "0": "SD: Anmeldung"
     },
     "Nicolette": {
       "0": "Anmeldung (10:30–17:00 Uhr) || Brandschutzkurs 9 Uhr"
