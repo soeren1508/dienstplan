@@ -528,7 +528,7 @@
     },
     "Imke": {
       "4": "FD: Anmeldung",
-      "0": "FD: Anmeldung + Springer Behandlung",
+      "0": "SD: Anmeldung",
       "2": "SD: Anmeldung"
     },
     "Deborah": {
@@ -566,7 +566,7 @@
       "4": "–"
     },
     "Nadine": {
-      "0": "SD: Anmeldung",
+      "0": "FD: Anmeldung + Springer Behandlung",
       "3": "FD: Anmeldung",
       "1": "FD: Assistenz Lisa"
     },
