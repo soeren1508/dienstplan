@@ -1411,6 +1411,7 @@
 
     <div class="spacer"></div>
 
+    <button class="btn btn-ghost" id="btn-refresh" title="Aktualisieren (lädt die neueste Version)" style="font-size:16px;padding:5px 9px">🔄</button>
     <button class="btn" id="btn-lock" title="Bearbeitungsmodus">
       <span class="btn-lock-label-lock">🔒</span>
       <span class="btn-lock-label-unlock">🔓</span>
@@ -3107,6 +3108,32 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/static/sw.js")
     .catch(e => console.warn("SW:", e));
 }
+
+// ── "Aktualisieren"-Button ───────────────────────────────────────────────
+// Erzwingt eine komplett frische Version: Service Worker abmelden, alle
+// Caches leeren, danach mit Cache-Busting-Parameter neu laden. Hilft, wenn
+// eine alte Version (Homescreen-PWA, Safari-Cache) hängen geblieben ist.
+const btnRefresh = document.getElementById("btn-refresh");
+btnRefresh.addEventListener("click", async () => {
+  btnRefresh.disabled = true;
+  btnRefresh.textContent = "…";
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const r of regs) await r.unregister();
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      for (const k of keys) await caches.delete(k);
+    }
+  } catch (e) {
+    console.warn("Aktualisieren:", e);
+  } finally {
+    const url = new URL(window.location.href);
+    url.searchParams.set("_r", Date.now());
+    window.location.href = url.toString();
+  }
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────
 (async () => {
