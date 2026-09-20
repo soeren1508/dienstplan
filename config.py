@@ -191,9 +191,15 @@ ALL_PERSONS = [
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
 ARZTE_MANUAL = ["Hanne"]       # Ärzte in UI-Gruppe, aber nicht auto-scheduliert
+# ACHTUNG: TFAS treibt die automatische Planung (scheduler.py) -- Pauline
+# bleibt hier drin, damit sich an ihrer Auto-Verplanung nichts ändert.
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
 AZUBIS       = ["Molly", "Matthias"]
+# Rein optische Umgruppierung: Pauline wird weiterhin ganz normal wie eine
+# TFA automatisch verplant (siehe TFAS oben), erscheint im UI aber unter
+# "Azubis" statt "TFAs". Siehe app.py (tfas/azubis-Aufbau für die API).
+TFAS_DISPLAY_ALS_AZUBI = ["Pauline"]
 AUSHILFEN: list[str] = []      # Ronja ausgeschieden
 EMPFANG      = ["Nicolette"]   # nur Anmeldung, fester Zeitblock, kein FD/SD
 
