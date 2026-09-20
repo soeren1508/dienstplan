@@ -956,6 +956,11 @@
        sichtbare Position kurz auseinanderlaufen können -> Buttons lassen
        sich nur teilweise/unzuverlässig antippen. position:sticky bleibt
        Teil des normalen Dokumentenflusses und ist davon nicht betroffen. */
+    /* ACHTUNG: kein transform/will-change auf .topbar setzen -- .topbar-actions
+       (die untere Tab-Leiste) ist ein DOM-Kind von .topbar und braucht
+       position:fixed relativ zum Viewport. Ein transform auf .topbar würde
+       automatisch zum neuen Bezugsrahmen für dieses fixed-Kind werden und
+       die untere Leiste an die falsche Stelle reißen. */
     .topbar {
       position: sticky !important;
       top: 0; left: 0; right: 0;
@@ -3084,6 +3089,18 @@ if ("serviceWorker" in navigator) {
   await checkAuth();   // Prüft ob Session noch aktiv
   loadKw(currentKw);
 })();
+
+// iOS-Safari-Bug: position:sticky + env(safe-area-inset-top) wird beim
+// allerersten Laden manchmal falsch berechnet (Kopfzeile erscheint zu hoch/
+// verschoben) und korrigiert sich erst nach einem Scroll-Ereignis. Wir
+// erzwingen einmalig ein Reflow kurz nach dem Laden, ohne dass der Nutzer
+// selbst scrollen/ziehen muss.
+window.addEventListener("load", () => {
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 1);
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+  });
+});
 </script>
 </body>
 </html>
