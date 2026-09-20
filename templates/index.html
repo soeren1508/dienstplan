@@ -30,6 +30,7 @@
   button, a, [role="button"] { touch-action: manipulation; }
 
   /* ── Top Bar ── */
+  #topbar-spacer { display: none; } /* nur auf Mobile sichtbar, siehe Media Query */
   .topbar {
     background: #1e293b; color: white; padding: 0 16px; height: 56px;
     display: flex; align-items: center; gap: 10px; position: sticky;
@@ -950,6 +951,17 @@
   ══════════════════════════════════════════════ */
   @media (max-width: 640px) {
 
+    /* ── Abstandshalter über der Kopfzeile ──
+       Schiebt die sticky Topbar beim ersten Laden ein Stück nach unten,
+       damit die WebKit-Fehlberechnung (siehe .topbar-Kommentar weiter
+       unten) gar nicht erst sichtbar wird / die Bedienelemente von
+       Anfang an erreichbar sind. */
+    #topbar-spacer {
+      display: block;
+      height: 14px;
+      background: #1e293b;
+    }
+
     /* ── Topbar: STICKY oben (nicht fixed) ──
        position:fixed + Safe-Area ist auf iOS Safari dafür bekannt, dass
        beim Ein-/Ausblenden der Adressleiste Touch-Koordinaten und
@@ -1354,6 +1366,10 @@
     <button id="btn-save">Speichern</button>
   </div>
 </div>
+
+<!-- Abstandshalter: schiebt die Kopfzeile auf Mobile ein Stück nach unten,
+     damit sie beim ersten Laden korrekt positioniert/bedienbar ist -->
+<div id="topbar-spacer"></div>
 
 <!-- Top Bar -->
 <div class="topbar">
