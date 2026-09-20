@@ -1059,19 +1059,19 @@
       top: calc(52px + env(safe-area-inset-top) + 8px) !important;
     }
 
-    /* ── Echte Tabellen-Kopfzeile (thead in .table-wrap): NICHT mehr sticky.
+    /* ── Echte Tabellen-Kopfzeile (thead in .table-wrap): komplett ausgeblendet.
        Grund: .table-wrap braucht overflow-x:auto für die breite Tabelle,
        und das macht den Browser-Container (nicht die Seite) automatisch
        zum Bezugsrahmen für position:sticky -- dadurch "klebte" die Zeile
        an der falschen Stelle (irgendwo mitten in der Tabelle statt oben).
-       Sichtbarkeit beim Scrollen übernimmt stattdessen die separate
-       eingefrorene Kopfzeile weiter unten (#frozen-head-wrap). ── */
-    thead tr:first-child th,
-    thead tr.balance-row td {
-      position: static !important;
-    }
-    thead th:first-child {
-      position: sticky !important; /* nur horizontal (left), unproblematisch */
+       Die Anzeige übernimmt komplett die separate eingefrorene Kopfzeile
+       weiter unten (#frozen-head-wrap); diese hier würde sonst doppelt
+       zu sehen sein, solange nicht gescrollt wurde. visibility:collapse
+       (statt display:none) behält die Spaltenbreiten für table-layout:fixed
+       bei, nimmt aber keinen Platz mehr ein. ── */
+    #table-wrap thead tr:first-child,
+    #table-wrap thead tr.balance-row {
+      visibility: collapse;
     }
 
     /* ── Eingefrorene Kopfzeile: liegt AUSSERHALB von .table-wrap, daher
