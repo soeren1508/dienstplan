@@ -155,7 +155,11 @@
   /* ── Table ── */
   .table-wrap {
     background: white; border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.06); overflow: auto;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.06);
+    /* Nur horizontal scrollen (breite Tabelle) -- overflow-y muss "visible"
+       bleiben, sonst wird table-wrap selbst zum Sticky-Scroll-Container und
+       die sticky thead-Positionierung bricht (Lücke/Flackern beim Scrollen) */
+    overflow-x: auto; overflow-y: visible;
   }
   table { border-collapse: collapse; width: 100%; min-width: 960px; }
 
@@ -1024,6 +1028,19 @@
     /* ── Toast: unterhalb der Topbar ── */
     #toast {
       top: calc(52px + env(safe-area-inset-top) + 8px) !important;
+    }
+
+    /* ── Tabellen-Kopfzeile (thead): auf Mobile ist die Topbar bereits
+       fixiert oben. Ein zusätzlich vertikal-sticky thead kollidiert damit
+       beim Scrollen (Kompositions-Konflikt zweier gestapelter Sticky/Fixed-
+       Ebenen -> Flacker-/Verwisch-Effekt). Vertikales Sticky daher auf
+       Mobile deaktiviert; die Namens-Spalte bleibt weiterhin horizontal
+       sticky (siehe thead th:first-child, setzt eigenes left:0). ── */
+    thead th {
+      position: static !important;
+    }
+    thead th:first-child {
+      position: sticky !important;
     }
 
     /* ── Topbar Zeile-1 Elemente ── */
