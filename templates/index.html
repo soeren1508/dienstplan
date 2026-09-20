@@ -1057,17 +1057,17 @@
       top: calc(52px + env(safe-area-inset-top) + 8px) !important;
     }
 
-    /* ── Tabellen-Kopfzeile (thead): auf Mobile ist die Topbar bereits
-       fixiert oben. Ein zusätzlich vertikal-sticky thead kollidiert damit
-       beim Scrollen (Kompositions-Konflikt zweier gestapelter Sticky/Fixed-
-       Ebenen -> Flacker-/Verwisch-Effekt). Vertikales Sticky daher auf
-       Mobile deaktiviert; die Namens-Spalte bleibt weiterhin horizontal
-       sticky (siehe thead th:first-child, setzt eigenes left:0). ── */
+    /* ── Tabellen-Kopfzeile (thead): bleibt beim Scrollen sichtbar (Person/
+       Mo/Di), klebt direkt unterhalb der jetzt sticky Topbar. Zwei gestapelte
+       sticky-Ebenen sind (anders als fixed+sticky) unproblematisch, solange
+       der zweite top-Offset die Höhe des ersten Elements berücksichtigt. ── */
     thead th {
-      position: static !important;
+      position: sticky !important;
+      top: calc(52px + env(safe-area-inset-top)) !important;
+      z-index: 10;
     }
     thead th:first-child {
-      position: sticky !important;
+      z-index: 12;
     }
 
     /* ── Topbar Zeile-1 Elemente ── */
