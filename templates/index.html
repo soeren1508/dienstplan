@@ -34,9 +34,16 @@
     background: #1e293b; color: white; padding: 0 16px; height: 56px;
     display: flex; align-items: center; gap: 10px; position: sticky;
     top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    /* Fallback statt Zusammenquetschen: bei zu wenig Platz lieber horizontal
+       scrollen, damit jedes Element immer in voller Größe klickbar bleibt */
+    overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
-  .topbar h1 { font-size: 15px; font-weight: 600; white-space: nowrap; }
-  .topbar .spacer { flex: 1; }
+  .topbar::-webkit-scrollbar { display: none; }
+  .topbar h1 { font-size: 15px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+  .topbar .spacer { flex: 1; flex-shrink: 0; min-width: 10px; }
+  /* Keine Kopfzeilen-Elemente dürfen sich verkleinern/überlappen */
+  .topbar > *, .topbar-row1 > *, .topbar-actions > * { flex-shrink: 0; }
   /* Zeile 1: auf Desktop ist sie der "normale" flex-Container-Inhalt */
   .topbar-row1 {
     display: contents; /* Kinder nehmen direkt am topbar-flex teil */
@@ -646,9 +653,6 @@
   }
   .suggestion-item .btn-apply:hover { background: #4f46e5; }
 
-  /* Krank-Zellfarbe */
-  .c-krank { background: #fee2e2; color: #991b1b; }
-
   /* ── Person-Filter ── */
   #person-filter {
     background: rgba(255,255,255,0.12); color: white; border: none;
@@ -958,7 +962,11 @@
       height: 52px;
       padding: 0 10px;
       flex-shrink: 0;
+      /* Fallback statt Zusammenquetschen bei schmalen Screens */
+      overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .topbar-row1::-webkit-scrollbar { display: none; }
 
     /* ── Bottom Tab-Bar: Action-Buttons FIXED unten ── */
     .topbar-actions {
@@ -1019,7 +1027,9 @@
     }
 
     /* ── Topbar Zeile-1 Elemente ── */
-    .topbar h1 { font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    /* Titel nimmt auf Mobile nur unnötig Platz weg -> weg damit,
+       Bedienelemente haben Vorrang vor Deko */
+    .topbar h1 { display: none; }
     .kw-nav { padding: 4px 6px; gap: 0; }
     .kw-nav .kw-label { min-width: 60px; font-size: 13px; font-weight: 700; }
     .kw-nav button { font-size: 22px; padding: 2px 6px; min-height: 40px; min-width: 36px; }
@@ -1112,7 +1122,6 @@
   }
 
   @media (max-width: 380px) {
-    .topbar h1 { display: none; }
     .kw-nav .kw-label { min-width: 52px; font-size: 12px; }
     .kw-nav button { min-width: 32px; }
   }
