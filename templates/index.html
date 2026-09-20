@@ -104,13 +104,15 @@
   body:not(.edit-mode) #status-issues                      { display: none; }
   body:not(.edit-mode) #status-mods                        { display: none; }
   body:not(.edit-mode) #day-issues-bar                     { display: none !important; }
-  body:not(.edit-mode) #suggestions-bar                    { display: none !important; }
   body:not(.edit-mode) .day-warn                           { display: none; }
   body:not(.edit-mode) thead th.day-col.has-issue          { background: #f8fafc !important; }
   body:not(.edit-mode) .cell-inner.has-issue               { outline: none; }
   body:not(.edit-mode) .cell-inner.has-issue::before       { display: none; }
   body:not(.edit-mode) .day-card.has-issue .day-card-badge { outline: none; }
   body:not(.edit-mode) .legend-issue                       { display: none; }
+
+  /* ── Vorschläge (Lösungsvorschläge + Überstunden-Abbau) vorerst deaktiviert ── */
+  #suggestions-bar, #btn-overtime, #overtime-overlay { display: none !important; }
 
   /* ── Main ── */
   .main { padding: 16px 20px; max-width: 1500px; margin: 0 auto; }
@@ -1594,7 +1596,7 @@ function setEditMode(on) {
     ? '<span class="status-badge" style="background:#fef3c7;color:#92400e">✏ Bearbeitungsmodus</span>'
     : '<span class="status-badge badge-view">👁 Nur Ansicht</span>';
   // Überstunden-Vorschläge beim Moduswechsel aktualisieren
-  if (on && planData) loadOvertimeSuggestions(currentKw);
+  if (SUGGESTIONS_ENABLED && on && planData) loadOvertimeSuggestions(currentKw);
   else renderOvertimeSuggestions([], currentKw);
 }
 
@@ -1718,6 +1720,9 @@ function formatCell(val) {
   return main + noteHtml;
 }
 
+// Vorschläge (Lösungsvorschläge + Überstunden-Abbau) vorerst deaktiviert
+const SUGGESTIONS_ENABLED = false;
+
 // ── Load & Render ─────────────────────────────────────────────────────────
 let suggestionsData = [];
 
@@ -1751,7 +1756,7 @@ async function loadKw(kw) {
     // Vorschläge berechnen (serverseitig via validate-Daten geht nicht direkt,
     // deshalb holen wir sie vom neuen Endpoint wenn Violations vorhanden)
     const totalIssues = Object.values(validData?.day || {}).reduce((s,v) => s+v.length, 0);
-    if (totalIssues > 0) {
+    if (SUGGESTIONS_ENABLED && totalIssues > 0) {
       try {
         // Wir nutzen /api/apply-suggestions mit leeren overrides um nur Suggestions zu bekommen
         const sr = await fetch(`/api/validate/${kw}/suggestions`);
@@ -1767,7 +1772,7 @@ async function loadKw(kw) {
     renderSuggestions(suggestionsData, kw);
     updateNav();
     // Überstunden-Vorschläge nur im Edit-Modus laden
-    if (isEditMode) loadOvertimeSuggestions(kw);
+    if (SUGGESTIONS_ENABLED && isEditMode) loadOvertimeSuggestions(kw);
     else renderOvertimeSuggestions([], kw);
   } catch(e) {
     showToast("Fehler beim Laden: " + e.message, "err");
