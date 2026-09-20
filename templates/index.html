@@ -1057,17 +1057,25 @@
       top: calc(52px + env(safe-area-inset-top) + 8px) !important;
     }
 
-    /* ── Tabellen-Kopfzeile (thead): bleibt beim Scrollen sichtbar (Person/
-       Mo/Di), klebt direkt unterhalb der jetzt sticky Topbar. Zwei gestapelte
-       sticky-Ebenen sind (anders als fixed+sticky) unproblematisch, solange
-       der zweite top-Offset die Höhe des ersten Elements berücksichtigt. ── */
-    thead th {
+    /* ── Tabellen-Kopfzeile (thead): bleibt beim Scrollen sichtbar, klebt
+       direkt unterhalb der sticky Topbar. WICHTIG: position:sticky auf
+       einzelnen <th> lässt die zweite Zeile (FD/SD-Übersicht, <td>, nicht
+       sticky) im normalen Fluss durchrutschen -> beide Zeilen vertauschen
+       sich optisch während des Scrollens. Deshalb werden BEIDE Kopfzeilen
+       (Person/Mo/Di + FD/SD-Übersicht) als eigene sticky-Einheiten gestapelt,
+       die zweite mit Top-Offset = Höhe der ersten Zeile. ── */
+    thead tr:first-child th {
       position: sticky !important;
       top: calc(52px + env(safe-area-inset-top)) !important;
+      z-index: 11;
+    }
+    thead tr.balance-row td {
+      position: sticky !important;
+      top: calc(52px + env(safe-area-inset-top) + 46px) !important;
       z-index: 10;
     }
-    thead th:first-child {
-      z-index: 12;
+    thead tr:first-child th:first-child {
+      z-index: 13;
     }
 
     /* ── Topbar Zeile-1 Elemente ── */
