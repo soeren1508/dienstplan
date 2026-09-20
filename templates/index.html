@@ -1063,7 +1063,9 @@
        sticky) im normalen Fluss durchrutschen -> beide Zeilen vertauschen
        sich optisch während des Scrollens. Deshalb werden BEIDE Kopfzeilen
        (Person/Mo/Di + FD/SD-Übersicht) als eigene sticky-Einheiten gestapelt,
-       die zweite mit Top-Offset = Höhe der ersten Zeile. ── */
+       die zweite mit Top-Offset = Höhe der ersten Zeile. Die Höhe wird per
+       JS gemessen (--thead-row1-height, siehe renderPlan) statt fest
+       geschätzt, damit es unabhängig von Schriftgröße/Gerät passt. ── */
     thead tr:first-child th {
       position: sticky !important;
       top: calc(52px + env(safe-area-inset-top)) !important;
@@ -1071,7 +1073,7 @@
     }
     thead tr.balance-row td {
       position: sticky !important;
-      top: calc(52px + env(safe-area-inset-top) + 46px) !important;
+      top: calc(52px + env(safe-area-inset-top) + var(--thead-row1-height, 46px)) !important;
       z-index: 10;
     }
     thead tr:first-child th:first-child {
@@ -2018,6 +2020,18 @@ function renderPlan(data, valid) {
     const icon = cls==="bal-ok" ? "" : cls==="bal-warn" ? " ⚠" : " ⛔";
     return `<td class="${cls}"><span class="bal-fd">↑${fd}</span> / <span class="bal-sd">↓${sd}</span>${icon}</td>`;
   }).join("")}</tr>`;
+
+  // Höhe der ersten Kopfzeile (Person/Mo/Di) messen und als CSS-Variable
+  // setzen, damit die zweite sticky-Zeile (FD/SD-Übersicht) exakt darunter
+  // andockt -- unabhängig von Schriftgröße/Gerät (kein fester Pixel-Wert).
+  requestAnimationFrame(() => {
+    const firstRow = thead.querySelector("tr:first-child");
+    if (firstRow) {
+      document.documentElement.style.setProperty(
+        "--thead-row1-height", firstRow.getBoundingClientRect().height + "px"
+      );
+    }
+  });
 
   // Body
   let html = "";
