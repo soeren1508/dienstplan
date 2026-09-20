@@ -948,9 +948,14 @@
   ══════════════════════════════════════════════ */
   @media (max-width: 640px) {
 
-    /* ── Topbar: FIXED oben (nicht sticky) ── */
+    /* ── Topbar: STICKY oben (nicht fixed) ──
+       position:fixed + Safe-Area ist auf iOS Safari dafür bekannt, dass
+       beim Ein-/Ausblenden der Adressleiste Touch-Koordinaten und
+       sichtbare Position kurz auseinanderlaufen können -> Buttons lassen
+       sich nur teilweise/unzuverlässig antippen. position:sticky bleibt
+       Teil des normalen Dokumentenflusses und ist davon nicht betroffen. */
     .topbar {
-      position: fixed !important;
+      position: sticky !important;
       top: 0; left: 0; right: 0;
       height: auto !important;
       /* Notch / Dynamic Island */
@@ -1017,9 +1022,12 @@
     /* In Tagesansicht: Tab-Bar ausblenden (Bottom-Nav übernimmt) */
     body.day-view .topbar-actions { display: none !important; }
 
-    /* ── Content: Platz für Fixed-Bars ── */
+    /* ── Content: Platz für die fixierte Bottom-Tab-Bar ──
+       Kein padding-top-Ausgleich mehr nötig: die Topbar ist jetzt sticky
+       (Teil des normalen Dokumentenflusses), .main folgt automatisch
+       direkt danach -- nur noch etwas visueller Abstand. ── */
     .main {
-      padding-top: calc(52px + env(safe-area-inset-top) + 10px) !important;
+      padding-top: 10px !important;
       padding-bottom: calc(52px + env(safe-area-inset-bottom) + 10px) !important;
       padding-left: 8px !important;
       padding-right: 8px !important;
