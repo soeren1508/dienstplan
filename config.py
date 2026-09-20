@@ -173,7 +173,6 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
     # Neue Mitarbeiter 2026
     "Schrodt":    "Molly",
     "Sternbach":  "Matthias",
-    "Pfeiffer":   "Ronja",
     "Jaß":        "Nina",
 }
 
@@ -182,19 +181,20 @@ NACHNAME_ZU_VORNAME: dict[str, str] = {
 # ---------------------------------------------------------------------------
 ALL_PERSONS = [
     "Ulf", "Wilke", "Florian", "Lisa",
+    "Hanne",                    # Ärztin (manuell, noch nicht in Auto-Rotation)
     "Kristin", "Deborah", "Imke", "Nadine", "Nicolas",
     "Alyssa", "Pauline",
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis (Ausbildungsbeginn 03.08. = KW32)
-    "Ronja",                    # Aushilfe (Maria ausgeschieden)
     "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
     "Nicolette",                # Empfang (ab September, nur Anmeldung, 08:30-17:00)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
+ARZTE_MANUAL = ["Hanne"]       # Ärzte in UI-Gruppe, aber nicht auto-scheduliert
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
 TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
 AZUBIS       = ["Molly", "Matthias"]
-AUSHILFEN    = ["Ronja"]
+AUSHILFEN: list[str] = []      # Ronja ausgeschieden
 EMPFANG      = ["Nicolette"]   # nur Anmeldung, fester Zeitblock, kein FD/SD
 
 # Ab wann Nicolette ihr Default-Muster bekommt (Mo-Fr, 08:30-17:00 Anmeldung),

@@ -33,7 +33,7 @@ sys.path.insert(0, str(DIENSTPLAN_DIR))
 
 from scheduler import generate_week
 from vacations import load_vacations, load_krank
-from config    import ALL_PERSONS, ARZTE, TFAS, TFAS_MANUAL, AZUBIS, AUSHILFEN, EMPFANG, DAYS
+from config    import ALL_PERSONS, ARZTE, ARZTE_MANUAL, TFAS, TFAS_MANUAL, AZUBIS, AUSHILFEN, EMPFANG, DAYS
 
 # Excel-Datei: erst im selben Verzeichnis suchen (Deployment), dann im Repo-Root (lokal)
 _urlaub_candidates = [
@@ -380,7 +380,7 @@ def api_plan(kw):
         "plan":      plan,
         "days":      DAYS,
         "persons":   ALL_PERSONS,
-        "arzte":     ARZTE,
+        "arzte":     ARZTE + ARZTE_MANUAL,
         "tfas":      TFAS + TFAS_MANUAL,
         "azubis":    AZUBIS,
         "aushilfen": AUSHILFEN,
