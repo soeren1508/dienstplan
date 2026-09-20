@@ -156,6 +156,7 @@
   .issue-dismiss:hover { background: #bbf7d0; }
 
   /* ── Table ── */
+  .frozen-head-wrap { display: none; } /* nur auf Mobile sichtbar, siehe Media Query */
   .table-wrap {
     background: white; border-radius: 12px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.06);
@@ -685,6 +686,7 @@
   #day-container { display: none; }
   body.day-view #day-container { display: block; padding-bottom: 80px; }
   body.day-view .table-wrap   { display: none; }
+  body.day-view .frozen-head-wrap { display: none !important; }
   body.day-view .legend       { display: none; }
   body.day-view .kw-nav       { display: none; }
 
@@ -1057,28 +1059,42 @@
       top: calc(52px + env(safe-area-inset-top) + 8px) !important;
     }
 
-    /* ── Tabellen-Kopfzeile (thead): bleibt beim Scrollen sichtbar, klebt
-       direkt unterhalb der sticky Topbar. WICHTIG: position:sticky auf
-       einzelnen <th> lässt die zweite Zeile (FD/SD-Übersicht, <td>, nicht
-       sticky) im normalen Fluss durchrutschen -> beide Zeilen vertauschen
-       sich optisch während des Scrollens. Deshalb werden BEIDE Kopfzeilen
-       (Person/Mo/Di + FD/SD-Übersicht) als eigene sticky-Einheiten gestapelt,
-       die zweite mit Top-Offset = Höhe der ersten Zeile. Die Höhe wird per
-       JS gemessen (--thead-row1-height, siehe renderPlan) statt fest
-       geschätzt, damit es unabhängig von Schriftgröße/Gerät passt. ── */
-    thead tr:first-child th {
-      position: sticky !important;
-      top: calc(52px + env(safe-area-inset-top)) !important;
-      z-index: 11;
-    }
+    /* ── Echte Tabellen-Kopfzeile (thead in .table-wrap): NICHT mehr sticky.
+       Grund: .table-wrap braucht overflow-x:auto für die breite Tabelle,
+       und das macht den Browser-Container (nicht die Seite) automatisch
+       zum Bezugsrahmen für position:sticky -- dadurch "klebte" die Zeile
+       an der falschen Stelle (irgendwo mitten in der Tabelle statt oben).
+       Sichtbarkeit beim Scrollen übernimmt stattdessen die separate
+       eingefrorene Kopfzeile weiter unten (#frozen-head-wrap). ── */
+    thead tr:first-child th,
     thead tr.balance-row td {
-      position: sticky !important;
-      top: calc(52px + env(safe-area-inset-top) + var(--thead-row1-height, 46px)) !important;
-      z-index: 10;
+      position: static !important;
     }
-    thead tr:first-child th:first-child {
-      z-index: 13;
+    thead th:first-child {
+      position: sticky !important; /* nur horizontal (left), unproblematisch */
     }
+
+    /* ── Eingefrorene Kopfzeile: liegt AUSSERHALB von .table-wrap, daher
+       bezieht sich sticky korrekt auf die echte Seite. Zeigt exakt dieselben
+       Kopfzeilen-Daten (siehe renderPlan/JS), horizontale Position wird per
+       JS mit dem Scrollen von .table-wrap synchronisiert. ── */
+    .frozen-head-wrap {
+      display: block;
+      position: sticky;
+      top: calc(52px + env(safe-area-inset-top));
+      z-index: 15;
+      overflow: hidden;
+      background: white;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .frozen-head-table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 960px;
+      table-layout: fixed;
+    }
+    .frozen-head-table thead th:first-child { position: sticky; left: 0; z-index: 2; }
 
     /* ── Topbar Zeile-1 Elemente ── */
     /* Titel nimmt auf Mobile nur unnötig Platz weg -> weg damit,
@@ -1109,8 +1125,18 @@
     .statusbar { font-size: 11px; gap: 5px; flex-wrap: wrap; }
 
     /* ── Tabelle ── */
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
-    thead th.day-col { min-width: 105px; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 0 0 10px 10px; }
+    /* table-layout:fixed + explizite (nicht nur min-)Breiten auf BEIDEN
+       Tabellen (echte + eingefrorene Kopfzeile), damit die Spalten pixel-
+       genau übereinander liegen, unabhängig vom jeweiligen Zellinhalt */
+    .table-wrap table, .frozen-head-table { table-layout: fixed; }
+    .table-wrap table th:first-child, .table-wrap table td:first-child,
+    .frozen-head-table th:first-child {
+      width: 105px; min-width: 105px;
+    }
+    thead th.day-col, .frozen-head-table th.day-col {
+      width: 105px; min-width: 105px;
+    }
 
     /* ── iOS: Inputs 16px → kein Auto-Zoom ── */
     input, select, textarea { font-size: 16px !important; }
@@ -1466,7 +1492,17 @@
   </div>
 
 
-  <div class="table-wrap">
+  <!-- Eingefrorene Kopfzeile: nur auf Mobile sichtbar, liegt AUSSERHALB des
+       horizontal scrollenden Containers, damit "sticky" sich auf die echte
+       Seite bezieht statt auf den Scroll-Container. Horizontale Position
+       wird per JS mit dem Tabellen-Scroll synchronisiert (siehe Script). -->
+  <div class="frozen-head-wrap" id="frozen-head-wrap">
+    <table class="frozen-head-table">
+      <thead id="frozen-thead"></thead>
+    </table>
+  </div>
+
+  <div class="table-wrap" id="table-wrap">
     <table>
       <thead id="plan-thead"></thead>
       <tbody id="plan-tbody"></tbody>
@@ -1576,6 +1612,9 @@ const statusIssues = document.getElementById("status-issues");
 const modCount     = document.getElementById("mod-count");
 const thead        = document.getElementById("plan-thead");
 const tbody        = document.getElementById("plan-tbody");
+const frozenThead   = document.getElementById("frozen-thead");
+const frozenHeadWrap= document.getElementById("frozen-head-wrap");
+const tableWrap     = document.getElementById("table-wrap");
 const loading      = document.getElementById("loading");
 const loadingMsg   = document.getElementById("loading-msg");
 const toast        = document.getElementById("toast");
@@ -1952,6 +1991,18 @@ function filterPastIssues(rawDay, rawCell, dates) {
   return { dayIssues: dayOut, cellIssues: cellOut };
 }
 
+// Eingefrorene Kopfzeile (Mobile): horizontale Position exakt an die
+// tatsächliche Tabelle koppeln, damit die Spalten optisch übereinander
+// bleiben, egal wie weit die Tabelle seitlich gescrollt ist.
+function syncFrozenHeadScroll() {
+  if (!frozenThead || !tableWrap) return;
+  const inner = frozenThead.closest("table");
+  if (inner) inner.style.transform = `translateX(-${tableWrap.scrollLeft}px)`;
+}
+if (tableWrap) {
+  tableWrap.addEventListener("scroll", syncFrozenHeadScroll, { passive: true });
+}
+
 function renderPlan(data, valid) {
   const { kw, dates, plan, days, arzte, tfas, azubis = [], aushilfen = [], empfang = [], overrides } = data;
   const { dayIssues, cellIssues } = filterPastIssues(
@@ -2021,17 +2072,12 @@ function renderPlan(data, valid) {
     return `<td class="${cls}"><span class="bal-fd">↑${fd}</span> / <span class="bal-sd">↓${sd}</span>${icon}</td>`;
   }).join("")}</tr>`;
 
-  // Höhe der ersten Kopfzeile (Person/Mo/Di) messen und als CSS-Variable
-  // setzen, damit die zweite sticky-Zeile (FD/SD-Übersicht) exakt darunter
-  // andockt -- unabhängig von Schriftgröße/Gerät (kein fester Pixel-Wert).
-  requestAnimationFrame(() => {
-    const firstRow = thead.querySelector("tr:first-child");
-    if (firstRow) {
-      document.documentElement.style.setProperty(
-        "--thead-row1-height", firstRow.getBoundingClientRect().height + "px"
-      );
-    }
-  });
+  // Eingefrorene Kopfzeile (Mobile) mit denselben Inhalten befüllen und
+  // horizontale Scroll-Position synchronisieren (siehe syncFrozenHeadScroll).
+  if (frozenThead) {
+    frozenThead.innerHTML = thead.innerHTML;
+    syncFrozenHeadScroll();
+  }
 
   // Body
   let html = "";
