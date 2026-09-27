@@ -610,7 +610,8 @@
       "3": "SD: Behandlung"
     },
     "Imke": {
-      "3": "FD: Anmeldung"
+      "3": "FD: Anmeldung",
+      "0": "Frei"
     },
     "Nicolas": {
       "3": "FD: Springer",
