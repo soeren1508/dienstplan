@@ -1254,7 +1254,7 @@
     },
     "Nadine": {
       "5": "Dienst",
-      "0": "SD: Assistenz Lisa OP",
+      "0": "FD: Behandlung",
       "1": "FD: Assistenz Ulf",
       "2": "SD: Behandlung"
     },
@@ -1274,7 +1274,7 @@
       "0": "SD: Behandlung"
     },
     "Imke": {
-      "0": "FD: Behandlung",
+      "0": "SD: Assistenz Lisa OP",
       "1": "FD: Behandlung",
       "2": "FD: Anmeldung",
       "3": "FD: Assistenz Ulf"
