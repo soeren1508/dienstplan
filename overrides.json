@@ -1251,7 +1251,8 @@
       "4": "Überstundenfrei"
     },
     "Nadine": {
-      "5": "Dienst"
+      "5": "Dienst",
+      "0": "FD: Assistenz Ulf"
     },
     "Alyssa": {
       "4": "Krank bis 11.10"
@@ -1261,6 +1262,9 @@
     },
     "Pauline": {
       "0": "SD: Behandlung"
+    },
+    "Imke": {
+      "0": "SD: Assistenz Lisa OP"
     }
   },
   "38": {
