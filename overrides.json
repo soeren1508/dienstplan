@@ -1252,7 +1252,8 @@
     },
     "Nadine": {
       "5": "Dienst",
-      "0": "SD: Assistenz Lisa OP"
+      "0": "SD: Assistenz Lisa OP",
+      "1": "FD: Assistenz Ulf"
     },
     "Alyssa": {
       "4": "Krank bis 11.10"
@@ -1264,7 +1265,8 @@
       "0": "SD: Behandlung"
     },
     "Imke": {
-      "0": "FD: Assistenz Ulf"
+      "0": "FD: Assistenz Ulf",
+      "1": "FD: Behandlung"
     }
   },
   "38": {
