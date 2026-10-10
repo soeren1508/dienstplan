@@ -1520,7 +1520,8 @@
     "Nina": {
       "0": "SD: Assistenz Ulf Ab 15 Uhr",
       "3": "SD: Anmeldung",
-      "2": "SD: Behandlung"
+      "2": "SD: Behandlung",
+      "1": "FD: Behandlung"
     },
     "Matthias": {
       "0": "FD: Assistenz Ulf",
