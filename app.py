@@ -87,12 +87,13 @@ def _github_pull(filename: str) -> str | None:
 
 def _github_push(filename: str, content: str, message: str = "Auto-save"):
     """Schreibt eine Datei in das GitHub-Repo (im Hintergrund).
-    [skip deploy] verhindert, dass Render bei Daten-Commits neu startet."""
+    [skip render] verhindert, dass Render bei Daten-Commits neu deployt
+    ([skip deploy] kennt Render NICHT -- das war die Ursache der Neustart-Schleife)."""
     if not GITHUB_TOKEN:
         return
     # Sicherstellen, dass Daten-Commits keinen Render-Deploy auslösen
-    if "[skip deploy]" not in message:
-        message = message + " [skip deploy]"
+    if "[skip render]" not in message:
+        message = message + " [skip render] [skip ci]"
     def _do():
         url = f"{GITHUB_API}/repos/{GITHUB_REPO}/contents/{filename}"
         headers = _gh_headers()
