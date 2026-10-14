@@ -353,6 +353,11 @@
     background: white; border-radius: 14px; padding: 24px 24px 20px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 340px; max-width: 95vw;
   }
+  #abs-range-chips button {
+    border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; border-radius: 16px;
+    padding: 5px 11px; font-size: 12px; cursor: pointer; min-height: 30px;
+  }
+  #abs-range-chips button:hover { background: #e2e8f0; }
   #absence-dialog h2 { font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
   #absence-dialog .abs-subtitle {
     font-size: 12px; color: #64748b; margin-bottom: 16px;
@@ -1360,12 +1365,18 @@
       <select id="abs-person"></select>
     </div>
     <div class="abs-row">
-      <label>Von</label>
-      <input type="date" id="abs-date">
-    </div>
-    <div class="abs-row">
-      <label>Bis (optional, für einen Zeitraum)</label>
-      <input type="date" id="abs-date-to">
+      <label>Zeitraum</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="date" id="abs-date" style="flex:1;min-width:0" aria-label="Von">
+        <span style="color:#64748b;font-size:12px">bis</span>
+        <input type="date" id="abs-date-to" style="flex:1;min-width:0" aria-label="Bis">
+      </div>
+      <div id="abs-range-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+        <button type="button" data-range="day">1 Tag</button>
+        <button type="button" data-range="week">Ganze Woche (Mo–Fr)</button>
+        <button type="button" data-range="2weeks">2 Wochen</button>
+      </div>
+      <div id="abs-range-info" style="font-size:12px;color:#64748b;margin-top:6px"></div>
     </div>
     <div class="abs-row">
       <label>Grund</label>
@@ -2402,6 +2413,12 @@ function onCellClick(e) {
     btn.addEventListener("click", () => { editInput.value = label; editInput.focus(); });
     quickPicks.appendChild(btn);
   });
+  const zb = document.createElement("button");
+  zb.className = "quick-pick";
+  zb.textContent = "📆 Zeitraum…";
+  zb.title = "Krank/Urlaub für mehrere Tage eintragen";
+  zb.addEventListener("click", () => openAbsenceForCell(person, di));
+  quickPicks.appendChild(zb);
   if (isOv) {
     const rb = document.createElement("button");
     rb.className = "quick-pick qp-reset";
@@ -2943,6 +2960,7 @@ btnVacOk.addEventListener("click", async () => {
   const fromStr = vacDateFrom.value;
   const toStr   = vacDateTo.value || fromStr;
   if (!person || !fromStr) { showToast("Bitte Person und Datum wählen", "err"); return; }
+  if (toStr < fromStr) { showToast("„Bis“ liegt vor „Von“", "err"); return; }
 
   // Alle Tage im Bereich sammeln (Mo–Sa)
   const dates = [];
@@ -3062,6 +3080,7 @@ function _showAbsenceModal() {
   const today = new Date().toISOString().slice(0, 10);
   absDateInput.value   = today;
   absDateToInput.value = "";
+  updateAbsRangeInfo();
 
   // Reset
   absGrund = "Krank";
@@ -3074,6 +3093,54 @@ function _showAbsenceModal() {
 }
 
 let _pendingAbsenceOpen = false;
+
+// ── Zeitraum-Schnellwahl ──
+const absRangeInfo = document.getElementById("abs-range-info");
+function _isoLocal(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function updateAbsRangeInfo() {
+  const f = absDateInput.value, t = absDateToInput.value || f;
+  if (!f) { absRangeInfo.textContent = ""; return; }
+  if (t < f) { absRangeInfo.textContent = "⚠ „Bis“ liegt vor „Von“"; absRangeInfo.style.color = "#b91c1c"; return; }
+  let n = 0, cur = new Date(f + "T12:00:00"); const end = new Date(t + "T12:00:00");
+  while (cur <= end) { if (cur.getDay() !== 0) n++; cur.setDate(cur.getDate() + 1); }
+  absRangeInfo.style.color = "#64748b";
+  absRangeInfo.textContent = n === 1 ? "= 1 Arbeitstag (Sonntage werden übersprungen)" : `= ${n} Arbeitstage (Sonntage werden übersprungen)`;
+}
+document.querySelectorAll("#abs-range-chips button").forEach(b => b.addEventListener("click", () => {
+  if (!absDateInput.value) absDateInput.value = _isoLocal(new Date());
+  const start = new Date(absDateInput.value + "T12:00:00");
+  const r = b.dataset.range;
+  if (r === "day") { absDateToInput.value = ""; }
+  else {
+    // auf Montag der gewählten Woche springen, wenn "ganze Woche"
+    const dow = start.getDay() || 7;
+    const mon = new Date(start); mon.setDate(start.getDate() - (dow - 1));
+    const end = new Date(mon); end.setDate(mon.getDate() + (r === "week" ? 4 : 11));
+    absDateInput.value = _isoLocal(mon);
+    absDateToInput.value = _isoLocal(end);
+  }
+  updateAbsRangeInfo();
+}));
+absDateInput.addEventListener("change", () => {
+  if (absDateToInput.value && absDateToInput.value < absDateInput.value) absDateToInput.value = absDateInput.value;
+  updateAbsRangeInfo();
+});
+absDateToInput.addEventListener("change", updateAbsRangeInfo);
+
+// Aus dem Zellen-Popup: Abwesenheit für einen Zeitraum, Person+Datum vorbelegt
+function openAbsenceForCell(person, di) {
+  closePopup();
+  openAbsenceModal();
+  if (!isEditMode) return;
+  absPersonSel.value = person;
+  const mon = new Date(Date.UTC(2025, 11, 29));  // Montag KW1 2026
+  mon.setUTCDate(mon.getUTCDate() + (currentKw - 1) * 7 + di);
+  absDateInput.value = mon.toISOString().slice(0, 10);
+  absDateToInput.value = "";
+  updateAbsRangeInfo();
+}
 
 btnAbsence.addEventListener("click", openAbsenceModal);
 btnAbsCancel.addEventListener("click", () => absenceOverlay.classList.remove("visible"));
