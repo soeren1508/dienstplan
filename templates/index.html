@@ -1839,6 +1839,9 @@ function formatCell(val) {
 
 // Vorschläge (Lösungsvorschläge + Überstunden-Abbau) vorerst deaktiviert
 const SUGGESTIONS_ENABLED = false;
+// Regelprobleme (Warnungen, Markierungen, Hinweisleiste) vorerst ausgeblendet.
+// Zum Wiedereinblenden auf true setzen.
+const SHOW_RULE_ISSUES = false;
 
 // ── Load & Render ─────────────────────────────────────────────────────────
 let suggestionsData = [];
@@ -1869,6 +1872,7 @@ async function loadKw(kw) {
     ]);
     planData  = await pr.json();
     validData = await vr.json();
+    if (!SHOW_RULE_ISSUES && validData) { validData.day = {}; validData.cell = {}; }
 
     // Vorschläge berechnen (serverseitig via validate-Daten geht nicht direkt,
     // deshalb holen wir sie vom neuen Endpoint wenn Violations vorhanden)
@@ -2479,7 +2483,9 @@ async function reloadAndNotify(label) {
   const before = _countIssues();
   await loadKw(currentKw);
   const after = _countIssues();
-  if (after === 0) {
+  if (!SHOW_RULE_ISSUES) {
+    showToast(label, "ok");
+  } else if (after === 0) {
     showToast(`${label} · ✓ Keine Regelverstöße`, "ok");
   } else if (after > before) {
     showToast(`${label} · ⚠ ${after} Regelverstoß${after!==1?"e":""}`, "err");
