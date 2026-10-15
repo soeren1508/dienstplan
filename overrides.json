@@ -1660,11 +1660,13 @@
       "0": "SD: Assistenz Ulf ab 15 Uhr"
     },
     "Nadine": {
-      "0": "FD: Assistenz Lisa"
+      "0": "FD: Assistenz Lisa",
+      "1": "FD: Assistenz Ulf"
     },
     "Nicolas": {
       "0": "FD: Anmeldung + Springer",
-      "3": "SD: Anmeldung"
+      "3": "SD: Anmeldung",
+      "1": "FD: Anmeldung"
     }
   }
 }
