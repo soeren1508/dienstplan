@@ -1,7 +1,7 @@
 # Planungs-Agent – Übergabe für neue Sitzungen
 
 **Diese Datei zuerst lesen.** Sie ersetzt das erneute Durchlesen des ganzen Codes.
-Stand: 01.11.2026
+Stand: 01.11.2026 (Regelwerk-Sitzung)
 
 ## Ziel
 Ein Planer erstellt für eine KW einen **Vorschlag**. In der App kann man den Vorschlag
@@ -12,15 +12,16 @@ Manuelle Einträge und Urlaub/Krank/Feiertag werden nie überschrieben.
 | # | Phase | Stand |
 |---|---|---|
 | 0 | Framework: Prüfstand, Analyse, Regel-Bausteine, API, Oberfläche hinter Schalter | ✅ fertig |
-| 1 | Regelwerk mit dem Nutzer abstimmen → `docs/regeln.md` | ⏳ offen: Fragen in regeln.md beantworten |
-| 2 | Regeln aus `docs/regeln.md` in `planner/regeln.py` umsetzen; Ist-Wochen sollen kaum Pflichtverstöße haben | offen |
+| 1 | Regelwerk mit dem Nutzer abstimmen → `docs/regeln.md` | ⏳ großteils ✅ (01.11.), Rest: Abschnitt D in regeln.md |
+| 2 | Regeln aus `docs/regeln.md` in `planner/regeln.py` + `planner/einstellungen.py` umsetzen | ⏳ Pflichtregeln + Personen ✅, Wünsche-Gewichte offen |
 | 3 | Neuer Planer (Constraint-Solver, z.B. OR-Tools CP-SAT) in `planner/planer.py` registrieren, am Prüfstand messen | offen |
 | 4 | Live schalten: Render-Env `VORSCHLAG_AKTIV=1`, später optional wöchentlicher Auto-Vorschlag | offen |
 
 ## Dateien (nur diese sind für den Planer relevant)
 | Datei | Inhalt |
 |---|---|
-| `planner/zellen.py` | Zellwert → Schicht/Rolle/Arzt/abwesend (`parse()`) |
+| `planner/einstellungen.py` | **Personen** (wer automatisch), feste Regeln, bevorzugte Besetzung |
+| `planner/zellen.py` | Zellwert → Schicht/Rolle/Arzt/abwesend (`parse()`); Rolle = zuerst genanntes Stichwort |
 | `planner/woche.py` | `Woche`-Objekt; `lade_ist_wochen()` holt echte Wochen über app.py |
 | `planner/regeln.py` | Regelbausteine (`@regel`), `bewertung()` |
 | `planner/planer.py` | Planer-Schnittstelle, `PLANER`-Register, `vorschlag()`, Schutz fester Zellen |
@@ -52,9 +53,11 @@ Achtung: „Übernehmen“ in der lokalen App schreibt in `overrides.json` → v
 ## Messwerte (Prüfstand, KW 24–45)
 | Planer | Treffer | Schicht | Pflichtverstöße Vorschlag | Pflichtverstöße Ist-Plan |
 |---|---|---|---|---|
-| baseline (alter scheduler.py) | 42 % | 57 % | 60 | 135 |
+| baseline (alter scheduler.py), Stand 01.11. vormittags | 42 % | 57 % | 60 | 135 |
+| baseline nach Regelwerk-Abstimmung (01.11.) | 41 % | 58 % | 68 | 85 (Einzelfälle über 22 Wochen) |
 
-„Ist-Plan 135“ heißt: Die alten Regeln passen nicht mehr zur Praxis → Phase 1/2.
+„Ist-Plan 135“ (alter Stand) lag v.a. an Prüffehlern (Nina/Azubis nicht gezählt, „Assistenz Lisa“ ≠ OP).
+Nach Korrektur + neuen Regeln (01.11.): siehe `docs/analyse.md` Abschnitt 3 – nur noch Einzelfälle.
 
 ## Entscheidungen
 - Der Plan wird von einem deterministischen Planer berechnet, nicht von einer KI.
@@ -63,4 +66,5 @@ Achtung: „Übernehmen“ in der lokalen App schreibt in `overrides.json` → v
 - Fest (nie änderbar): manuelle Overrides + Urlaub/Krank/Feiertag (`planer.feste_zellen`).
 - Prüfstand: Planer sieht nur Abwesenheiten + Ärzte/Empfang; TFA/Azubi-Zellen werden
   geleert (kein Abschreiben). Referenzwochen KW 24–45 (von Hand fertig geplant).
+- Bestehende Wochen werden nicht verändert; Auto-Vorschläge erst ab einer KW, die der Nutzer nennt.
 - Alter `scheduler.py` bleibt unverändert Basis der Live-App, bis der neue Planer besser ist.

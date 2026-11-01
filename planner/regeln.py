@@ -21,7 +21,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from config import TFAS
+from config import TFAS, TFAS_MANUAL, AZUBIS
+
+# Alle, die Pflichtrollen (Anmeldung, Assistenz) besetzen können.
+# Hanne (Ärztin, läuft mit Florian mit) und Nicolette (Empfang, feste Zeiten) nicht.
+PLANBAR = TFAS + TFAS_MANUAL + AZUBIS
 from .woche import Woche
 from .zellen import parse
 
@@ -64,7 +68,7 @@ def werktage(w: Woche):
     return [di for di in range(5) if not w.feiertag(di)]
 
 
-def tfa_zellen(w: Woche, di: int, personen=TFAS):
+def tfa_zellen(w: Woche, di: int, personen=PLANBAR):
     return {p: parse(w.plan[p][di]) for p in personen if p in w.plan}
 
 
@@ -79,6 +83,12 @@ def _besetzung(w, di, schicht, rolle, arzt=None, op=None):
             continue
         out.append(p)
     return out
+
+
+def lisa_op(w, di) -> bool:
+    """Lisa operiert ganztags ("OP Ganztag", "OP (Ganztag)", "OP 09:00-17:00 Uhr")."""
+    z = str(w.plan.get("Lisa", ["–"] * 6)[di]).split(" || ")[0]
+    return z.startswith("OP")
 
 
 def _arzt_da(w, arzt, di):
@@ -117,30 +127,58 @@ def _ulf(w: Woche):
 
 
 @regel("assistenz_lisa_op", "pflicht",
-       "Hat Lisa 'OP Ganztag', gibt es in FD und SD je eine OP-Assistenz.")
+       "Operiert Lisa ganztags, hat sie in FD und SD je eine Assistenz ('Assistenz Lisa' = 'Assistenz Lisa OP').")
 def _lisa_op(w: Woche):
     v = []
     for di in werktage(w):
-        if "OP Ganztag" not in str(w.plan.get("Lisa", ["–"] * 6)[di]):
+        if not lisa_op(w, di):
             continue
         for sch in ("FD", "SD"):
-            if not _besetzung(w, di, sch, "Assistenz", arzt="Lisa", op=True):
+            # "Assistenz Lisa" und "Assistenz Lisa OP" gelten gleich (Praxis-Schreibweise)
+            if not _besetzung(w, di, sch, "Assistenz", arzt="Lisa"):
                 v.append(Verstoss("assistenz_lisa_op", di, f"Lisa OP → {sch}: Assistenz fehlt"))
     return v
 
 
 @regel("assistenz_wilke_op", "pflicht",
-       "Hat Wilke 'FD OP', gibt es eine OP-Assistenz (Ausnahme: Fr in ungeraden KWs, wenn Imke arbeitet).")
+       "Hat Wilke 'FD OP', hat er eine Assistenz ('Assistenz Wilke' = 'Assistenz Wilke OP').")
 def _wilke_op(w: Woche):
     v = []
     for di in werktage(w):
         if "FD OP" not in str(w.plan.get("Wilke", ["–"] * 6)[di]):
             continue
         hat = [p for p, z in tfa_zellen(w, di).items()
-               if z.arbeitet and z.rolle == "Assistenz" and z.arzt == "Wilke" and z.op]
-        ausnahme = di == 4 and not w.gerade and parse(w.plan["Imke"][di]).arbeitet
-        if not hat and not ausnahme:
+               if z.arbeitet and z.rolle == "Assistenz" and z.arzt == "Wilke"]
+        if not hat:
             v.append(Verstoss("assistenz_wilke_op", di, "Wilke OP → Assistenz fehlt"))
+    return v
+
+
+@regel("nina_kein_freitag", "pflicht", "Nina arbeitet freitags nicht.")
+def _nina_fr(w: Woche):
+    from .einstellungen import NIE_AM_TAG
+    v = []
+    for p, tage in NIE_AM_TAG.items():
+        for di in tage:
+            if p in w.plan and parse(w.plan[p][di]).arbeitet:
+                v.append(Verstoss("nina_kein_freitag", di, f"{p} eingeplant, arbeitet an dem Tag nie", p))
+    return v
+
+
+@regel("deborah_wechsel", "pflicht",
+       "Deborah: gerade KW Frühdienst, ungerade KW Spätdienst; gerade KW freitags frei.")
+def _deborah(w: Woche):
+    from .einstellungen import DEBORAH_SCHICHT, DEBORAH_FREI_FR_GERADE
+    soll = DEBORAH_SCHICHT[w.gerade]
+    v = []
+    for di in werktage(w):
+        z = parse(w.plan.get("Deborah", ["–"] * 6)[di])
+        if not z.arbeitet:
+            continue
+        if di == 4 and w.gerade and DEBORAH_FREI_FR_GERADE:
+            v.append(Verstoss("deborah_wechsel", di, "Deborah gerade KW Fr eingeplant", "Deborah"))
+        elif z.schicht in ("FD", "SD") and z.schicht != soll:
+            v.append(Verstoss("deborah_wechsel", di, f"Deborah {z.schicht} statt {soll}", "Deborah"))
     return v
 
 
