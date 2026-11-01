@@ -1128,6 +1128,21 @@ def _get_local_ip() -> str:
         return "unbekannt"
 
 
+# ---------------------------------------------------------------------------
+# Planungs-Vorschläge (planner/) — nur aktiv mit Env VORSCHLAG_AKTIV=1
+# ---------------------------------------------------------------------------
+from planner import api as _vorschlag_api
+_vorschlag_api.register(
+    app,
+    require_auth=require_auth,
+    load_overrides=_load_overrides,
+    save_overrides=_save_overrides,
+    plan_for_kw=_plan_for_kw,
+    get_vac=_get_all_vac,
+    get_krank=_get_all_krank,
+)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     print("Synchronisiere Overrides von GitHub …")

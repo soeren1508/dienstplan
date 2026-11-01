@@ -42,3 +42,9 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
 - Render-Dienst „dienstplan“, Auto-Deploy „On Commit“ muss aktiv sein (Settings → Build & Deploy).
 - Bei Deploy-Fehlern zuerst https://status.render.com prüfen.
 - Crewmeister-Anbindung wurde geprüft und verworfen (API nur lesend, Modul nicht gebucht).
+
+## Planungs-Agent (neu, in Arbeit)
+- Übergabe-Dokument: `docs/planer.md` – zuerst lesen, nicht den ganzen Code.
+- Regelwerk-Entwurf mit offenen Fragen: `docs/regeln.md`; Muster der echten Wochen: `docs/analyse.md` (generiert).
+- Code in `planner/`, Oberfläche in `static/vorschlag.js` (index.html dafür nicht lesen).
+- Vorschläge nur sichtbar mit Env `VORSCHLAG_AKTIV=1` (live aktuell aus).
