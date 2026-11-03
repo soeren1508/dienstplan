@@ -47,6 +47,8 @@ python -m planner.analyse                         # docs/analyse.md neu erzeugen
 VORSCHLAG_AKTIV=1 python app.py                   # App lokal mit Vorschlags-Knopf (PIN 1234)
 ```
 Lokale Abhängigkeiten: `pip install --ignore-installed blinker -r requirements.txt`.
+Achtung: Lokal immer mit `env -u GITHUB_TOKEN` starten (`planner/woche.py` macht das selbst),
+sonst lädt app.py Live-Daten von GitHub und speichert Änderungen direkt auf `main`.
 Achtung: „Übernehmen“ in der lokalen App schreibt in `overrides.json` → vor Commit prüfen
 (`git diff overrides.json`), ggf. `git checkout overrides.json`.
 

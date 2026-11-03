@@ -44,6 +44,9 @@ class Woche:
 
 def _app():
     """app.py lazy importieren (Startausgaben unterdrücken)."""
+    import os
+    # Nie mit echtem Token: sonst lädt app.py Live-Daten und könnte nach main speichern
+    os.environ.pop("GITHUB_TOKEN", None)
     with contextlib.redirect_stdout(io.StringIO()):
         import app  # noqa: WPS433
     return app

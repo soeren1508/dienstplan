@@ -22,6 +22,7 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 | Deborah | gerade KW Frühdienst, ungerade KW Spätdienst; gerade KW freitags frei | ✅ |
 | Alyssa | langzeitkrank (vorerst bis 11.11., voraussichtlich länger) → nicht verplanen | ✅ |
 | Kristin | krankgeschrieben, bleibt als „Krank“ im Plan → nicht verplanen | ✅ |
+| Emilia | neue TFA (Nov 2026), steht im Plan, wird vorerst nur manuell von Nicolas geplant | ✅ |
 | Molly, Matthias, Pauline | werden verplant, auch allein in Assistenz-Rollen (so in der Praxis) | ✏️ |
 | Ärzte | festes Muster + Samstagsrotation; Eingabe, nicht verplant | ✏️ |
 
