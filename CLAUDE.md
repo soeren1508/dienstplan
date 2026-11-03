@@ -20,7 +20,7 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
 
 ## Personen (Stand Okt 2026)
 - Ärzte: Ulf, Wilke, Florian, Lisa (auto); Hanne (nur manuell)
-- TFAs: Kristin, Deborah, Imke, Nadine, Nicolas, Alyssa (auto); Nina (manuell, Juli-Muster)
+- TFAs: Kristin, Deborah, Imke, Nadine, Nicolas, Alyssa (auto); Nina (manuell, Juli-Muster); Emilia (neu Nov 2026, nur manuell)
 - Azubis (Anzeige): Molly, Matthias, Pauline (Pauline wird intern wie TFA geplant, `TFAS_DISPLAY_ALS_AZUBI`)
 - Empfang: Nicolette (Default-Muster ab 01.09.)
 - Ronja ist ausgeschieden und entfernt.

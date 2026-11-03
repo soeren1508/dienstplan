@@ -187,6 +187,7 @@ ALL_PERSONS = [
     # Neue Mitarbeiter — nur manuell planbar
     "Molly", "Matthias",        # Azubis (Ausbildungsbeginn 03.08. = KW32)
     "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
+    "Emilia",                   # TFA (neu ab Nov 2026, vorerst nur manuell durch Nicolas)
     "Nicolette",                # Empfang (ab September, nur Anmeldung, 08:30-17:00)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
@@ -194,7 +195,7 @@ ARZTE_MANUAL = ["Hanne"]       # Ärzte in UI-Gruppe, aber nicht auto-schedulier
 # ACHTUNG: TFAS treibt die automatische Planung (scheduler.py) -- Pauline
 # bleibt hier drin, damit sich an ihrer Auto-Verplanung nichts ändert.
 TFAS         = ["Kristin", "Deborah", "Imke", "Nadine", "Nicolas", "Alyssa", "Pauline"]
-TFAS_MANUAL  = ["Nina"]        # TFAs in UI-Gruppe, aber nicht auto-scheduliert
+TFAS_MANUAL  = ["Nina", "Emilia"]  # TFAs in UI-Gruppe, aber nicht auto-scheduliert
 AZUBIS       = ["Molly", "Matthias"]
 # Rein optische Umgruppierung: Pauline wird weiterhin ganz normal wie eine
 # TFA automatisch verplant (siehe TFAS oben), erscheint im UI aber unter
