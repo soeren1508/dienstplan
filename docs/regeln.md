@@ -1,7 +1,7 @@
 # Regelwerk
 
 Grundlage: die von Nicolas manuell geplanten Wochen (KW 24–46, Schwerpunkt KW 36–46)
-und die Abstimmung mit der Praxis am 01.11.2026.
+und die Abstimmung mit der Praxis am 01.11. und 05.11.2026.
 Umsetzung: Personen/Vorlieben in `planner/einstellungen.py`, Prüfregeln in `planner/regeln.py`.
 
 Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nicht ausdrücklich bestätigt
@@ -20,9 +20,11 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 | Hanne | wird nicht automatisch verplant (läuft mit Florian mit) | ✅ |
 | Nina | wird ganz normal verplant; **freitags nie** | ✅ |
 | Deborah | gerade KW Frühdienst, ungerade KW Spätdienst; gerade KW freitags frei | ✅ |
-| Alyssa | langzeitkrank (vorerst bis 11.11., voraussichtlich länger) → nicht verplanen | ✅ |
-| Kristin | krankgeschrieben, bleibt als „Krank“ im Plan → nicht verplanen | ✅ |
-| Emilia | neue TFA (Nov 2026), steht im Plan, wird vorerst nur manuell von Nicolas geplant | ✅ |
+| Alyssa | langzeitkrank, fällt länger aus → nicht verplanen | ✅ |
+| Kristin | krankgeschrieben (voraussichtlich bis ca. Anfang Dezember), bleibt als „Krank“ im Plan | ✅ |
+| Emilia | wird normal verplant (Behandlung, OP, Assistenz Lisa/Wilke/Florian); **noch nicht** Anmeldung, **noch nicht** bei Ulf | ✅ 05.11. |
+| Emilia | jede Woche 1 Tag frei, im Wechsel Freitag / anderer Tag – Tag und Rhythmus ❓ noch mit ihr abzustimmen | ❓ |
+| Pauline | **nie** Anmeldung, **nie** bei Ulf; Behandlung, OP und Lisa ja | ✅ 05.11. |
 | Molly, Matthias, Pauline | werden verplant, auch allein in Assistenz-Rollen (so in der Praxis) | ✏️ |
 | Ärzte | festes Muster + Samstagsrotation; Eingabe, nicht verplant | ✏️ |
 
@@ -32,8 +34,9 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 | `anmeldung_fd_sd` | TFA-Anmeldung in FD und SD je genau 1× (Nicolette zählt nicht) | einzelne Ausnahmen |
 | `assistenz_ulf` | Ulf da → **je eine Assistenz vormittags (FD) und nachmittags (SD)** ✅ | wenige Lücken |
 | `assistenz_lisa_op` | Lisa operiert → Assistenz FD und SD; „Assistenz Lisa“ = „Assistenz Lisa OP“ ✅ | einzelne |
-| `assistenz_wilke_op` | Wilke „FD OP“ → eine Assistenz; „Assistenz Wilke“ zählt ✏️ | einzelne |
+| `assistenz_wilke_op` | Wilke „FD OP“ → eine Assistenz; „Assistenz Wilke“ zählt ✅ (OP-Ärzte haben immer einen Helfer) | einzelne |
 | `nina_kein_freitag` | Nina freitags nie eingeplant ✅ | 1× |
+| `rollen_verbote` | Emilia und Pauline: keine Anmeldung, nicht bei Ulf ✅ | 1× (Pauline bei Ulf) |
 | `deborah_wechsel` | Deborahs Schichtwechsel (s.o.) ✅ | 5× in 22 Wochen |
 | `gesperrt_unveraendert` | manuelle Einträge bleiben exakt erhalten ✅ | 0 |
 
@@ -52,12 +55,37 @@ Reihenfolge = erste Wahl zuerst. Steht in `planner/einstellungen.py` und ist dor
 **Assistenz Lisa:** FD Molly › Nicolas › Nina › Nadine; SD Nadine › Molly › Pauline
 **Assistenz Wilke:** FD Imke › Matthias › Molly; SD Pauline › Molly
 
-Weitere Wünsche (Gewichtung folgt): FD/SD ausgeglichen (`balance_fd_sd`), Rollen fair verteilt.
+**`jeder_arzt_helfer`** ✅ (Wunsch, hohes Gewicht): Wenn genug Leute da sind, bekommt **jeder Arzt in jeder
+Schicht, in der er arbeitet, eine Assistenz** (Wilke, Florian, Lisa; Ulf ist ohnehin Pflicht; Hanne läuft mit Florian).
+Schicht des Arztes aus seiner Zelle: „FD …“/„09–12“ = FD, „SD …“ = SD, „09:00–17:00“/„OP Ganztag“ = beide.
+In KW 36–46 war das 69× nicht möglich – deshalb Wunsch, nicht Pflicht.
 
-## D. Offene Fragen
+Reihenfolge der Wichtigkeit beim Verteilen: 1. Anmeldung FD+SD → 2. Ulf FD+SD → 3. OP-Ärzte →
+4. übrige Ärzte je Schicht → 5. Behandlung/Springer, FD/SD ausgeglichen (`balance_fd_sd`).
+
+## D. Schule der Azubis (aus dem Plan KW 32–47)
+- Pauline: **Mittwoch** Schule (ganztägig) ✅.
+- Molly + Matthias: seit KW 37 **Donnerstag und Freitag** Schule. An beiden Tagen kommt **einer von beiden
+  nach der Schule ab 15:30 in den SD**, der andere hat dort ganztägig Schule – am anderen Tag umgekehrt:
+
+  | KW | Do: kommt ab 15:30 | Fr: kommt ab 15:30 |
+  |---|---|---|
+  | 37 | Molly | Matthias |
+  | 38 | Molly | Matthias |
+  | 39 | Matthias | Molly |
+  | 40 | Matthias | (Molly krank) |
+  | 41 | Molly | Matthias |
+  | 42 | Fortbildung | beide (13:30/14:30) |
+  | 43–44 | Herbstferien → normal im Dienst | |
+  | 45 | Fortbildung | beide Schule |
+
+  ❓ Nach welchem Rhythmus wechselt das? (37/38 gleich, 39/40 getauscht, 41 wieder wie 37)
+  ❓ In `config.py` stehen noch alte Platzhalter (Molly Do, Matthias **Di**) → wird nach Klärung korrigiert.
+
+## E. Offene Fragen
 1. ❓ **Mindestbesetzung:** Wie viele Personen braucht es mindestens pro Schicht (FD / SD)?
 2. ❓ **Arbeitszeit:** Gibt es Soll-Tage pro Woche je Person (z.B. Teilzeit Nina, Azubis)?
 3. ❓ **Samstag:** Feste Rotationsliste weiterführen oder fair verteilen lassen?
-4. ❓ **Assistenz Florian / Springer:** Nach Bedarf oder fest an bestimmten Tagen?
+4. ✅ **Assistenz Florian:** jeder Arzt bekommt je Schicht einen Helfer, wenn möglich (`jeder_arzt_helfer`). Springer = wer übrig bleibt.
 5. ✏️ **Azubis allein:** Dürfen Molly/Matthias eine Pflicht-Assistenz allein besetzen? (Daten: ja)
-6. ❓ **Wilke-OP-Freitag:** Mehrmals ohne Assistenz geplant (KW 36, 39, 42) – Ausnahme oder Lücke?
+6. ✅ **OP-Ärzte** haben immer einen Helfer (Pflicht) – auch Wilke freitags.

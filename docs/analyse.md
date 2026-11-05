@@ -23,6 +23,8 @@ Urlaub/Krank sind herausgerechnet. Format: häufigste Einteilung (Anteil) · zwe
 | Pauline | ungerade | SD Assistenz Florian (40%) · FD Behandlung | SD Behandlung (40%) · FD Behandlung | Schule (60%) · FD Behandlung | SD Behandlung (50%) · Fortbildung | FD Behandlung (55%) · SD Assistenz Florian |
 | Nina | gerade | SD Behandlung (30%) · SD Assistenz Ulf | FD Behandlung (30%) · – | – (30%) · FD Behandlung | FD Behandlung (30%) · – | – (100%) |
 | Nina | ungerade | SD Assistenz Ulf (55%) · – | FD Anmeldung (33%) · – | – (22%) · FD Behandlung | FD Behandlung (22%) · – | – (90%) · FD Behandlung |
+| Emilia | gerade | – (100%) | – (100%) | – (100%) | – (100%) | – (100%) |
+| Emilia | ungerade | – (100%) | – (100%) | – (100%) | – (100%) | – (100%) |
 | Molly | gerade | FD Behandlung (45%) · FD Assistenz Lisa | FD Behandlung (40%) · – | – (40%) · SD Behandlung | FD Behandlung (30%) · – | – (40%) · SD Behandlung |
 | Molly | ungerade | FD Behandlung (20%) · FD Assistenz Wilke | FD Behandlung (27%) · – | – (36%) · SD Behandlung | FD Behandlung (18%) · – | – (36%) · Schule |
 | Matthias | gerade | – (36%) · FD Behandlung | SD Behandlung (45%) · – | – (36%) · FD Behandlung | – (36%) · SD Behandlung | – (36%) · FD Behandlung |
@@ -57,5 +59,7 @@ Viele Verstöße = Regel passt nicht zur Praxis und muss überarbeitet werden.
 - `assistenz_wilke_op` (pflicht): 8× — Wilke OP → Assistenz fehlt 8×
 - `nina_kein_freitag` (pflicht): 1× — Nina eingeplant, arbeitet an dem Tag nie 1×
 - `deborah_wechsel` (pflicht): 5× — Deborah FD statt SD 4×; Deborah gerade KW Fr eingeplant 1×
+- `rollen_verbote` (pflicht): 1× — Pauline: Assistenz Ulf nicht erlaubt 1×
+- `jeder_arzt_helfer` (wunsch): 169× — Lisa FD ohne Assistenz 39×; Florian FD ohne Assistenz 29×; Lisa SD ohne Assistenz 28×; Wilke SD ohne Assistenz 26×
 - `balance_fd_sd` (wunsch): 19× — FD=6, SD=0 5×; FD=5, SD=0 5×; FD=5, SD=1 4×; FD=4, SD=0 4×
 - `gesperrt_unveraendert` (pflicht): 0× — ok

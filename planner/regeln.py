@@ -182,6 +182,64 @@ def _deborah(w: Woche):
     return v
 
 
+def _rolle_key(z) -> str | None:
+    if z.rolle == "Anmeldung":
+        return "Anmeldung"
+    if z.rolle == "Assistenz" and z.arzt:
+        return f"Assistenz {z.arzt}"
+    return z.rolle
+
+
+@regel("rollen_verbote", "pflicht",
+       "Niemand bekommt eine Rolle, die er/sie noch nicht übernehmen darf (z.B. Emilia/Pauline nicht Anmeldung, nicht bei Ulf).")
+def _verbote(w: Woche):
+    from .einstellungen import KANN_NICHT
+    v = []
+    for p, verboten in KANN_NICHT.items():
+        for di in werktage(w):
+            z = parse(w.plan.get(p, ["–"] * 6)[di])
+            if z.arbeitet and _rolle_key(z) in verboten:
+                v.append(Verstoss("rollen_verbote", di, f"{p}: {_rolle_key(z)} nicht erlaubt", p))
+    return v
+
+
+def arzt_schichten(wert) -> set[str]:
+    """In welchen Schichten arbeitet ein Arzt laut Zelle? FD, SD oder beide."""
+    import re
+    z = parse(wert)
+    if not z.arbeitet:
+        return set()
+    h = str(wert).split(" || ")[0]
+    if h.startswith("FD"):   # auch "FD OP" (Wilke) = nur Frühdienst
+        return {"FD"}
+    if h.startswith("SD"):
+        return {"SD"}
+    m = re.search(r"(\d{1,2})(?::\d{2})?\s*[–-]\s*(\d{1,2})", h)
+    if m:
+        von, bis = int(m.group(1)), int(m.group(2))
+        if bis <= 14:
+            return {"FD"}
+        if von >= 12:
+            return {"SD"}
+    return {"FD", "SD"}   # ganztags, OP, unklar
+
+
+@regel("jeder_arzt_helfer", "wunsch",
+       "Wenn genug Personal da ist, hat jeder anwesende Arzt in jeder Schicht, in der er arbeitet, eine Assistenz.",
+       gewicht=20)
+def _arzt_helfer(w: Woche):
+    v = []
+    for arzt in ("Wilke", "Florian", "Lisa"):   # Ulf: eigene Pflichtregel; Hanne läuft mit Florian
+        for di in werktage(w):
+            for sch in sorted(arzt_schichten(w.plan.get(arzt, ["–"] * 6)[di])):
+                hat = [p for p, z in tfa_zellen(w, di).items()
+                       if z.arbeitet and z.rolle == "Assistenz" and z.arzt == arzt
+                       and z.schicht in (sch, "GANZ")]
+                if not hat:
+                    v.append(Verstoss("jeder_arzt_helfer", di, f"{arzt} {sch} ohne Assistenz"))
+    return v
+
+
 @regel("balance_fd_sd", "wunsch",
        "FD und SD sind ungefähr gleich stark besetzt (Differenz < 4).", gewicht=5)
 def _balance(w: Woche):
