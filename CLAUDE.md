@@ -40,6 +40,8 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
   synchronisiert, Hover-Effekte nur bei `@media (hover: hover)`), Systemschrift `-apple-system`.
 - Mobil: genau 3 Tage pro Bildschirmbreite (`--daycol`), Wischen rastet tageweise ein (scroll-snap).
 - Erste Spalte der eingefrorenen Kopfzeile braucht `z-index: 20` (Tages-Zellen haben 10).
+- Ansicht-Modus: beim Öffnen springt die Tabelle so, dass direkt nach den Namen der heutige Tag
+  beginnt (`positioniereHeute()`, einmal pro Wochenwechsel). Heute = nur blauer Rahmen, kein Hintergrund.
 
 ## Farben (Stand Nov 2026, vom Nutzer so gewünscht)
 - EINE Farbe pro Zelle, nach Dienst – für Ärzte, TFAs und Azubis gleich:

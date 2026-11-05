@@ -497,18 +497,19 @@
   th.today-col {
     background: #dbeafe !important;
     border-top: 3px solid #3b82f6 !important;
-    border-left: 2px solid #93c5fd !important;
-    border-right: 2px solid #93c5fd !important;
+    border-left: 3px solid #2563eb !important;
+    border-right: 3px solid #2563eb !important;
   }
   th.today-col .day-name { color: #1d4ed8; font-weight: 800; }
   th.today-col .day-date { color: #2563eb; font-weight: 600; }
+  /* Heute: nur ein blauer Rahmen um die Spalte – KEIN eigener Hintergrund,
+     damit die Dienst-Farben (FD/SD/Krank …) auch heute lesbar bleiben */
   td.cell.today-col {
-    background: rgba(219,234,254,0.35);
-    box-shadow: inset 2px 0 0 #93c5fd, inset -2px 0 0 #93c5fd;
+    box-shadow: inset 3px 0 0 #2563eb, inset -3px 0 0 #2563eb;
   }
   /* Letzte Zelle der Heute-Spalte bekommt auch unten einen Rahmen */
   td.cell.today-col-last {
-    box-shadow: inset 2px 0 0 #93c5fd, inset -2px 0 0 #93c5fd, inset 0 -2px 0 #93c5fd;
+    box-shadow: inset 3px 0 0 #2563eb, inset -3px 0 0 #2563eb, inset 0 -3px 0 #2563eb;
   }
 
   /* ── FD/SD-Balance-Zeile ── */
@@ -2206,6 +2207,23 @@ function renderPlan(data, valid) {
       allTodayCells[allTodayCells.length - 1].classList.add("today-col-last");
   }
   applyPersonFilter();
+  positioniereHeute(kw, todayDi);
+}
+
+// Ansicht-Modus: beim Öffnen einer Woche seitlich so schieben, dass direkt
+// nach den Namen der HEUTIGE Tag beginnt (andere Wochen: ab Montag).
+// Nur einmal pro Wochenwechsel, damit Neuzeichnen nicht ständig springt.
+let _positionierteKw = null;
+function positioniereHeute(kw, todayDi) {
+  if (!tableWrap || isEditMode || _positionierteKw === kw) return;
+  _positionierteKw = kw;
+  const zelle = todayDi > 0 ? tableWrap.querySelector(`td.cell[data-di="${todayDi}"]`) : null;
+  const name  = tableWrap.querySelector("td.person-name");
+  const ziel  = zelle && name ? zelle.offsetLeft - name.offsetWidth : 0;
+  requestAnimationFrame(() => {
+    tableWrap.scrollLeft = Math.max(0, Math.round(ziel));
+    syncFrozenHeadScroll();
+  });
 }
 
 // ── Tagesansicht (Karten) ────────────────────────────────────────────────
