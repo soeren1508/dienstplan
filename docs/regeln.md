@@ -23,7 +23,7 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 | Alyssa | langzeitkrank, fällt länger aus → nicht verplanen | ✅ |
 | Kristin | krankgeschrieben (voraussichtlich bis ca. Anfang Dezember), bleibt als „Krank“ im Plan | ✅ |
 | Emilia | wird normal verplant (Behandlung, OP, Assistenz Lisa/Wilke/Florian); **noch nicht** Anmeldung, **noch nicht** bei Ulf | ✅ 05.11. |
-| Emilia | jede Woche 1 Tag frei, im Wechsel Freitag / anderer Tag – Tag und Rhythmus ❓ noch mit ihr abzustimmen | ❓ |
+| Emilia | jede Woche 1 Tag frei: **ungerade KW Freitag** ✅ (KW 45 = Fr 06.11.), gerade KW fester anderer Tag ❓ | ⏳ |
 | Pauline | **nie** Anmeldung, **nie** bei Ulf; Behandlung, OP und Lisa ja | ✅ 05.11. |
 | Molly, Matthias, Pauline | werden verplant, auch allein in Assistenz-Rollen (so in der Praxis) | ✏️ |
 | Ärzte | festes Muster + Samstagsrotation; Eingabe, nicht verplant | ✏️ |
@@ -79,11 +79,14 @@ Reihenfolge der Wichtigkeit beim Verteilen: 1. Anmeldung FD+SD → 2. Ulf FD+SD 
   | 43–44 | Herbstferien → normal im Dienst | |
   | 45 | Fortbildung | beide Schule |
 
-  ❓ Nach welchem Rhythmus wechselt das? (37/38 gleich, 39/40 getauscht, 41 wieder wie 37)
+  ✏️ **Fortgesetzte Logik (Annahme):** Wechsel alle 2 Wochen, ab KW 37 gezählt, Ferien-KWs ohne Schule:
+  KW 45–46 Do Molly / Fr Matthias ab 15:30 · KW 47–48 Do Matthias / Fr Molly · KW 49–50 wie 45–46 …
+  Umgesetzt in `planner/einstellungen.py` → `schule()`; Anker/Rhythmus dort änderbar.
+  ❓ Von Molly/Matthias bestätigen lassen (die Datenbasis sind nur KW 37–41).
   ❓ In `config.py` stehen noch alte Platzhalter (Molly Do, Matthias **Di**) → wird nach Klärung korrigiert.
 
 ## E. Offene Fragen
-1. ❓ **Mindestbesetzung:** Wie viele Personen braucht es mindestens pro Schicht (FD / SD)?
+1. ✅ **Mindestbesetzung:** keine feste Zahl – alle Verfügbaren werden auf FD/SD aufgeteilt.
 2. ❓ **Arbeitszeit:** Gibt es Soll-Tage pro Woche je Person (z.B. Teilzeit Nina, Azubis)?
 3. ❓ **Samstag:** Feste Rotationsliste weiterführen oder fair verteilen lassen?
 4. ✅ **Assistenz Florian:** jeder Arzt bekommt je Schicht einen Helfer, wenn möglich (`jeder_arzt_helfer`). Springer = wer übrig bleibt.

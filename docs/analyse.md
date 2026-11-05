@@ -57,7 +57,7 @@ Viele Verstöße = Regel passt nicht zur Praxis und muss überarbeitet werden.
 - `assistenz_ulf` (pflicht): 18× — Ulf da → SD: Assistenz fehlt 15×; Ulf da → FD: Assistenz fehlt 3×
 - `assistenz_lisa_op` (pflicht): 16× — Lisa OP → SD: Assistenz fehlt 11×; Lisa OP → FD: Assistenz fehlt 5×
 - `assistenz_wilke_op` (pflicht): 8× — Wilke OP → Assistenz fehlt 8×
-- `nina_kein_freitag` (pflicht): 1× — Nina eingeplant, arbeitet an dem Tag nie 1×
+- `freie_tage` (pflicht): 1× — Nina eingeplant, hat an dem Tag frei 1×
 - `deborah_wechsel` (pflicht): 5× — Deborah FD statt SD 4×; Deborah gerade KW Fr eingeplant 1×
 - `rollen_verbote` (pflicht): 1× — Pauline: Assistenz Ulf nicht erlaubt 1×
 - `jeder_arzt_helfer` (wunsch): 169× — Lisa FD ohne Assistenz 39×; Florian FD ohne Assistenz 29×; Lisa SD ohne Assistenz 28×; Wilke SD ohne Assistenz 26×

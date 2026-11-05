@@ -154,14 +154,15 @@ def _wilke_op(w: Woche):
     return v
 
 
-@regel("nina_kein_freitag", "pflicht", "Nina arbeitet freitags nicht.")
-def _nina_fr(w: Woche):
-    from .einstellungen import NIE_AM_TAG
+@regel("freie_tage", "pflicht", "Feste freie Tage: Nina nie freitags; Emilia ungerade KW freitags (gerade KW: Tag offen).")
+def _freie_tage(w: Woche):
+    from .einstellungen import FREIE_TAGE
     v = []
-    for p, tage in NIE_AM_TAG.items():
-        for di in tage:
+    par = "gerade" if w.gerade else "ungerade"
+    for p, tage in FREIE_TAGE.items():
+        for di in tage[par]:
             if p in w.plan and parse(w.plan[p][di]).arbeitet:
-                v.append(Verstoss("nina_kein_freitag", di, f"{p} eingeplant, arbeitet an dem Tag nie", p))
+                v.append(Verstoss("freie_tage", di, f"{p} eingeplant, hat an dem Tag frei", p))
     return v
 
 
