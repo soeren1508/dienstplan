@@ -1462,7 +1462,7 @@
     "Nicolas": {
       "4": "Frei",
       "3": "Frei",
-      "2": "FD: Anmeldung bis 13 Uhr",
+      "2": "Frei",
       "5": "–"
     },
     "Lisa": {
@@ -1481,6 +1481,16 @@
     },
     "Imke": {
       "5": "Dienst"
+    },
+    "Alyssa": {
+      "0": "–",
+      "1": "–",
+      "2": "–",
+      "3": "–",
+      "4": "–"
+    },
+    "Nadine": {
+      "5": "–"
     }
   },
   "46": {
@@ -1492,10 +1502,13 @@
       "4": "Urlaub"
     },
     "Nicolas": {
-      "5": "Dienst"
+      "5": "Dienst",
+      "0": "FD: Springer: Rechnungen"
     },
     "Nadine": {
-      "5": "–"
+      "5": "–",
+      "0": "FD: Anmeldung",
+      "1": "FD: Assistenz Ulf"
     },
     "Deborah": {
       "2": "FD: Assistenz Ulf",
@@ -1519,6 +1532,44 @@
       "2": "–",
       "3": "–",
       "4": "–"
+    },
+    "Nina": {
+      "0": "SD: Behandlung"
+    },
+    "Pauline": {
+      "0": "SD: Assistenz Florian"
+    },
+    "Nicolette": {
+      "0": "–",
+      "1": "–",
+      "2": "–",
+      "3": "–",
+      "4": "–"
+    },
+    "Molly": {
+      "0": "SD: Assistenz Ulf",
+      "1": "–",
+      "3": "Schule",
+      "4": "Schule"
+    },
+    "Matthias": {
+      "0": "FD: Assistenz Wilke",
+      "3": "Schule",
+      "4": "Schule",
+      "2": "FD: Assistenz Ulf bis 16 Uhr",
+      "1": "SD: Assistenz Ulf"
+    },
+    "Emilia": {
+      "0": "FD: Behandlung"
+    },
+    "Hanne": {
+      "0": "SD 11-19 Uhr",
+      "1": "FD 09-17 Uhr",
+      "2": "SD 11-19 Uhr",
+      "3": "FD 09-17 Uhr"
+    },
+    "Florian": {
+      "4": "FD (09–13:30)"
     }
   },
   "48": {
@@ -1531,6 +1582,9 @@
     },
     "Deborah": {
       "4": "–"
+    },
+    "Florian": {
+      "4": "SD 12-19"
     }
   },
   "42": {
@@ -1781,7 +1835,7 @@
     },
     "Molly": {
       "3": "Fortbildung ab 09:00 Uhr",
-      "4": "Schule",
+      "4": "Schule ab 15:30",
       "0": "FD: Assistenz Wilke",
       "1": "FD: Assistenz Ulf",
       "2": "SD: Assistenz Ulf + dann Anmeldung zum lernen"
@@ -1794,10 +1848,10 @@
       "2": "SD: Assistenz Florian"
     },
     "Nina": {
-      "0": "SD: Assistenz Ulf",
-      "2": "FD: Assistenz Lisa",
-      "3": "Fortbildung ab 09:00 Uhr",
-      "1": "SD: Assistenz Wilke"
+      "0": "Krank",
+      "2": "Krank",
+      "3": "Krank",
+      "1": "Krank"
     },
     "Nicolas": {
       "0": "FD: Anmeldung",
@@ -1809,7 +1863,8 @@
       "0": "FD: Assistenz Lisa",
       "4": "SD: Anmeldung",
       "1": "FD: Assistenz Florian",
-      "3": "Fortbildung ab 09:00 Uhr"
+      "3": "Fortbildung ab 09:00 Uhr",
+      "5": "–"
     },
     "Hanne": {
       "0": "SD: 11-19",
@@ -1821,7 +1876,8 @@
       "4": "FD: Assistenz Wilke",
       "3": "Fortbildung ab 09:00 Uhr",
       "1": "FD: Anmeldung",
-      "0": "SD: Anmeldung"
+      "0": "SD: Anmeldung",
+      "5": "Dienst"
     },
     "Nicolette": {
       "3": "Fortbildung ab 09:00 Uhr bis 15:15 Uhr"
@@ -1834,6 +1890,11 @@
     },
     "Wilke": {
       "3": "Fortbildung?"
+    },
+    "Emilia": {
+      "2": "FD: Assistenz Lisa",
+      "3": "Fortbildung ab 09:00 Uhr",
+      "4": "SD 11:30-19:30 Uhr"
     }
   },
   "51": {
@@ -1843,7 +1904,28 @@
   },
   "50": {
     "Deborah": {
-      "4": "FD: Behandlung"
+      "4": "FD: Behandlung",
+      "0": "FD: Assistenz Ulf ab 11 Uhr || Vorher beim Arzt"
+    }
+  },
+  "49": {
+    "Lisa": {
+      "0": "Urlaub",
+      "4": "FD 09-14"
+    },
+    "Florian": {
+      "0": "TD 09-19",
+      "1": "SD 12-19",
+      "3": "FD (09–15) ab 20 Uhr Notdienst",
+      "4": "SD 14-19",
+      "5": "Dienst"
+    },
+    "Hanne": {
+      "0": "SD 11-19"
+    },
+    "Wilke": {
+      "3": "Urlaub",
+      "5": "–"
     }
   }
 }
