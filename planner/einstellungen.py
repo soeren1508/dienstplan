@@ -18,6 +18,13 @@ NICHT_AUTOMATISCH = {
     "Kristin":   "krankgeschrieben (voraussichtlich bis ca. Anfang Dezember), bleibt als Krank im Plan",
 }
 
+# Längere Ausfälle: der Planer trägt in alle NICHT manuell geplanten Zellen
+# "Krank" ein (manuelle Einträge bleiben). Wert = letzter Tag oder None (offen).
+LANGZEIT_KRANK = {
+    "Kristin": None,   # voraussichtlich bis ca. Anfang Dezember
+    "Alyssa":  None,
+}
+
 # Rollen, die jemand (noch) nicht übernehmen darf. Schlüssel wie in regeln._rolle_key():
 #   "Anmeldung", "Assistenz Ulf", "Assistenz Lisa", "Assistenz Wilke", "Assistenz Florian", "Springer"
 KANN_NICHT = {

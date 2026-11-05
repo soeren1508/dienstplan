@@ -24,7 +24,9 @@ from .regeln import bewertung, TAGE
 from .woche import lade_ist_wochen
 from .zellen import parse
 
-PERSONEN = TFAS + TFAS_MANUAL + AZUBIS
+# Verglichen (und für den Planer geleert) werden nur automatisch geplante Personen;
+# alle anderen (z.B. Kristin in früheren Wochen) bleiben als Eingabe stehen.
+from .einstellungen import AUTOMATISCH as PERSONEN  # noqa: E402
 # Referenzwochen: von Hand fertig geplant (siehe docs/planer.md)
 REFERENZ = range(24, 46)
 
@@ -63,7 +65,7 @@ def messe(w, planer):
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--planer", default=STANDARD, choices=sorted(PLANER))
+    ap.add_argument("--planer", default="baseline", choices=sorted(PLANER))
     ap.add_argument("--kw", default=f"{REFERENZ.start}-{REFERENZ.stop - 1}")
     ap.add_argument("--details", type=int, help="Abweichungen dieser KW auflisten")
     a = ap.parse_args(argv)

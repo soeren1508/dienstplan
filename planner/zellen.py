@@ -88,7 +88,9 @@ def parse(wert) -> Zelle:
     hat_schicht = h.startswith(("FD", "SD"))
     if not hat_schicht:   # "SD: Assistenz Lisa ab 15:30 wegen Schule" ist KEINE Abwesenheit
         for wort, grund in ABWESEND:
-            if wort in h:
+            treffer = (re.search(r"frei\b", h, re.I) if wort == "Frei"   # nicht "Freitag"
+                       else wort in h)
+            if treffer:
                 # "Schule ab 15:30" / "Schule 15:30 bei Lisa" → arbeitet ab Nachmittag
                 if grund == "Schule" and re.search(r"\d{1,2}:\d{2}", h):
                     arzt = next((a for a in ARZT_NAMEN if a in h), None)

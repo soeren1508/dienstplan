@@ -34,17 +34,17 @@ class BaselinePlaner(Planer):
 
 
 PLANER: dict[str, Planer] = {p.name: p for p in (BaselinePlaner(),)}
-STANDARD = "baseline"
+STANDARD = "baseline"   # wird unten auf "loeser" gesetzt
 
 
-def vorschlag(w: Woche, planer: str = STANDARD) -> dict:
+def vorschlag(w: Woche, planer: str | None = None) -> dict:
     """Vorschlag berechnen: gesperrte Zellen erzwingen, Änderungen auflisten.
 
     Rückgabe:
         plan        kompletter Vorschlagsplan
         aenderungen [{person, di, alt, neu}]  nur Zellen, die sich ändern würden
     """
-    roh = PLANER[planer].plane(w)
+    roh = PLANER[planer or STANDARD].plane(w)
     plan = {p: list(roh.get(p, w.plan.get(p, ["–"] * 6))) for p in ALL_PERSONS}
     fest = feste_zellen(w)
     for p, di in fest:
@@ -85,7 +85,18 @@ def nur_eingaben(w: Woche, personen) -> Woche:
         if keep:
             eing[p] = keep
     for p in personen:
+        if all(parse(v).leer for v in plan[p][:5]):
+            # Person war in der Woche gar nicht eingeplant (z.B. noch nicht
+            # eingestellt) → bleibt leer und gesperrt, wird nicht verplant
+            eing[p] = {di: plan[p][di] for di in range(6)}
+            continue
         for di in range(6):
             if not parse(plan[p][di]).abwesend:
                 plan[p][di] = "–"
     return Woche(w.kw, w.dates, plan, eing, w.urlaub, w.krank)
+
+
+# Neuer Planer (am Dateiende importiert, um Zirkelbezug zu vermeiden)
+from .loeser import LoeserPlaner  # noqa: E402
+PLANER[LoeserPlaner.name] = LoeserPlaner()
+STANDARD = LoeserPlaner.name

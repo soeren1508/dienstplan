@@ -1,7 +1,7 @@
 # Planungs-Agent – Übergabe für neue Sitzungen
 
 **Diese Datei zuerst lesen.** Sie ersetzt das erneute Durchlesen des ganzen Codes.
-Stand: 01.11.2026 (Regelwerk-Sitzung)
+Stand: 05.11.2026 (Planer v1)
 
 ## Ziel
 Ein Planer erstellt für eine KW einen **Vorschlag**. In der App kann man den Vorschlag
@@ -14,7 +14,7 @@ Manuelle Einträge und Urlaub/Krank/Feiertag werden nie überschrieben.
 | 0 | Framework: Prüfstand, Analyse, Regel-Bausteine, API, Oberfläche hinter Schalter | ✅ fertig |
 | 1 | Regelwerk mit dem Nutzer abstimmen → `docs/regeln.md` | ⏳ großteils ✅ (01.11.), Rest: Abschnitt D in regeln.md |
 | 2 | Regeln aus `docs/regeln.md` in `planner/regeln.py` + `planner/einstellungen.py` umsetzen | ⏳ Pflichtregeln + Personen ✅, Wünsche-Gewichte offen |
-| 3 | Neuer Planer (Constraint-Solver, z.B. OR-Tools CP-SAT) in `planner/planer.py` registrieren, am Prüfstand messen | offen |
+| 3 | Neuer Planer `planner/loeser.py` (exakte Optimierung per DP, ohne Zusatzpakete), Standard in der App | ✅ 05.11. erste Version |
 | 4 | Live schalten: Render-Env `VORSCHLAG_AKTIV=1`, später optional wöchentlicher Auto-Vorschlag | offen |
 
 ## Dateien (nur diese sind für den Planer relevant)
@@ -25,6 +25,7 @@ Manuelle Einträge und Urlaub/Krank/Feiertag werden nie überschrieben.
 | `planner/woche.py` | `Woche`-Objekt; `lade_ist_wochen()` holt echte Wochen über app.py |
 | `planner/regeln.py` | Regelbausteine (`@regel`), `bewertung()` |
 | `planner/planer.py` | Planer-Schnittstelle, `PLANER`-Register, `vorschlag()`, Schutz fester Zellen |
+| `planner/loeser.py` | **der neue Planer**: plant eine Woche Mo–Fr, Tag für Tag, Strafpunkte oben in der Datei |
 | `planner/pruefstand.py` | misst Planer gegen echte Wochen |
 | `planner/analyse.py` | erzeugt `docs/analyse.md` (Muster der echten Wochen) |
 | `planner/api.py` | Endpunkte `/api/vorschlag/...`, Feature-Flag |
@@ -57,6 +58,11 @@ Achtung: „Übernehmen“ in der lokalen App schreibt in `overrides.json` → v
 |---|---|---|---|---|
 | baseline (alter scheduler.py), Stand 01.11. vormittags | 42 % | 57 % | 60 | 135 |
 | baseline nach Regelwerk-Abstimmung (01.11.) | 41 % | 58 % | 68 | 85 (Einzelfälle über 22 Wochen) |
+| **loeser** (05.11.), KW 36–45 | 42 % | 71 % | **1** | 23 |
+
+Prüfstand ab 05.11.: verglichen werden nur Personen aus `einstellungen.AUTOMATISCH`; wer in einer
+Woche gar nicht im Plan stand (z.B. Emilia vor Nov.), bleibt leer. „Treffer“ = exakt Nicolas' Wahl –
+niedrig ist normal, weil es oft mehrere gleich gute Einteilungen gibt. Maßgeblich sind die Pflichtverstöße.
 
 „Ist-Plan 135“ (alter Stand) lag v.a. an Prüffehlern (Nina/Azubis nicht gezählt, „Assistenz Lisa“ ≠ OP).
 Nach Korrektur + neuen Regeln (01.11.): siehe `docs/analyse.md` Abschnitt 3 – nur noch Einzelfälle.
@@ -70,3 +76,8 @@ Nach Korrektur + neuen Regeln (01.11.): siehe `docs/analyse.md` Abschnitt 3 – 
   geleert (kein Abschreiben). Referenzwochen KW 24–45 (von Hand fertig geplant).
 - Bestehende Wochen werden nicht verändert; Auto-Vorschläge erst ab einer KW, die der Nutzer nennt.
 - Alter `scheduler.py` bleibt unverändert Basis der Live-App, bis der neue Planer besser ist.
+- **Geplant wird nur auf Knopfdruck und nur die angezeigte Woche** („🤖 Woche planen“). Kein automatisches
+  Vorausplanen. Übernommene Zellen werden normale manuelle Einträge und sind danach fest.
+- OR-Tools verworfen: Installation zu schwer für Render Free (512 MB, zieht pandas/numpy).
+- FD/SD-Ausgleich zuerst über die TFA-Gruppe (so zählt die FD/SD-Zeile der App), dann über alle.
+- Langzeit-Kranke (`einstellungen.LANGZEIT_KRANK`) werden in nicht-manuellen Zellen als „Krank“ eingetragen.

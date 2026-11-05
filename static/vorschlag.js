@@ -54,8 +54,8 @@
     const leiste = document.querySelector(".topbar-actions");
     if (leiste) {
       leiste.insertAdjacentHTML("afterbegin",
-        `<button class="btn btn-ghost edit-only" id="btn-vorschlag" title="Planungs-Vorschlag">
-           <span class="btn-icon">🤖</span><span class="btn-lbl">Vorschlag</span></button>`);
+        `<button class="btn btn-ghost edit-only" id="btn-vorschlag" title="Diese Woche planen">
+           <span class="btn-icon">🤖</span><span class="btn-lbl">Woche planen</span></button>`);
       document.getElementById("btn-vorschlag").addEventListener("click", oeffnen);
     }
     document.getElementById("vs-overlay").addEventListener("click", e => {
@@ -71,14 +71,14 @@
 
   async function oeffnen() {
     const panel = document.getElementById("vs-panel");
-    panel.innerHTML = `<h3>Vorschlag KW ${currentKw}</h3><div class="vs-sub">wird berechnet …</div>`;
+    panel.innerHTML = `<h3>Woche planen · KW ${currentKw}</h3><div class="vs-sub">wird berechnet … Nur diese Woche, manuelle Einträge bleiben unverändert.</div>`;
     document.getElementById("vs-overlay").classList.add("offen");
     try {
       const r = await fetch(`/api/vorschlag/${currentKw}`, { credentials: "same-origin" });
       if (!r.ok) throw new Error((r.status === 401 || r.status === 403) ? "Bitte zuerst PIN eingeben" : `Fehler ${r.status}`);
       daten = await r.json();
     } catch (e) {
-      panel.innerHTML = `<h3>Vorschlag KW ${currentKw}</h3><div class="vs-sub">${e.message}</div>
+      panel.innerHTML = `<h3>Woche planen · KW ${currentKw}</h3><div class="vs-sub">${e.message}</div>
         <div class="vs-knoepfe"><button data-a="zu">Schließen</button></div>`;
       panel.querySelector("[data-a=zu]").onclick = schliessen;
       return;
@@ -92,7 +92,7 @@
     const panel = document.getElementById("vs-panel");
     const a = daten.aenderungen;
     const v = daten.vorher.pflicht, n = daten.nachher.pflicht;
-    let html = `<h3>Vorschlag KW ${daten.kw}</h3>
+    let html = `<h3>Woche planen · KW ${daten.kw}</h3>
       <div class="vs-sub">${a.length} Änderung${a.length !== 1 ? "en" : ""} ·
         Pflichtregel-Verstöße: ${v} → ${n} · Planer: ${daten.planer}<br>
         Manuelle Einträge bleiben unverändert.</div>`;
@@ -130,7 +130,8 @@
   async function uebernehmen(liste) {
     if (!liste.length) { showToast("Nichts ausgewählt", "err"); return; }
     try {
-      const r = await fetch(`/api/vorschlag/${daten.kw}/uebernehmen`, {
+      const kw = daten.kw;   // schliessen() setzt daten = null
+      const r = await fetch(`/api/vorschlag/${kw}/uebernehmen`, {
         method: "POST", credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ zellen: liste.map(x => ({ person: x.person, di: x.di, neu: x.neu })) }),
@@ -138,7 +139,7 @@
       if (!r.ok) throw new Error(`Fehler ${r.status}`);
       const res = await r.json();
       schliessen();
-      await loadKw(daten.kw);
+      await loadKw(kw);
       showToast(`${res.uebernommen} Zelle${res.uebernommen !== 1 ? "n" : ""} übernommen`, "ok");
     } catch (e) {
       showToast("Übernehmen fehlgeschlagen: " + e.message, "err");
