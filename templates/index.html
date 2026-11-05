@@ -238,51 +238,31 @@
 
   /* ── Schicht-Farben (6 Gruppen, FD+SD jeweils gleich) ── */
   /* Text durchgehend schwarz — auch bei manuellen Einträgen ohne Kategorie (c-empty) */
-  /* ══ Farbsystem ══
-     Hintergrund = MIT WEM: jeder Arzt hat eine Farbe; seine eigene Zelle und
-     die Zellen seiner Assistenz haben dieselbe Farbe → wer mit wem arbeitet,
-     ist auf einen Blick zu sehen.
-     Balken links = WELCHER DIENST: blau = Frühdienst, orange = Spätdienst,
-     blau/orange geteilt = ganztags. */
-  :root {
-    --fd: #2563eb; --sd: #ea580c;
-    --ulf: #cffafe;     --ulf-t: #155e75;
-    --lisa: #f5d0fe;    --lisa-t: #86198f;
-    --wilke: #bbf7d0;   --wilke-t: #166534;
-    --florian: #fde68a; --florian-t: #92400e;
-    --hanne: #fecdd3;   --hanne-t: #9f1239;
-    --anm: #c7d2fe;     --anm-t: #3730a3;
-    --fd-beh: #dbeafe;  --sd-beh: #ffedd5;
-  }
-  .s-fd, .s-sd, .s-ganz { background-repeat: no-repeat; background-size: 5px 100%; }
-  .s-fd   { background-image: linear-gradient(var(--fd), var(--fd)); }
-  .s-sd   { background-image: linear-gradient(var(--sd), var(--sd)); }
-  .s-ganz { background-image: linear-gradient(var(--fd) 50%, var(--sd) 50%); }
-  .day-card-badge.s-fd, .day-card-badge.s-sd, .day-card-badge.s-ganz { padding-left: 10px; }
+  /* ══ Farbsystem: EINE Farbe pro Zelle ══
+     Die Farbe sagt, in welchem Dienst jemand ist – egal ob Arzt, TFA oder Azubi:
+       Blau   = Frühdienst      Orange = Spätdienst      Lila = ganztags
+     Die Anmeldung ist die wichtigste Rolle → kräftigerer Ton derselben Farbe
+     (FD-Anmeldung kräftig blau, SD-Anmeldung kräftig orange), fett.
+     Mit welchem Arzt jemand arbeitet, steht als Text in der Zelle.
+     Abwesenheiten sind grau/gedämpft, damit sie optisch zurücktreten. */
+  .c-fd      { background: #cfe3ff; color: #000; }
+  .c-sd      { background: #ffdcb8; color: #000; }
+  .c-ganz    { background: #c8f1df; color: #000; }
+  .c-anm-fd  { background: #7fb2ff; color: #000; font-weight: 700; }
+  .c-anm-sd  { background: #ffad66; color: #000; font-weight: 700; }
+  .c-arzt    { font-weight: 600; }
 
-  .c-anmeldung      { background-color: var(--anm); color: #000; }
-  .c-fd-beh         { background-color: var(--fd-beh); color: #000; }
-  .c-sd-beh         { background-color: var(--sd-beh); color: #000; }
-  .c-springer       { background-color: #f1f5f9; color: #000; }
-  .c-assistenz-ulf, .c-arzt-ulf         { background-color: var(--ulf); color: #000; }
-  .c-assistenz-lisa, .c-arzt-lisa       { background-color: var(--lisa); color: #000; }
-  .c-assistenz-wilke, .c-arzt-wilke     { background-color: var(--wilke); color: #000; }
-  .c-assistenz-florian, .c-arzt-florian { background-color: var(--florian); color: #000; }
-  .c-assistenz-hanne, .c-arzt-hanne     { background-color: var(--hanne); color: #000; }
-  .c-arzt-ulf, .c-arzt-lisa, .c-arzt-wilke, .c-arzt-florian, .c-arzt-hanne { font-weight: 600; }
-
-  .c-urlaub    { background-color: #e2e8f0; color: #475569; }
-  .c-krank     { background-color: #fee2e2; color: #b91c1c; font-weight: 600; }
-  .c-feiertag  { background-color: #fef9c3; color: #713f12; }
-  .c-schule    { background-color: #f5f5f4; color: #57534e; }
-  .c-dienst    { background-color: #e0f2fe; color: #000; }
-  .c-notdienst { background-color: #fee2e2; color: #000; }
-  .c-op        { background-color: #f1f5f9; color: #000; }
-  .c-frei      { background-color: #f8fafc; color: #64748b; }
-  .c-empty     { background-color: white;   color: #000; }
-  .c-pruefung       { background-color: #fce7f3; color: #000; }
-  .c-weiterbildung  { background-color: #f5f5f4; color: #57534e; }
-  .c-mitteldienst   { background-color: #f1f5f9; color: #000; }
+  .c-urlaub    { background: #e5e7eb; color: #4b5563; }
+  .c-krank     { background: #fde2e2; color: #b91c1c; font-weight: 600; }
+  .c-feiertag  { background: #fef3c7; color: #78350f; }
+  .c-schule    { background: #f3f4f6; color: #4b5563; }
+  .c-weiterbildung { background: #f3f4f6; color: #4b5563; }
+  .c-pruefung  { background: #f3f4f6; color: #4b5563; }
+  .c-frei      { background: #f9fafb; color: #6b7280; }
+  .c-notdienst { background: #fde2e2; color: #000; }
+  .c-dienst    { background: #c8f1df; color: #000; }   /* Samstag = ganzer Dienst */
+  .c-op        { background: #f3f4f6; color: #000; }   /* nicht zuordenbar */
+  .c-empty     { background: white;   color: #000; }
 
   /* ── Edit Popup ── */
   #edit-popup {
@@ -943,8 +923,6 @@
   .legend.open { display: flex; }
   .legend-head { width: 100%; font-size: 10px; font-weight: 700; color: #94a3b8;
     text-transform: uppercase; letter-spacing: .5px; margin: 6px 0 2px; }
-  .legend-bar { position: relative; padding-left: 14px !important; }
-  .legend-bar .lb { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; border-radius: 3px 0 0 3px; }
   .legend-item {
     display: flex; align-items: center; gap: 5px;
     padding: 3px 9px; border-radius: 5px; white-space: nowrap;
@@ -1581,26 +1559,19 @@
       <span>Legende</span><span class="legend-arrow">▼</span>
     </div>
     <div class="legend" id="legend-panel">
-      <div class="legend-head">Dienst = Balken links</div>
-      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:var(--fd)"></span>Frühdienst</div>
-      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:var(--sd)"></span>Spätdienst</div>
-      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:linear-gradient(var(--fd) 50%,var(--sd) 50%)"></span>ganztags</div>
-      <div class="legend-head">Farbe = mit wem (Arzt und seine Assistenz)</div>
-      <div class="legend-item" style="background:var(--ulf);color:#000;font-weight:600">Ulf</div>
-      <div class="legend-item" style="background:var(--lisa);color:#000;font-weight:600">Lisa</div>
-      <div class="legend-item" style="background:var(--wilke);color:#000;font-weight:600">Wilke</div>
-      <div class="legend-item" style="background:var(--florian);color:#000;font-weight:600">Florian</div>
-      <div class="legend-item" style="background:var(--hanne);color:#000;font-weight:600">Hanne</div>
-      <div class="legend-item" style="background:var(--anm);color:#000">Anmeldung</div>
-      <div class="legend-item" style="background:var(--fd-beh);color:#000">FD: Behandlung</div>
-      <div class="legend-item" style="background:var(--sd-beh);color:#000">SD: Behandlung</div>
-      <div class="legend-item" style="background:#f1f5f9;color:#000">Springer / Sonstiges</div>
-      <div class="legend-head">Abwesend</div>
-      <div class="legend-item" style="background:#e2e8f0;color:#000">Urlaub</div>
-      <div class="legend-item" style="background:#fee2e2;color:#000">Krank</div>
-      <div class="legend-item" style="background:#f5f5f4;color:#000">Schule / Fortbildung</div>
-      <div class="legend-item" style="background:#fef9c3;color:#000">Feiertag</div>
-      <div class="legend-item" style="background:#e0f2fe;color:#000">Dienst (Sa)</div>
+      <div class="legend-head">Dienst</div>
+      <div class="legend-item c-anm-fd">FD: Anmeldung</div>
+      <div class="legend-item c-fd">Frühdienst</div>
+      <div class="legend-item c-anm-sd">SD: Anmeldung</div>
+      <div class="legend-item c-sd">Spätdienst</div>
+      <div class="legend-item c-ganz">ganztags / Mitteldienst</div>
+      <div class="legend-head">Abwesend / Sonstiges</div>
+      <div class="legend-item c-urlaub">Urlaub</div>
+      <div class="legend-item c-krank">Krank</div>
+      <div class="legend-item c-schule">Schule / Fortbildung</div>
+      <div class="legend-item c-frei">Frei</div>
+      <div class="legend-item c-feiertag">Feiertag</div>
+      <div class="legend-item c-dienst">Dienst (Sa)</div>
       <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
     </div>
   </div>
@@ -1838,69 +1809,53 @@ function closePinDialog() {
 // Trennzeichen für Hinweise: " || " (wird bei Klassifizierung/Validierung ignoriert)
 function _mainVal(val) { return val ? String(val).split(" || ")[0] : ""; }
 
-const ARZT_FARBE = { Ulf: "ulf", Lisa: "lisa", Wilke: "wilke", Florian: "florian", Hanne: "hanne" };
+const AERZTE_NAMEN = new Set(["Ulf", "Wilke", "Florian", "Lisa", "Hanne"]);
 
-// Welcher Dienst? "s-fd" | "s-sd" | "s-ganz" | "" (für den Farbbalken links)
-function schichtKlasse(val) {
+// Welcher Dienst? "fd" | "sd" | "ganz" | "" (keiner / abwesend)
+function schichtVon(val) {
   if (!val || val === "–") return "";
   const v = _mainVal(val);
   if (/^(Urlaub|Krank|Feiertag|SCHULE|Schule|Frei|Weiterbildung|Fortbildung|Abschlussprüfung|Dienst)\b/.test(v)) return "";
   if (/Notdienst|ECVO|Überstunden/i.test(v)) return "";
-  if (v.startsWith("FD")) return "s-fd";
-  if (v.startsWith("SD")) return "s-sd";
-  if (/Schule.*15:30/.test(v)) return "s-sd";
-  if (/Mitteldienst|Ganztag|Tagdienst|^TD\b|^OP/.test(v)) return "s-ganz";
+  if (v.startsWith("FD")) return "fd";
+  if (v.startsWith("SD")) return "sd";
+  if (/Mitteldienst|Ganztag|Tagdienst|^TD\b|^OP/.test(v)) return "ganz";
   const m = v.match(/(\d{1,2})(?::\d{2})?\s*(?:Uhr)?\s*[–-]\s*(\d{1,2})/);
   if (m) {
     const von = +m[1], bis = +m[2];
-    if (bis <= 14) return "s-fd";
-    if (von >= 12) return "s-sd";
-    return "s-ganz";
+    if (bis <= 14) return "fd";
+    if (von >= 12) return "sd";
+    return "ganz";
   }
   return "";
 }
 
+// Genau EINE Farbklasse pro Zelle (siehe Farbsystem im CSS)
 function cellClass(val, person) {
-  const sch = schichtKlasse(val);
-  return _farbKlasse(val, person) + (sch ? " " + sch : "");
-}
-
-function _farbKlasse(val, person) {
   if (!val || val === "–") return "c-empty";
   const v = _mainVal(val);  // Note-Teil ignorieren
-  // Ärzte: eigene Farbe (gleich wie ihre Assistenz), solange sie arbeiten
-  if (person && ARZT_FARBE[person] && schichtKlasse(val)) return "c-arzt-" + ARZT_FARBE[person];
 
-  // Rollenbasierte Farben (FD und SD gleich je Rolle)
-  if (v.includes("Springer"))             return "c-springer";
-  if (v.includes("Anmeldung"))            return "c-anmeldung";
-  if (v.includes("Assistenz Ulf"))        return "c-assistenz-ulf";
-  if (v.includes("Assistenz Lisa"))       return "c-assistenz-lisa";
-  if (v.includes("Assistenz Wilke"))      return "c-assistenz-wilke";
-  if (v.includes("Assistenz Florian"))    return "c-assistenz-florian";
-  if (v.includes("Assistenz Hanne"))      return "c-assistenz-hanne";
-  if (v.includes("Assistenz"))            return "c-assistenz-ulf"; // Fallback
-
-  // FD / SD Behandlung (einzige Unterscheidung nach Schicht)
-  if (v.startsWith("FD"))                 return "c-fd-beh";
-  if (v.startsWith("SD"))                 return "c-sd-beh";
-
-  // Sonstige
-  if (v === "Urlaub")                     return "c-urlaub";
-  if (v === "Krank")                      return "c-krank";
-  if (v === "Feiertag")                   return "c-feiertag";
+  // Abwesend / Sonstiges
+  if (v === "Urlaub")                          return "c-urlaub";
+  if (v === "Krank")                           return "c-krank";
+  if (v === "Feiertag")                        return "c-feiertag";
   if (v === "SCHULE" || v.startsWith("Schule")) return "c-schule";
-  if (v.startsWith("Fortbildung"))        return "c-weiterbildung";
-  if (v === "Dienst")                     return "c-dienst";
-  if (v === "Weiterbildung")              return "c-weiterbildung";
-  if (v.includes("Mitteldienst"))          return "c-mitteldienst";
-  if (v.includes("Notdienst"))            return "c-notdienst";
-  if (v.includes("Abschlussprüfung"))     return "c-pruefung";
-  if (v.includes("Frei"))                 return "c-frei";
-  if (v.includes("OP") || v.includes("09:00") ||
-      v.includes("09–12") || v.includes("ECVO") ||
-      v.includes("Bestellungen"))         return "c-op";
-  return "c-empty";
+  if (v.startsWith("Fortbildung") || v === "Weiterbildung" || v.includes("ECVO")) return "c-weiterbildung";
+  if (v.includes("Abschlussprüfung"))          return "c-pruefung";
+  if (v.includes("Notdienst"))                 return "c-notdienst";
+  if (v === "Dienst")                          return "c-dienst";
+  if (/^Frei|frei\b/i.test(v))                return "c-frei";
+
+  const sch = schichtVon(val);
+  const arzt = person && AERZTE_NAMEN.has(person) ? " c-arzt" : "";
+  // Anmeldung: kräftiger Ton der Dienst-Farbe
+  if (v.includes("Anmeldung") && !arzt && (sch === "fd" || sch === "sd")) {
+    const zuerst = Math.min(...["Anmeldung", "Assistenz", "Springer", "Behandlung"]
+      .map(k => v.indexOf(k)).filter(x => x >= 0));
+    if (v.indexOf("Anmeldung") === zuerst) return "c-anm-" + sch;
+  }
+  if (sch) return "c-" + sch + arzt;
+  return "c-op";
 }
 
 function formatCell(val) {

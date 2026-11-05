@@ -41,11 +41,12 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
 - Mobil: genau 3 Tage pro Bildschirmbreite (`--daycol`), Wischen rastet tageweise ein (scroll-snap).
 - Erste Spalte der eingefrorenen Kopfzeile braucht `z-index: 20` (Tages-Zellen haben 10).
 
-## Farben (Stand Nov 2026)
-- Hintergrund = mit wem: Arzt-Zelle und seine Assistenz haben dieselbe Farbe
-  (Ulf cyan, Lisa fuchsia, Wilke grün, Florian gelb, Hanne rosa); Anmeldung indigo;
-  Behandlung FD hellblau / SD hellorange.
-- Balken links = Dienst: blau FD, orange SD, geteilt = ganztags (`schichtKlasse()` in index.html).
+## Farben (Stand Nov 2026, vom Nutzer so gewünscht)
+- EINE Farbe pro Zelle, nach Dienst – für Ärzte, TFAs und Azubis gleich:
+  Frühdienst hellblau, Spätdienst hellorange, ganztags mint;
+  Anmeldung = kräftiger Ton derselben Farbe (FD kräftig blau, SD kräftig orange), fett.
+- Keine Farben pro Arzt und keine Seitenbalken (vom Nutzer abgelehnt: zu unruhig).
+- Abwesend gedämpft grau, Krank rosa mit roter Schrift. Logik: `cellClass()`/`schichtVon()` in index.html.
 
 ## Deployment
 - Render-Dienst „dienstplan“, Auto-Deploy „On Commit“ muss aktiv sein (Settings → Build & Deploy).
