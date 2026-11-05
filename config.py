@@ -188,7 +188,6 @@ ALL_PERSONS = [
     "Molly", "Matthias",        # Azubis (Ausbildungsbeginn 03.08. = KW32)
     "Nina",                     # TFA (manuell + Juli-Default, noch nicht in Auto-Rotation)
     "Emilia",                   # TFA (neu ab Nov 2026, vorerst nur manuell durch Nicolas)
-    "Nicolette",                # Empfang (ab September, nur Anmeldung, 08:30-17:00)
 ]
 ARZTE        = ["Ulf", "Wilke", "Florian", "Lisa"]
 ARZTE_MANUAL = ["Hanne"]       # Ärzte in UI-Gruppe, aber nicht auto-scheduliert
@@ -202,12 +201,8 @@ AZUBIS       = ["Molly", "Matthias"]
 # "Azubis" statt "TFAs". Siehe app.py (tfas/azubis-Aufbau für die API).
 TFAS_DISPLAY_ALS_AZUBI = ["Pauline"]
 AUSHILFEN: list[str] = []      # Ronja ausgeschieden
-EMPFANG      = ["Nicolette"]   # nur Anmeldung, fester Zeitblock, kein FD/SD
+EMPFANG: list[str] = []       # Nicolette ausgeschieden (Nov 2026)
 
-# Ab wann Nicolette ihr Default-Muster bekommt (Mo-Fr, 08:30-17:00 Anmeldung),
-# solange kein manueller Eintrag vorliegt. Manuelle Overrides haben Vorrang.
-NICOLETTE_START = date(2026, 9, 1)
-NICOLETTE_MUSTER = "Anmeldung (08:30–17:00 Uhr)"
 
 # ---------------------------------------------------------------------------
 # Tage-Mapping

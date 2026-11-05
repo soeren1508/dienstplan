@@ -16,7 +16,7 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 ## A. Personen
 | Person | Regel | Status |
 |---|---|---|
-| Nicolette | Empfang mit festen Zeiten, steht im Plan wie bisher. Ist **keine** FD-Anmeldung, wird nicht verplant. | ✅ |
+| Nicolette | ausgeschieden (Nov 2026), aus dem Plan entfernt | ✅ |
 | Hanne | wird nicht automatisch verplant (läuft mit Florian mit) | ✅ |
 | Nina | wird ganz normal verplant; **freitags nie** | ✅ |
 | Deborah | gerade KW Frühdienst, ungerade KW Spätdienst; gerade KW freitags frei | ✅ |
@@ -31,7 +31,7 @@ Status: ✅ bestätigt · ❓ offen · ✏️ aus den Daten abgeleitet, noch nic
 ## B. Pflichtregeln
 | ID | Regel | Verstöße in den echten Wochen |
 |---|---|---|
-| `anmeldung_fd_sd` | TFA-Anmeldung in FD und SD je genau 1× (Nicolette zählt nicht) | einzelne Ausnahmen |
+| `anmeldung_fd_sd` | TFA-Anmeldung in FD und SD je genau 1× | einzelne Ausnahmen |
 | `assistenz_ulf` | Ulf da → **je eine Assistenz vormittags (FD) und nachmittags (SD)** ✅ | wenige Lücken |
 | `assistenz_lisa_op` | Lisa operiert → Assistenz FD und SD; „Assistenz Lisa“ = „Assistenz Lisa OP“ ✅ | einzelne |
 | `assistenz_wilke_op` | Wilke „FD OP“ → eine Assistenz; „Assistenz Wilke“ zählt ✅ (OP-Ärzte haben immer einen Helfer) | einzelne |

@@ -13,7 +13,6 @@ AUTOMATISCH = [p for p in TFAS + TFAS_MANUAL + AZUBIS if p not in ("Alyssa", "Kr
 # Werden NICHT verplant – ihre Zellen bleiben, wie sie sind (Eingabe für den Planer)
 NICHT_AUTOMATISCH = {
     "Hanne":     "läuft zurzeit mit Florian mit, nur manuell",
-    "Nicolette": "Empfang mit festen Arbeitszeiten (keine FD-Anmeldung)",
     "Alyssa":    "langzeitkrank, fällt länger aus",
     "Kristin":   "krankgeschrieben (voraussichtlich bis ca. Anfang Dezember), bleibt als Krank im Plan",
 }

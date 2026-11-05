@@ -24,7 +24,7 @@ from typing import Callable
 from config import TFAS, TFAS_MANUAL, AZUBIS
 
 # Alle, die Pflichtrollen (Anmeldung, Assistenz) besetzen können.
-# Hanne (Ärztin, läuft mit Florian mit) und Nicolette (Empfang, feste Zeiten) nicht.
+# Hanne (Ärztin, läuft mit Florian mit) nicht.
 PLANBAR = TFAS + TFAS_MANUAL + AZUBIS
 from .woche import Woche
 from .zellen import parse
