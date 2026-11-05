@@ -36,6 +36,16 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
 - Die echte `<thead>` in `#table-wrap` ist mit `visibility: collapse` versteckt (liefert Spaltenbreiten).
 - Kein `transform` auf `.topbar` – `.topbar-actions` (fixed) würde sonst an der Kopfzeile kleben.
 - Nach Änderungen an `index.html` lokal den Flask-Server komplett neu starten (Template-Cache).
+- Schärfe: kein `transform`/`filter` mit Bruchteil-Pixeln auf Text (Kopfzeile wird per `scrollLeft`
+  synchronisiert, Hover-Effekte nur bei `@media (hover: hover)`), Systemschrift `-apple-system`.
+- Mobil: genau 3 Tage pro Bildschirmbreite (`--daycol`), Wischen rastet tageweise ein (scroll-snap).
+- Erste Spalte der eingefrorenen Kopfzeile braucht `z-index: 20` (Tages-Zellen haben 10).
+
+## Farben (Stand Nov 2026)
+- Hintergrund = mit wem: Arzt-Zelle und seine Assistenz haben dieselbe Farbe
+  (Ulf cyan, Lisa fuchsia, Wilke grün, Florian gelb, Hanne rosa); Anmeldung indigo;
+  Behandlung FD hellblau / SD hellorange.
+- Balken links = Dienst: blau FD, orange SD, geteilt = ganztags (`schichtKlasse()` in index.html).
 
 ## Deployment
 - Render-Dienst „dienstplan“, Auto-Deploy „On Commit“ muss aktiv sein (Settings → Build & Deploy).

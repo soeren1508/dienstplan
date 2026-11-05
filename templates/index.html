@@ -15,12 +15,14 @@
 <!-- CI-Schrift Roboto -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { height: 100%; }
+  html { height: 100%; overscroll-behavior: none; }
+  body { overflow-x: clip; }
   body {
-    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "tnum" 1; /* gleich breite Ziffern für Uhrzeiten */
     background: #f5f6fa; color: #1e293b;
     min-height: 100%; min-height: 100dvh;
     -webkit-tap-highlight-color: transparent;
@@ -164,6 +166,7 @@
        bleiben, sonst wird table-wrap selbst zum Sticky-Scroll-Container und
        die sticky thead-Positionierung bricht (Lücke/Flackern beim Scrollen) */
     overflow-x: auto; overflow-y: visible;
+    overscroll-behavior-x: contain;   /* seitliches Wischen bleibt in der Tabelle */
   }
   table { border-collapse: collapse; width: 100%; min-width: 960px; }
 
@@ -184,7 +187,7 @@
   }
 
   tbody tr { border-bottom: 1px solid #f1f5f9; }
-  tbody tr:hover { background: #fafbfc; }
+  @media (hover: hover) and (pointer: fine) { tbody tr:hover { background: #fafbfc; } }
   tbody tr:last-child { border-bottom: none; }
 
   tr.group-header td {
@@ -207,10 +210,10 @@
   td.cell {
     padding: 0; text-align: center; vertical-align: middle;
     position: relative; cursor: pointer;
-    border-right: 1px solid #f1f5f9; transition: filter 0.1s;
+    border-right: 1px solid #f1f5f9;
   }
   td.cell:last-child { border-right: none; }
-  td.cell:hover { filter: brightness(0.92); }
+  @media (hover: hover) and (pointer: fine) { td.cell:hover { filter: brightness(0.92); } }
 
   .cell-inner {
     padding: 6px 7px; font-size: 12px; line-height: 1.3; min-height: 40px;
@@ -235,27 +238,51 @@
 
   /* ── Schicht-Farben (6 Gruppen, FD+SD jeweils gleich) ── */
   /* Text durchgehend schwarz — auch bei manuellen Einträgen ohne Kategorie (c-empty) */
-  .c-anmeldung      { background: #e0e7ff; color: #000; } /* Indigo   – Anmeldung (FD+SD)      */
-  .c-fd-beh         { background: #bfdbfe; color: #000; } /* Blau     – FD: Behandlung         */
-  .c-sd-beh         { background: #fed7aa; color: #000; } /* Orange   – SD: Behandlung         */
-  .c-springer       { background: #f0fdfa; color: #000; } /* Teal     – FD/SD: Springer        */
-  .c-assistenz-ulf     { background: #a5f3fc; color: #000; } /* Cyan   – Assistenz Ulf (FD+SD)     */
-  .c-assistenz-lisa    { background: #c4b5fd; color: #000; } /* Lila   – Assistenz Lisa (FD+SD)    */
-  .c-assistenz-wilke   { background: #86efac; color: #000; } /* Mint   – Assistenz Wilke (FD+SD)   */
-  .c-assistenz-florian { background: #fde68a; color: #000; } /* Amber  – Assistenz Florian (FD+SD) */
-  /* ── Sonstige ── */
-  .c-urlaub    { background: #e2e8f0; color: #000; }
-  .c-krank     { background: #fee2e2; color: #000; }
-  .c-feiertag  { background: #fef9c3; color: #000; }
-  .c-schule    { background: #ede9fe; color: #000; }
-  .c-dienst    { background: #d1fae5; color: #000; }
-  .c-notdienst { background: #fee2e2; color: #000; }
-  .c-op        { background: #cffafe; color: #000; }
-  .c-frei      { background: #f8fafc; color: #000; }
-  .c-empty     { background: white;   color: #000; }
-  .c-pruefung       { background: #fce7f3; color: #000; }
-  .c-weiterbildung  { background: #e0f2fe; color: #000; } /* Sky-Blau – Weiterbildung */
-  .c-mitteldienst   { background: #cffafe; color: #000; } /* Cyan     – Mitteldienst */
+  /* ══ Farbsystem ══
+     Hintergrund = MIT WEM: jeder Arzt hat eine Farbe; seine eigene Zelle und
+     die Zellen seiner Assistenz haben dieselbe Farbe → wer mit wem arbeitet,
+     ist auf einen Blick zu sehen.
+     Balken links = WELCHER DIENST: blau = Frühdienst, orange = Spätdienst,
+     blau/orange geteilt = ganztags. */
+  :root {
+    --fd: #2563eb; --sd: #ea580c;
+    --ulf: #cffafe;     --ulf-t: #155e75;
+    --lisa: #f5d0fe;    --lisa-t: #86198f;
+    --wilke: #bbf7d0;   --wilke-t: #166534;
+    --florian: #fde68a; --florian-t: #92400e;
+    --hanne: #fecdd3;   --hanne-t: #9f1239;
+    --anm: #c7d2fe;     --anm-t: #3730a3;
+    --fd-beh: #dbeafe;  --sd-beh: #ffedd5;
+  }
+  .s-fd, .s-sd, .s-ganz { background-repeat: no-repeat; background-size: 5px 100%; }
+  .s-fd   { background-image: linear-gradient(var(--fd), var(--fd)); }
+  .s-sd   { background-image: linear-gradient(var(--sd), var(--sd)); }
+  .s-ganz { background-image: linear-gradient(var(--fd) 50%, var(--sd) 50%); }
+  .day-card-badge.s-fd, .day-card-badge.s-sd, .day-card-badge.s-ganz { padding-left: 10px; }
+
+  .c-anmeldung      { background-color: var(--anm); color: #000; }
+  .c-fd-beh         { background-color: var(--fd-beh); color: #000; }
+  .c-sd-beh         { background-color: var(--sd-beh); color: #000; }
+  .c-springer       { background-color: #f1f5f9; color: #000; }
+  .c-assistenz-ulf, .c-arzt-ulf         { background-color: var(--ulf); color: #000; }
+  .c-assistenz-lisa, .c-arzt-lisa       { background-color: var(--lisa); color: #000; }
+  .c-assistenz-wilke, .c-arzt-wilke     { background-color: var(--wilke); color: #000; }
+  .c-assistenz-florian, .c-arzt-florian { background-color: var(--florian); color: #000; }
+  .c-assistenz-hanne, .c-arzt-hanne     { background-color: var(--hanne); color: #000; }
+  .c-arzt-ulf, .c-arzt-lisa, .c-arzt-wilke, .c-arzt-florian, .c-arzt-hanne { font-weight: 600; }
+
+  .c-urlaub    { background-color: #e2e8f0; color: #475569; }
+  .c-krank     { background-color: #fee2e2; color: #b91c1c; font-weight: 600; }
+  .c-feiertag  { background-color: #fef9c3; color: #713f12; }
+  .c-schule    { background-color: #f5f5f4; color: #57534e; }
+  .c-dienst    { background-color: #e0f2fe; color: #000; }
+  .c-notdienst { background-color: #fee2e2; color: #000; }
+  .c-op        { background-color: #f1f5f9; color: #000; }
+  .c-frei      { background-color: #f8fafc; color: #64748b; }
+  .c-empty     { background-color: white;   color: #000; }
+  .c-pruefung       { background-color: #fce7f3; color: #000; }
+  .c-weiterbildung  { background-color: #f5f5f4; color: #57534e; }
+  .c-mitteldienst   { background-color: #f1f5f9; color: #000; }
 
   /* ── Edit Popup ── */
   #edit-popup {
@@ -758,14 +785,15 @@
 
   /* ── Toast ── */
   #toast {
-    position: fixed; top: 68px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    position: fixed; top: 68px; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100vw - 24px);
+    transform: translateY(-20px);
     background: #1e293b; color: white;
     padding: 11px 22px; border-radius: 10px; font-size: 14px; font-weight: 600;
     box-shadow: 0 6px 24px rgba(0,0,0,0.25); opacity: 0;
     transition: all 0.25s ease; z-index: 3000; white-space: nowrap;
     pointer-events: none;
   }
-  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.show { transform: none; opacity: 1; }
   #toast.toast-ok  { background: #059669; }
   #toast.toast-err { background: #dc2626; }
 
@@ -913,6 +941,10 @@
     margin-top: 8px; font-size: 12px;
   }
   .legend.open { display: flex; }
+  .legend-head { width: 100%; font-size: 10px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: .5px; margin: 6px 0 2px; }
+  .legend-bar { position: relative; padding-left: 14px !important; }
+  .legend-bar .lb { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; border-radius: 3px 0 0 3px; }
   .legend-item {
     display: flex; align-items: center; gap: 5px;
     padding: 3px 9px; border-radius: 5px; white-space: nowrap;
@@ -944,7 +976,7 @@
     position: sticky; left: 0; z-index: 4;
     background: white; box-shadow: 2px 0 4px rgba(0,0,0,0.06);
   }
-  tbody tr:hover td.person-name { background: #fafbfc; }
+  @media (hover: hover) and (pointer: fine) { tbody tr:hover td.person-name { background: #fafbfc; } }
   thead th:first-child { position: sticky; left: 0; z-index: 12; background: #f8fafc; }
   tr.group-header td   { position: sticky; left: 0; z-index: 3; }
 
@@ -1102,7 +1134,11 @@
       min-width: 960px;
       table-layout: fixed;
     }
-    .frozen-head-table thead th:first-child { position: sticky; left: 0; z-index: 2; }
+    /* Erste Spalte (Person / FD-SD) muss ÜBER den Tages-Zellen liegen (die haben z-index 10) */
+    .frozen-head-table thead th:first-child,
+    .frozen-head-table thead td:first-child {
+      position: sticky; left: 0; z-index: 20; background: #f8fafc;
+    }
 
     /* ── Topbar Zeile-1 Elemente ── */
     /* Titel nimmt auf Mobile nur unnötig Platz weg -> weg damit,
@@ -1138,13 +1174,27 @@
        Tabellen (echte + eingefrorene Kopfzeile), damit die Spalten pixel-
        genau übereinander liegen, unabhängig vom jeweiligen Zellinhalt */
     .table-wrap table, .frozen-head-table { table-layout: fixed; }
+    /* iPhone: genau 3 Tage pro Bildschirmbreite, Wischen rastet tageweise ein
+       (wie Kalender/Fotos in iOS). Spaltenbreiten aus der Bildschirmbreite. */
+    :root {
+      --namecol: 76px;
+      --daycol: max(96px, calc((100vw - 16px - var(--namecol)) / 3));
+    }
+    .table-wrap table, .frozen-head-table {
+      min-width: 0 !important;
+      width: calc(var(--namecol) + 6 * var(--daycol)) !important;
+    }
     .table-wrap table th:first-child, .table-wrap table td:first-child,
     .frozen-head-table th:first-child {
-      width: 105px; min-width: 105px;
+      width: var(--namecol); min-width: var(--namecol);
     }
     thead th.day-col, .frozen-head-table th.day-col {
-      width: 105px; min-width: 105px;
+      width: var(--daycol); min-width: var(--daycol);
     }
+    .table-wrap { scroll-snap-type: x mandatory; scroll-padding-left: var(--namecol); }
+    td.cell { scroll-snap-align: start; }
+    td.person-name { padding: 7px 8px; overflow: hidden; text-overflow: ellipsis; }
+    .cell-inner { min-height: 44px; }   /* Apple: Tippfläche mind. 44 pt */
 
     /* ── iOS: Inputs 16px → kein Auto-Zoom ── */
     input, select, textarea { font-size: 16px !important; }
@@ -1531,23 +1581,26 @@
       <span>Legende</span><span class="legend-arrow">▼</span>
     </div>
     <div class="legend" id="legend-panel">
-      <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Schichten</div>
-      <div class="legend-item" style="background:#e0e7ff;color:#3730a3"><div class="legend-dot" style="background:#6366f1"></div>Anmeldung</div>
-      <div class="legend-item" style="background:#bfdbfe;color:#1e3a8a"><div class="legend-dot" style="background:#3b82f6"></div>FD: Behandlung</div>
-      <div class="legend-item" style="background:#fed7aa;color:#9a3412"><div class="legend-dot" style="background:#fb923c"></div>SD: Behandlung</div>
-      <div class="legend-item" style="background:#f0fdfa;color:#134e4a"><div class="legend-dot" style="background:#2dd4bf"></div>Springer</div>
-      <div class="legend-item" style="background:#a5f3fc;color:#0e7490"><div class="legend-dot" style="background:#22d3ee"></div>Ass. Ulf</div>
-      <div class="legend-item" style="background:#86efac;color:#166534"><div class="legend-dot" style="background:#4ade80"></div>Ass. Wilke</div>
-      <div class="legend-item" style="background:#fde68a;color:#92400e"><div class="legend-dot" style="background:#fbbf24"></div>Ass. Florian</div>
-      <div class="legend-item" style="background:#c4b5fd;color:#5b21b6"><div class="legend-dot" style="background:#a78bfa"></div>Ass. Lisa</div>
-      <div style="width:100%;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:5px 0 3px">Sonstige</div>
-      <div class="legend-item" style="background:#d1fae5;color:#065f46"><div class="legend-dot" style="background:#6ee7b7"></div>Dienst (Sa)</div>
-      <div class="legend-item" style="background:#e2e8f0;color:#64748b"><div class="legend-dot" style="background:#cbd5e1"></div>Urlaub</div>
-      <div class="legend-item" style="background:#fef9c3;color:#854d0e"><div class="legend-dot" style="background:#fde047"></div>Feiertag</div>
-      <div class="legend-item" style="background:#ede9fe;color:#5b21b6"><div class="legend-dot" style="background:#c4b5fd"></div>Schule</div>
-      <div class="legend-item" style="background:#fce7f3;color:#9d174d"><div class="legend-dot" style="background:#f9a8d4"></div>Prüfung</div>
-      <div class="legend-item" style="background:#e0f2fe;color:#0369a1"><div class="legend-dot" style="background:#7dd3fc"></div>Weiterbildung</div>
-      <div class="legend-item" style="background:#cffafe;color:#0e7490"><div class="legend-dot" style="background:#67e8f9"></div>Mitteldienst</div>
+      <div class="legend-head">Dienst = Balken links</div>
+      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:var(--fd)"></span>Frühdienst</div>
+      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:var(--sd)"></span>Spätdienst</div>
+      <div class="legend-item legend-bar" style="background:#fff"><span class="lb" style="background:linear-gradient(var(--fd) 50%,var(--sd) 50%)"></span>ganztags</div>
+      <div class="legend-head">Farbe = mit wem (Arzt und seine Assistenz)</div>
+      <div class="legend-item" style="background:var(--ulf);color:#000;font-weight:600">Ulf</div>
+      <div class="legend-item" style="background:var(--lisa);color:#000;font-weight:600">Lisa</div>
+      <div class="legend-item" style="background:var(--wilke);color:#000;font-weight:600">Wilke</div>
+      <div class="legend-item" style="background:var(--florian);color:#000;font-weight:600">Florian</div>
+      <div class="legend-item" style="background:var(--hanne);color:#000;font-weight:600">Hanne</div>
+      <div class="legend-item" style="background:var(--anm);color:#000">Anmeldung</div>
+      <div class="legend-item" style="background:var(--fd-beh);color:#000">FD: Behandlung</div>
+      <div class="legend-item" style="background:var(--sd-beh);color:#000">SD: Behandlung</div>
+      <div class="legend-item" style="background:#f1f5f9;color:#000">Springer / Sonstiges</div>
+      <div class="legend-head">Abwesend</div>
+      <div class="legend-item" style="background:#e2e8f0;color:#000">Urlaub</div>
+      <div class="legend-item" style="background:#fee2e2;color:#000">Krank</div>
+      <div class="legend-item" style="background:#f5f5f4;color:#000">Schule / Fortbildung</div>
+      <div class="legend-item" style="background:#fef9c3;color:#000">Feiertag</div>
+      <div class="legend-item" style="background:#e0f2fe;color:#000">Dienst (Sa)</div>
       <div class="legend-issue"><span style="font-weight:700">!</span> Regelverstoß</div>
     </div>
   </div>
@@ -1785,9 +1838,38 @@ function closePinDialog() {
 // Trennzeichen für Hinweise: " || " (wird bei Klassifizierung/Validierung ignoriert)
 function _mainVal(val) { return val ? String(val).split(" || ")[0] : ""; }
 
-function cellClass(val) {
+const ARZT_FARBE = { Ulf: "ulf", Lisa: "lisa", Wilke: "wilke", Florian: "florian", Hanne: "hanne" };
+
+// Welcher Dienst? "s-fd" | "s-sd" | "s-ganz" | "" (für den Farbbalken links)
+function schichtKlasse(val) {
+  if (!val || val === "–") return "";
+  const v = _mainVal(val);
+  if (/^(Urlaub|Krank|Feiertag|SCHULE|Schule|Frei|Weiterbildung|Fortbildung|Abschlussprüfung|Dienst)\b/.test(v)) return "";
+  if (/Notdienst|ECVO|Überstunden/i.test(v)) return "";
+  if (v.startsWith("FD")) return "s-fd";
+  if (v.startsWith("SD")) return "s-sd";
+  if (/Schule.*15:30/.test(v)) return "s-sd";
+  if (/Mitteldienst|Ganztag|Tagdienst|^TD\b|^OP/.test(v)) return "s-ganz";
+  const m = v.match(/(\d{1,2})(?::\d{2})?\s*(?:Uhr)?\s*[–-]\s*(\d{1,2})/);
+  if (m) {
+    const von = +m[1], bis = +m[2];
+    if (bis <= 14) return "s-fd";
+    if (von >= 12) return "s-sd";
+    return "s-ganz";
+  }
+  return "";
+}
+
+function cellClass(val, person) {
+  const sch = schichtKlasse(val);
+  return _farbKlasse(val, person) + (sch ? " " + sch : "");
+}
+
+function _farbKlasse(val, person) {
   if (!val || val === "–") return "c-empty";
   const v = _mainVal(val);  // Note-Teil ignorieren
+  // Ärzte: eigene Farbe (gleich wie ihre Assistenz), solange sie arbeiten
+  if (person && ARZT_FARBE[person] && schichtKlasse(val)) return "c-arzt-" + ARZT_FARBE[person];
 
   // Rollenbasierte Farben (FD und SD gleich je Rolle)
   if (v.includes("Springer"))             return "c-springer";
@@ -1796,6 +1878,7 @@ function cellClass(val) {
   if (v.includes("Assistenz Lisa"))       return "c-assistenz-lisa";
   if (v.includes("Assistenz Wilke"))      return "c-assistenz-wilke";
   if (v.includes("Assistenz Florian"))    return "c-assistenz-florian";
+  if (v.includes("Assistenz Hanne"))      return "c-assistenz-hanne";
   if (v.includes("Assistenz"))            return "c-assistenz-ulf"; // Fallback
 
   // FD / SD Behandlung (einzige Unterscheidung nach Schicht)
@@ -1806,7 +1889,8 @@ function cellClass(val) {
   if (v === "Urlaub")                     return "c-urlaub";
   if (v === "Krank")                      return "c-krank";
   if (v === "Feiertag")                   return "c-feiertag";
-  if (v === "SCHULE")                     return "c-schule";
+  if (v === "SCHULE" || v.startsWith("Schule")) return "c-schule";
+  if (v.startsWith("Fortbildung"))        return "c-weiterbildung";
   if (v === "Dienst")                     return "c-dienst";
   if (v === "Weiterbildung")              return "c-weiterbildung";
   if (v.includes("Mitteldienst"))          return "c-mitteldienst";
@@ -2046,8 +2130,8 @@ function filterPastIssues(rawDay, rawCell, dates) {
 // bleiben, egal wie weit die Tabelle seitlich gescrollt ist.
 function syncFrozenHeadScroll() {
   if (!frozenThead || !tableWrap) return;
-  const inner = frozenThead.closest("table");
-  if (inner) inner.style.transform = `translateX(-${tableWrap.scrollLeft}px)`;
+  // scrollLeft statt transform: bleibt pixelgenau scharf (Retina)
+  if (frozenHeadWrap) frozenHeadWrap.scrollLeft = tableWrap.scrollLeft;
 }
 if (tableWrap) {
   tableWrap.addEventListener("scroll", syncFrozenHeadScroll, { passive: true });
@@ -2152,7 +2236,7 @@ function renderPlan(data, valid) {
         const isToday = di === todayDi ? " today-col" : "";
         let innerCls  = "cell-inner" + (isOv?" is-override":"") + (msgs.length?" has-issue":"");
         const titleAttr = msgs.length ? ` title="${msgs.join(" | ").replace(/"/g,"&quot;")}"` : "";
-        html += `<td class="cell ${cellClass(val)}${isToday}" data-person="${person}" data-di="${di}"${titleAttr}>
+        html += `<td class="cell ${cellClass(val, person)}${isToday}" data-person="${person}" data-di="${di}"${titleAttr}>
           <div class="${innerCls}">${formatCell(val)}</div></td>`;
       }
       html += "</tr>";
@@ -2256,7 +2340,7 @@ function renderDayView(data, valid) {
                     style="${todayBorder}"
                     title="${msgs.join(" | ").replace(/"/g, "&quot;")}">
         <span class="day-card-name">${person}</span>
-        <span class="day-card-badge ${cellClass(val)}">${formatCell(val)}${isOv ? " ✎" : ""}</span>
+        <span class="day-card-badge ${cellClass(val, person)}">${formatCell(val)}${isOv ? " ✎" : ""}</span>
         <span class="day-card-edit-hint">›</span>
       </div>`;
     }
