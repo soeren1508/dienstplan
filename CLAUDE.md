@@ -43,10 +43,12 @@ Flask-PWA zur Dienstplanung (FD/SD, Urlaub, Krank, Überstunden). Deployt auf Re
 - Ansicht-Modus: beim Öffnen springt die Tabelle so, dass direkt nach den Namen der heutige Tag
   beginnt (`positioniereHeute()`, einmal pro Wochenwechsel). Heute = nur blauer Rahmen, kein Hintergrund.
 
-## Farben (Stand Nov 2026, vom Nutzer so gewünscht)
-- EINE Farbe pro Zelle, nach Dienst – für Ärzte, TFAs und Azubis gleich:
-  Frühdienst hellblau, Spätdienst hellorange, ganztags mint;
-  Anmeldung = kräftiger Ton derselben Farbe (FD kräftig blau, SD kräftig orange), fett.
+## Farben (Stand 06.11.2026, vom Nutzer so gewünscht)
+- EINE klare Farbe pro Dienst, für Ärzte, TFAs und Azubis gleich:
+  Frühdienst klares Blau (#8ec5ff), Spätdienst klares Orange (#ffb870), ganztags Grün.
+  Anmeldung hat dieselbe Dienstfarbe, nur fett.
+- Azubis mit „Schule ab 15:30“ / „Schule 15:30 bei …“ (Schule + danach Dienst) = Spätdienst-Farbe;
+  nur „Schule“ ohne Uhrzeit ist grau.
 - Keine Farben pro Arzt und keine Seitenbalken (vom Nutzer abgelehnt: zu unruhig).
 - Abwesend gedämpft grau, Krank rosa mit roter Schrift. Logik: `cellClass()`/`schichtVon()` in index.html.
 

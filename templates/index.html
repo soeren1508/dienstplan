@@ -245,11 +245,11 @@
      (FD-Anmeldung kräftig blau, SD-Anmeldung kräftig orange), fett.
      Mit welchem Arzt jemand arbeitet, steht als Text in der Zelle.
      Abwesenheiten sind grau/gedämpft, damit sie optisch zurücktreten. */
-  .c-fd      { background: #cfe3ff; color: #000; }
-  .c-sd      { background: #ffdcb8; color: #000; }
-  .c-ganz    { background: #c8f1df; color: #000; }
-  .c-anm-fd  { background: #7fb2ff; color: #000; font-weight: 700; }
-  .c-anm-sd  { background: #ffad66; color: #000; font-weight: 700; }
+  .c-fd      { background: #8ec5ff; color: #000; }   /* Frühdienst: klares Blau */
+  .c-sd      { background: #ffb870; color: #000; }   /* Spätdienst: klares Orange */
+  .c-ganz    { background: #9be3bf; color: #000; }   /* ganztags: Grün */
+  .c-anm-fd  { background: #8ec5ff; color: #000; font-weight: 700; }
+  .c-anm-sd  { background: #ffb870; color: #000; font-weight: 700; }
   .c-arzt    { font-weight: 600; }
 
   .c-urlaub    { background: #e5e7eb; color: #4b5563; }
@@ -260,7 +260,7 @@
   .c-pruefung  { background: #f3f4f6; color: #4b5563; }
   .c-frei      { background: #f9fafb; color: #6b7280; }
   .c-notdienst { background: #fde2e2; color: #000; }
-  .c-dienst    { background: #c8f1df; color: #000; }   /* Samstag = ganzer Dienst */
+  .c-dienst    { background: #9be3bf; color: #000; }   /* Samstag = ganzer Dienst */
   .c-op        { background: #f3f4f6; color: #000; }   /* nicht zuordenbar */
   .c-empty     { background: white;   color: #000; }
 
@@ -1561,15 +1561,13 @@
     </div>
     <div class="legend" id="legend-panel">
       <div class="legend-head">Dienst</div>
-      <div class="legend-item c-anm-fd">FD: Anmeldung</div>
       <div class="legend-item c-fd">Frühdienst</div>
-      <div class="legend-item c-anm-sd">SD: Anmeldung</div>
-      <div class="legend-item c-sd">Spätdienst</div>
+      <div class="legend-item c-sd">Spätdienst (auch Schule + danach Dienst)</div>
       <div class="legend-item c-ganz">ganztags / Mitteldienst</div>
       <div class="legend-head">Abwesend / Sonstiges</div>
       <div class="legend-item c-urlaub">Urlaub</div>
       <div class="legend-item c-krank">Krank</div>
-      <div class="legend-item c-schule">Schule / Fortbildung</div>
+      <div class="legend-item c-schule">Schule ganztags / Fortbildung</div>
       <div class="legend-item c-frei">Frei</div>
       <div class="legend-item c-feiertag">Feiertag</div>
       <div class="legend-item c-dienst">Dienst (Sa)</div>
@@ -1840,6 +1838,9 @@ function cellClass(val, person) {
   if (v === "Urlaub")                          return "c-urlaub";
   if (v === "Krank")                           return "c-krank";
   if (v === "Feiertag")                        return "c-feiertag";
+  // Azubis, die nach der Schule noch kommen ("Schule ab 15:30", "Schule 15:30 bei Lisa",
+  // "Schule ab 13:30 bis 18:00 Uhr") arbeiten im Spätdienst → Spätdienst-Farbe
+  if (/^Schule\b/i.test(v) && /\d{1,2}[:.]\d{2}/.test(v)) return "c-sd";
   if (v === "SCHULE" || v.startsWith("Schule")) return "c-schule";
   if (v.startsWith("Fortbildung") || v === "Weiterbildung" || v.includes("ECVO")) return "c-weiterbildung";
   if (v.includes("Abschlussprüfung"))          return "c-pruefung";
