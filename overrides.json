@@ -1464,7 +1464,8 @@
       "3": "Frei",
       "2": "Frei",
       "5": "–",
-      "0": "SD: Anmeldung"
+      "0": "SD: Anmeldung",
+      "1": "FD: Anmeldung"
     },
     "Lisa": {
       "4": "Urlaub",
@@ -1498,7 +1499,7 @@
     "Nadine": {
       "5": "–",
       "0": "FD: Anmeldung",
-      "1": "FD: Anmeldung",
+      "1": "SD: Anmeldung",
       "2": "FD: Anmeldung",
       "3": "FD: Anmeldung",
       "4": "FD: Anmeldung"
