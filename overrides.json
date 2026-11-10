@@ -2048,7 +2048,7 @@
       "4": "Krank"
     },
     "Pauline": {
-      "0": "SD: Behandlung",
+      "0": "FD: Behandlung",
       "2": "Schule",
       "3": "FD: Behandlung"
     },
@@ -2073,7 +2073,7 @@
       "3": "FD: Assistenz Lisa"
     },
     "Emilia": {
-      "0": "FD: Behandlung",
+      "0": "SD: Behandlung",
       "1": "FD: Behandlung",
       "2": "SD: Behandlung",
       "3": "SD: Behandlung"
