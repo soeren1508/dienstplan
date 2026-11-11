@@ -1664,7 +1664,7 @@
       "3": "FD: Assistenz Florian"
     },
     "Florian": {
-      "4": "SD 12-19",
+      "4": "FD OP",
       "5": "Dienst"
     },
     "Hanne": {
@@ -1725,6 +1725,9 @@
       "4": "FD: Behandlung",
       "2": "SD: Assistenz Florian",
       "3": "FD: Anmeldung 2"
+    },
+    "Wilke": {
+      "4": "SD 12-19"
     }
   },
   "42": {
