@@ -1528,7 +1528,7 @@
     "Molly": {
       "0": "FD: Assistenz Ulf",
       "1": "SD: Behandlung",
-      "2": "SD: Assistenz Ulf",
+      "2": "FD: Assistenz Ulf",
       "3": "Schule",
       "4": "SD: Assistenz Wilke || ab 15:30 (Schule)"
     },
@@ -1542,7 +1542,7 @@
     "Nina": {
       "0": "SD: Assistenz Ulf",
       "1": "FD: Behandlung Hanne",
-      "2": "FD: Assistenz Ulf",
+      "2": "SD: Assistenz Ulf",
       "3": "FD: Assistenz Florian"
     },
     "Emilia": {
