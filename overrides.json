@@ -1665,7 +1665,7 @@
       "4": "–",
       "1": "FD: Behandlung",
       "2": "FD: Anmeldung",
-      "3": "FD: Assistenz Florian"
+      "3": "Krank"
     },
     "Florian": {
       "4": "SD 12-19",
@@ -1712,7 +1712,8 @@
     "Imke": {
       "0": "FD: Anmeldung",
       "4": "SD: Anmeldung",
-      "1": "SD: Anmeldung"
+      "1": "SD: Anmeldung",
+      "3": "FD: Behandlung"
     },
     "Molly": {
       "0": "SD: Behandlung Hanne",
